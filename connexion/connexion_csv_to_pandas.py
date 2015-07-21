@@ -4,7 +4,6 @@ Import CSV data to pandas.
 Author: Axel.Tidemann@telenor.com
 '''
 
-
 import sys
 
 import pandas as pd
