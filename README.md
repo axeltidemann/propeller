@@ -7,4 +7,4 @@ Several python packages are required in order to use the software. These are all
 pip install -r requirements.txt
 ```
 
-in order to get all the required packages. Your mileage may vary.
+in order to get all the required packages.
