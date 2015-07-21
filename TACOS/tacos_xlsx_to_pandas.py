@@ -1,3 +1,9 @@
+'''
+Import EXCEL data files to pandas.
+
+Author: Axel.Tidemann@telenor.com
+'''
+
 import sys
 import unicodedata
 

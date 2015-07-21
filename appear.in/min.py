@@ -1,6 +1,8 @@
-# Various plots for Min Xie.
-#
-# Author: Axel.Tidemann@telenor.com
+'''
+Various plots of the appear.in data for Min Xie.
+
+Author: Axel.Tidemann@telenor.com
+'''
 
 import numpy as np
 import pandas as pd

@@ -1,3 +1,9 @@
+'''
+Cleaning badly formatted HTML files.
+
+Author: Axel.Tidemann@telenor.com
+'''
+
 from __future__ import print_function
 import sys
 

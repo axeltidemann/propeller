@@ -1,3 +1,9 @@
+'''
+Converting cleaned HTML files to CSV.
+
+Author: Axel.Tidemann@telenor.com
+'''
+
 from __future__ import print_function
 import sys
 
