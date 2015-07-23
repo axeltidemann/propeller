@@ -52,6 +52,6 @@ for questionId in ['audio_quality', 'video_quality']:
             plt.legend(loc='center left', ncol=2)
         plt.xlabel('')
         plt.ylabel('rating')
-        plt.savefig('{}.png'.format(text))
+        #plt.savefig('{}.png'.format(text))
 
-#plt.show()
+plt.show()
