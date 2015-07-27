@@ -11,7 +11,7 @@ import pandas as pd
 
 # A thorough 'ASCIIfication' is necessary, because the HDF5 storage does not like unicode in python 2.x,
 # and there are ints, floats (i.e. NaNs) and datetimes stored in the same columns here. (NE_name is the worst.)
-to_ascii = lambda x: unicodedata.normalize('NFKD', x).encode('ascii', 'ignore') if type(x) is unicode else str(x)
+to_ascii = lambda x: unicodedata.normalize('NFKD', x).encode('ascii', 'ignore').strip() if type(x) is unicode else str(x)
 
 converters = { key: to_ascii for key in [ 'category', 'priority', 'problem_area', 'problem_type', 'consequence',
                                           'municipality', 'county', 'corrected_by', 'fault_cause', 'closure_note',
