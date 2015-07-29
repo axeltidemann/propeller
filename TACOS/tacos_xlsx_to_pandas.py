@@ -1,5 +1,7 @@
 '''
-Import EXCEL data files to pandas.
+Import Excel data files to pandas.
+
+First argument is path/to/data.h5, second is to the Excel file.
 
 Author: Axel.Tidemann@telenor.com
 '''
@@ -17,9 +19,9 @@ converters = { key: to_ascii for key in [ 'category', 'priority', 'problem_area'
                                           'municipality', 'county', 'corrected_by', 'fault_cause', 'closure_note',
                                           'NE_type', 'NE_name' ] }
 
-with pd.HDFStore('data.h5', 'a', complevel=9, complib='blosc') as store:
-    for input_file in sys.argv[1:]:
-        xl = pd.read_excel(input_file, sheetname=0, index_col=3, # Index on registered date
+with pd.HDFStore(sys.argv[1], 'a', complevel=9, complib='blosc') as store:
+    for input_file in sys.argv[2:]:
+        xl = pd.read_excel(input_file, sheetname=0, index_col=9, # Index on outage_start
                            converters = converters)
         store.append('fhs', xl, data_columns=True)
         print '{} stored in HDF5.'.format(input_file)
