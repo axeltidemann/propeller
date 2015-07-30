@@ -2,7 +2,7 @@
 Create plots from the nicely formatted TACOS data, both hourly and weekly
 for all counties in Norway.
 
-First argument is where to find the HDF5 file, second where to put the png files.
+python tacos_visualize.py /path/to/data.h5 /path/to/figures/
 
 Author: Axel.Tidemann@telenor.com
 '''
@@ -14,31 +14,45 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-fhs = pd.read_hdf(sys.argv[1], 'fhs')
-
-description = {'H': 'hourly', 'D': 'daily'}
-
-for county in np.unique(fhs.county):
-    county_df = fhs[ fhs.county == county ]
+def plot_averages(df, name, path):
 
     priorities = {'H': [], 'D': []}
+    description = {'H': 'hourly', 'D': 'daily'}
+
     for period in priorities.keys():
-        for P in np.unique(county_df.priority):
-            resampled = county_df[ county_df.priority == P ].resample(period, how=len)
+        for P in np.unique(df.priority):
+            resampled = df[ df.priority == P ].resample(period, how=len)
             series = pd.Series(resampled.priority, index=resampled.index, name=P)
             priorities[period].append(series/series.max())
 
-        df = pd.concat(priorities[period], axis=1)
+        P_df = pd.concat(priorities[period], axis=1)
         plt.figure()
-        plt.title('{} {} average'.format(county, description[period]))
-        sns.heatmap(df.T, xticklabels=False)
+        plt.title('{} {} average'.format(name, description[period]))
+        sns.heatmap(P_df.T, xticklabels=False)
 
-        indices = np.linspace(0,len(df)-1,4).astype(int)
-        dates = df.index[indices]
+        indices = np.linspace(0,len(P_df)-1,4).astype(int)
+        dates = P_df.index[indices]
         plt.gca().set_xticks(indices)
         plt.gca().set_xticklabels([ d.strftime('%b %d') for d in dates ])
+        plt.gca().set_xlabel('')
         plt.xticks(rotation=45)
         plt.yticks(rotation=0)
 
-        plt.savefig('{}/{}_{}.png'.format(sys.argv[2],county,period))
+        plt.tight_layout()
+        plt.savefig('{}/{}_{}.png'.format(path,name,period), dpi=300)
         plt.clf()
+
+fhs = pd.read_hdf(sys.argv[1], 'fhs')
+
+# The dataset is supposed to be 2014-11-01 -> 2015-02-28, so we limit them to this range. However, there
+# are some outliers since we now define the start time as the "outage start", and some are from before this
+# period.
+
+limited = fhs.ix['2014-11-01':'2015-03-01']
+
+plot_averages(limited, 'Norway', sys.argv[2])
+
+for county in np.unique(limited.county):
+    plot_averages(limited[ limited.county == county ], county, sys.argv[2])
+
+    
