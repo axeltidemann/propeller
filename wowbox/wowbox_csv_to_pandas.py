@@ -18,24 +18,26 @@ Note: use the above will probably yield a much more smooth export from the other
 
 For each of these databases, a subset of the available properties were chosen. The ones that were mainly avoided were json-related configuration strings. Two were included: cards.actions (enumerates which actions were possible - this is again found in action_log), and events.properties, which adds to the detail level in the events log.
 
+python wowbox_csv_to_pandas.py /path/to/data.h5 /path/to/{action_log.csv, cards.csv, events.csv}
+
 Author: Axel.Tidemann@telenor.com
 '''
 
 
 import pandas as pd
 
-with pd.HDFStore('data.h5', 'w', complevel=9, complib='blosc') as store:
-    cards = pd.read_csv('cards.csv', delimiter=';', parse_dates=[3,4], index_col=0)
+with pd.HDFStore(sys.argv[1], 'w', complevel=9, complib='blosc') as store:
+    cards = pd.read_csv('{}/cards.csv'.format(sys.argv[2]), delimiter=';', parse_dates=[3,4], index_col=0)
     store.put('cards', cards, data_columns=True)
     print 'cards,',
 
-    action_log = pd.read_csv('action_log.csv', delimiter=';', parse_dates=[5], index_col=5, chunksize=50000,
+    action_log = pd.read_csv('{}/action_log.csv'.format(sys.argv[2]), delimiter=';', parse_dates=[5], index_col=5, chunksize=50000,
                              dtype={ 'card_id': pd.np.float64 })
     for chunk in action_log:
         store.append('action_log', chunk, data_columns=True)
     print 'action_log,',
 
-    events = pd.read_csv('events.csv', delimiter=';', parse_dates=[3], index_col=3, chunksize=50000,
+    events = pd.read_csv('{}/events.csv'.format(sys.argv[2]), delimiter=';', parse_dates=[3], index_col=3, chunksize=50000,
                          header=None, names=['user_id', 'name', 'card_id', 'timestamp', 'properties'],
                          dtype={ 'card_id': pd.np.float64 })
     for chunk in events:

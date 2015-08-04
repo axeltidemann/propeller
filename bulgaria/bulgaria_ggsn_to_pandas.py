@@ -1,6 +1,8 @@
 '''
 Import GGSN CSV data to pandas.
 
+python bulgaria_ggsn_to_pandas.py /path/to/data.h5 /path/to/ggsn*csv
+
 Author: Axel.Tidemann@telenor.com
 '''
 
@@ -10,8 +12,8 @@ import pandas as pd
 
 from utils import determine_dtypes
 
-with pd.HDFStore('data.h5', 'a', complevel=9, complib='blosc') as store:
-     for input_file in sys.argv[1:]:
+with pd.HDFStore(sys.argv[1], 'a', complevel=9, complib='blosc') as store:
+     for input_file in sys.argv[2:]:
          kwargs = {'parse_dates': { 'timestamp': ['recordOpeningDate', 'recordOpeningTime'], 
                                     'report_date': ['dateOfReport', 'timeOfReport'],
                                     'change_date': ['changeDate', 'changeTime'],

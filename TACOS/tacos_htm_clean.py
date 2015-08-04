@@ -1,6 +1,8 @@
 '''
 Cleaning badly formatted HTML files.
 
+python tacos_htm_clean.py /path/to/malfortmatted_html*
+
 Author: Axel.Tidemann@telenor.com
 '''
 

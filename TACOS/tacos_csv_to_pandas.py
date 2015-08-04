@@ -1,6 +1,8 @@
 '''
 Importing CSV data to pandas.
 
+python tacos_csv_to_pandas.py /path/to/data.h5 /path/to/csv*
+
 Author: Axel.Tidemann@telenor.com
 '''
 
@@ -10,8 +12,8 @@ import pandas as pd
 
 dateparse = lambda x: pd.datetime.strptime(x, '%Y-%m-%d %H:%M:%S.%f')
 
-with pd.HDFStore('data.h5', 'a', complevel=9, complib='blosc') as store:
-    for input_file in sys.argv[1:]:
+with pd.HDFStore(sys.argv[1], 'a', complevel=9, complib='blosc') as store:
+    for input_file in sys.argv[2:]:
         csv = pd.read_csv(input_file, index_col=0,
                           parse_dates=[0,1,2], date_parser=dateparse,
                           dtype={ 'kpafylke': pd.np.object,

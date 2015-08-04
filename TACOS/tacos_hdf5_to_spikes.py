@@ -1,5 +1,5 @@
 '''
-Writes the FHS dataframes into the proper format for PySpike. 
+Puts FHS dataframes into SpikeTrains for use with PySpike.
 
 In its current version, it exports national level priorities and
 county level priorities.
@@ -9,7 +9,7 @@ but this is probably beneficial - closer investigation of the Excel
 source file reveal that there are many duplicate entries. See the
 columns NE_type and NE_name.
 
-python tacos_hdf_to_spikes.py /path/to/data.h5 /path/to/spike_trains/
+python tacos_hdf_to_spikes.py /path/to/data.h5 /path/to/figures/
 
 Author: Axel.Tidemann@telenor.com
 '''
@@ -21,11 +21,10 @@ import numpy as np
 import pyspike as spk
 import matplotlib.pyplot as plt
 import seaborn as sns
-import ipdb
 
-def save_matrix_plot(df, title, path):
+def save_matrix_plot(df, title, path, fmt='3.2f'):
     plt.figure()
-    sns.heatmap(df, annot=True, fmt='3.2f')
+    sns.heatmap(df, annot=True, fmt=fmt)
     plt.xticks(rotation=45)
     plt.yticks(rotation=0)
     plt.title(title)
@@ -65,7 +64,7 @@ P1 = fhs.query("priority == 'P1'")
 P2 = fhs.query("priority == 'P2'")
 
 # More complex experiment: find which time shift led to the best synchronous spike correlation.
-results = pd.DataFrame(index = np.linspace(0,60,13,dtype=int), columns = np.unique(fhs.county))
+results = pd.DataFrame(index = np.linspace(0,60,13,dtype=int), columns = np.unique(fhs.county), dtype=float)
 
 for delay in results.index:
     for county in results.columns:
@@ -80,5 +79,5 @@ for delay in results.index:
         P2_sync = [ spk.spike_sync(P2_shift, s_t, max_tau=delay*60) for s_t in spike_trains ]
         P2_sync[1] = 0 
         results[county][delay] = np.max(P1_sync + P2_sync)
-
-save_matrix_plot(results, 'Maximum gain of time shifts', '{}/Maximum_gains_of_time_shifts_per_county.png'.format(sys.argv[2])
+    
+save_matrix_plot(results, 'Maximum gain of time shifts', '{}/Maximum_gains_of_time_shifts_per_county.png'.format(sys.argv[2]), '3.1f')

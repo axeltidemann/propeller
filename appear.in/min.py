@@ -1,5 +1,5 @@
 '''
-Various plots of the appear.in data for Min Xie, as well as Excel file in a formatted way.
+Various plots/Excel export of the appear.in data for Min Xie.
 
 python /path/to/appear.in/data.h5 /path/to/figures/
 
@@ -11,8 +11,7 @@ import sys
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import matplotlib as mpl
-mpl.style.use('ggplot')
+plt.style.use('ggplot')
 
 df = pd.read_hdf(sys.argv[1], 'questionnaire')
 df.sort(inplace=True)
@@ -25,7 +24,8 @@ with pd.ExcelWriter('{}/min.xlsx'.format(sys.argv[2])) as xl:
     for i, index in enumerate(df.index):
         if index.month != month:
             month = index.month
-            df.ix[start:i].to_excel(xl, sheet_name=start_index.strftime('%Y %B'))
+            excerpt = df.ix[start:i]
+            excerpt[ ~pd.isnull(excerpt.text) ].to_excel(xl, sheet_name=start_index.strftime('%Y %B'))
             start = i
             start_index = index
 

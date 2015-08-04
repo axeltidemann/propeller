@@ -1,6 +1,8 @@
 '''
 Import Excel data files to pandas.
 
+python tacos_xlsx_to_pandas.py /path/do/data.h5 /path/to/excel_file*
+
 First argument is path/to/data.h5, second is to the Excel file.
 
 Author: Axel.Tidemann@telenor.com
