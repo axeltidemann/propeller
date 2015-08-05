@@ -1,5 +1,6 @@
 '''
-Plot a random user as well as the location of the various cell towers. 
+Plot location of the cell towers as well as some statistics related to the users, namely the
+histogram of the duration of the calls as well as histogram of calling/SMSing frequency.
 
 python bulgaria_plot_user.py /path/to/data.h5 /path/to/meshgrid/file /path/to/figures/
 
@@ -38,6 +39,12 @@ plt.savefig('{}/bulgaria_cells.png'.format(sys.argv[3]), dpi=300)
 plt.clf()
 
 with pd.get_store(sys.argv[1]) as store:
+    duration = store.select_column('msc', 'chargeableDuration')
+    sns.distplot(duration.dropna(), kde=False)
+    plt.xlabel('Duration (seconds)')
+    plt.tight_layout()
+    plt.savefig('{}/duration_histogram.png'.format(sys.argv[3]), dpi=300)
+    
     calling = store.select_column('msc', 'callingNumber')
     calling_counts = pd.value_counts(calling)
     called =  store.select_column('msc', 'calledNumber')
@@ -50,7 +57,7 @@ with pd.get_store(sys.argv[1]) as store:
         format(100.*len(calling_counts[ calling_counts < 20 ])/len(calling_counts))
     sns.distplot(calling_counts, kde=False, color='b')
     plt.tight_layout()
-    plt.savefig('{}/histogram.png'.format(sys.argv[3]), dpi=300)
+    plt.savefig('{}/usage_times_histogram.png'.format(sys.argv[3]), dpi=300)
     
     #     lon,lat = [],[]
     #     errors = False
