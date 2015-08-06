@@ -7,7 +7,6 @@ Author: Axel.Tidemann@telenor.com
 '''
 
 import sys
-import time
 from functools import partial
 
 # Necessary to run on joker without crashing when nohup'ing.
@@ -51,6 +50,7 @@ partial_count = partial(count, path=sys.argv[1], free=free)
 pool = mp.Pool()
 users = pd.concat(pool.map(partial_count, np.array_split(users_index, mp.cpu_count())))
 
+# users should be saved as well. Nice to take care of the calculations.
 sns.barplot(data=users)
 plt.tight_layout()
 plt.savefig('{}/before_after_free_data.png'.format(sys.argv[2]), dpi=300)
