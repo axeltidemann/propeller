@@ -10,6 +10,10 @@ import sys
 import time
 from functools import partial
 
+# Necessary to run on joker without crashing when nohup'ing.
+import matplotlib as mpl
+mpl.use('Agg')
+
 import pandas as pd
 import numpy as np
 import seaborn as sns
@@ -40,17 +44,13 @@ cards = store['cards']
 # There are others with the name 'Free' in them, find them like this:
 # cards[ cards.name.str.contains('Free|free')==True ]
 free = cards.query("name == 'Exclusive Offer 20MB Free'")
-users_index = store.select('action_log', where='card_id == free.index', columns=['user_id']).user_id.unique()[:1000]
+users_index = store.select('action_log', where='card_id == free.index', columns=['user_id']).user_id.unique()
 store.close()
 
 partial_count = partial(count, path=sys.argv[1], free=free)
-
 pool = mp.Pool()
-
 users = pd.concat(pool.map(partial_count, np.array_split(users_index, mp.cpu_count())))
 
 sns.barplot(data=users)
 plt.tight_layout()
 plt.savefig('{}/before_after_free_data.png'.format(sys.argv[2]), dpi=300)
-    
-    
