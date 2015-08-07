@@ -12,12 +12,13 @@ from functools import partial
 # Necessary to run on joker without crashing when nohup'ing.
 import matplotlib as mpl
 mpl.use('Agg')
-
 import pandas as pd
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 import multiprocessing as mp
+
+import ipdb
 
 def count(users_index, path, free):
     users = pd.DataFrame(index=users_index, columns=['before', 'after'])
@@ -40,6 +41,19 @@ def count(users_index, path, free):
 
 store = pd.HDFStore(sys.argv[1], 'r')
 cards = store['cards']
+
+success = store.select('action_log', where="action == 'buy' and status == 'success'", columns=['card_id', 'status'])
+sellers = success.groupby('card_id').count()
+sellers.rename(columns={'status': 'sale'}, inplace=True)
+cards_sale = cards.join(sellers)
+types = cards_sale.groupby('type').sum().dropna()
+sns.barplot(types.index, types.sale)
+plt.gca().set_ylabel('')
+plt.gca().set_xlabel('')
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.savefig('{}/sale_distribution.png'.format(sys.argv[2]), dpi=300)
+
 # There are others with the name 'Free' in them, find them like this:
 # cards[ cards.name.str.contains('Free|free')==True ]
 free = cards.query("name == 'Exclusive Offer 20MB Free'")

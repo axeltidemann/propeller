@@ -14,14 +14,14 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-def plot_averages(df, name, path):
+def plot_averages(df, name, path, how=len):
 
     priorities = {'H': [], 'D': []}
     description = {'H': 'hourly', 'D': 'daily'}
 
     for period in priorities.keys():
         for P in np.unique(df.priority):
-            resampled = df[ df.priority == P ].resample(period, how=len)
+            resampled = df[ df.priority == P ].resample(period, how=how)
             series = pd.Series(resampled.priority, index=resampled.index, name=P)
             priorities[period].append(series/series.max())
 
@@ -50,7 +50,10 @@ fhs = pd.read_hdf(sys.argv[1], 'fhs')
 
 limited = fhs.ix['2014-11-01':'2015-03-01']
 
+plot_averages(limited, 'Presence of error', sys.argv[2], lambda x: 1 if len(x) > 0 else 0)
+
 plot_averages(limited, 'Norway', sys.argv[2])
+
 
 for county in np.unique(limited.county):
     plot_averages(limited[ limited.county == county ], county, sys.argv[2])
