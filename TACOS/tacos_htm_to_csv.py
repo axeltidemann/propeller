@@ -1,6 +1,8 @@
 '''
 Converting cleaned HTML files to CSV.
 
+python tacos_htm_to_csv.py /path/to/files_that_are*cleaned
+
 Author: Axel.Tidemann@telenor.com
 '''
 
@@ -24,7 +26,7 @@ for input_file in sys.argv[1:]:
                     print(','.join([ col.text_content().strip().replace(',', ' ').encode('ascii', 'ignore').decode('ascii') 
                                      for col in children ]), file=file)
 
-            print('{}: {}, rows saved to csv format, {} skipped because of blank indices.'.format(input_file, i-skipped, skipped))
+            print('{}: {} rows saved to csv format, {} skipped because of blank indices.'.format(input_file, i-skipped, skipped))
         
 
 

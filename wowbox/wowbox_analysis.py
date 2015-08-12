@@ -1,5 +1,6 @@
 '''
-Calculates how many moves the user performs in the Wowbox app after getting free data.
+Calculates how many moves the user performs in the Wowbox app after getting free data, as well
+as distribution of the sold categories.
 
 python wowbox_analysis.py /path/to/data.h5 /path/to/figures/
 
@@ -8,6 +9,7 @@ Author: Axel.Tidemann@telenor.com
 
 import sys
 from functools import partial
+import multiprocessing as mp
 
 # Necessary to run on joker without crashing when nohup'ing.
 import matplotlib as mpl
@@ -16,9 +18,6 @@ import pandas as pd
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
-import multiprocessing as mp
-
-import ipdb
 
 def count(users_index, path, free):
     users = pd.DataFrame(index=users_index, columns=['before', 'after'])
@@ -42,7 +41,8 @@ def count(users_index, path, free):
 store = pd.HDFStore(sys.argv[1], 'r')
 cards = store['cards']
 
-success = store.select('action_log', where="action == 'buy' and status == 'success'", columns=['card_id', 'status'])
+action_log = store['action_log']
+success = action_log[ action_log.action.str.contains('buy') & (action_log.status == 'success') ]
 sellers = success.groupby('card_id').count()
 sellers.rename(columns={'status': 'sale'}, inplace=True)
 cards_sale = cards.join(sellers)
@@ -57,14 +57,14 @@ plt.savefig('{}/sale_distribution.png'.format(sys.argv[2]), dpi=300)
 # There are others with the name 'Free' in them, find them like this:
 # cards[ cards.name.str.contains('Free|free')==True ]
 free = cards.query("name == 'Exclusive Offer 20MB Free'")
-users_index = store.select('action_log', where='card_id == free.index', columns=['user_id']).user_id.unique()
+users_index = action_log[ action_log.card_id == free.index ].user_id.unique()
 store.close()
 
 partial_count = partial(count, path=sys.argv[1], free=free)
 pool = mp.Pool()
 users = pd.concat(pool.map(partial_count, np.array_split(users_index, mp.cpu_count())))
 
-# users should be saved as well. Nice to take care of the calculations.
+# The resulting DataFrame should be saved as well. Nice to take care of the calculations.
 sns.barplot(data=users)
 plt.tight_layout()
 plt.savefig('{}/before_after_free_data.png'.format(sys.argv[2]), dpi=300)

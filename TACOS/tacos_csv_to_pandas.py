@@ -10,14 +10,17 @@ import sys
 
 import pandas as pd
 
-dateparse = lambda x: pd.datetime.strptime(x, '%Y-%m-%d %H:%M:%S.%f')
+dateparse = lambda x: pd.NaT if pd.isnull(x) else pd.datetime.strptime(x, '%Y-%m-%d %H:%M:%S.%f')
 
 with pd.HDFStore(sys.argv[1], 'a', complevel=9, complib='blosc') as store:
     for input_file in sys.argv[2:]:
         csv = pd.read_csv(input_file, index_col=0,
                           parse_dates=[0,1,2], date_parser=dateparse,
                           dtype={ 'kpafylke': pd.np.object,
-                                  'kpakommune': pd.np.object },
+                                  'kpakommune': pd.np.object,
+                                  'fhsseverity': pd.np.float, # If you need to select on these, make them pd.np.object
+                                  'severity': pd.np.float,
+                                  'class': pd.np.float },
                           chunksize=50000)
 
         for chunk in csv:

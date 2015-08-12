@@ -3,8 +3,6 @@ Import Excel data files to pandas.
 
 python tacos_xlsx_to_pandas.py /path/do/data.h5 /path/to/excel_file*
 
-First argument is path/to/data.h5, second is to the Excel file.
-
 Author: Axel.Tidemann@telenor.com
 '''
 
@@ -24,7 +22,8 @@ converters = { key: to_ascii for key in [ 'category', 'priority', 'problem_area'
 with pd.HDFStore(sys.argv[1], 'a', complevel=9, complib='blosc') as store:
     for input_file in sys.argv[2:]:
         xl = pd.read_excel(input_file, sheetname=0, index_col=9, # Index on outage_start
-                           converters = converters)
+                           converters = converters,
+                           parse_cols=18) # Sometimes there are extra "unnamed" columns
         store.append('fhs', xl, data_columns=True)
         print '{} stored in HDF5.'.format(input_file)
         
