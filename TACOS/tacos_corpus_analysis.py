@@ -34,7 +34,7 @@ class DFSentences:
         self.store = store
 
     def __iter__(self):
-        corpus = self.store.select('tacos', columns=['identifier', 'class', 'node', 'alarmtype', 'fhsproblemarea'], chunksize=50000)
+        corpus = self.store.select('tacos', columns=['class', 'node', 'alarmtype', 'fhsproblemarea'], chunksize=50000)
         for chunk in corpus:
             for line in zip(chunk.identifier, chunk['class'], chunk.node, chunk.alarmtype, chunk.fhsproblemarea):
                 yield [ word for word in line if not pd.isnull(word) ]
