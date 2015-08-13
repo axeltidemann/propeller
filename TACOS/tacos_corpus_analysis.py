@@ -36,8 +36,9 @@ class DFSentences:
     def __iter__(self):
         corpus = self.store.select('tacos', columns=['identifier', 'class', 'node', 'alarmtype', 'fhsproblemarea'], chunksize=50000)
         for chunk in corpus:
+            chunk.fillna(False, inplace=True)
             for line in zip(chunk.identifier, chunk['class'], chunk.node, chunk.alarmtype, chunk.fhsproblemarea):
-                yield [ word for word in line if not pd.isnull(word) ]
+                yield [ word for word in line if word is not False ]
             
 
 def save_word_model(path):
