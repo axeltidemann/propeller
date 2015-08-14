@@ -8,12 +8,14 @@ Author: Axel.Tidemann@telenor.com
 
 import sys
 import multiprocessing as mp
+from functools import partial
 
 import pandas as pd
 import gensim
 import logging
+import ipdb
 
-logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
+#logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
 def frequencies(store):
     
@@ -30,24 +32,22 @@ def frequencies(store):
     
 
 class DFSentences:
-    def __init__(self, store):
+    def __init__(self, store, column):
         self.store = store
+        self.column = column
 
     def __iter__(self):
-        corpus = self.store.select('tacos', columns=['class', 'node', 'alarmtype', 'fhsproblemarea'], chunksize=50000)
+        corpus = self.store.select('tacos', columns=[self.column], chunksize=50000)
         for chunk in corpus:
-            for line in zip(chunk.identifier, chunk['class'], chunk.node, chunk.alarmtype, chunk.fhsproblemarea):
-                yield [ word for word in line if not pd.isnull(word) ]
-            
+            yield chunk.fillna('')[self.column]
 
-def save_word_model(path):
+def save_word_model(column, path):
     with pd.get_store(path) as store:
-        sentences = DFSentences(store)
-        model = gensim.models.Word2Vec(sentences, workers=mp.cpu_count())
-        model.save('{}.word2vec'.format(path))
+        sentences = DFSentences(store, column)
+        model = gensim.models.Word2Vec(sentences) #, workers=mp.cpu_count())
+        model.save('{}.word2vec.{}'.format(path, column))
 
+partial_save = partial(save_word_model, path=sys.argv[1])
 
-save_word_model(sys.argv[1])
-    
-                
-
+pool = mp.Pool()
+pool.map(partial_save, ['identifier', 'node', 'alarmtype',  'fhsproblemara' ])
