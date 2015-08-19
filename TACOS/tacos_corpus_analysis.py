@@ -41,7 +41,6 @@ def save_word_model(column, path):
         model = gensim.models.Word2Vec(sentences) #, workers=mp.cpu_count())
         model.save('{}.word2vec.{}'.format(path, column))
 
-
 partial_freq = partial(frequency, path=sys.argv[1])
 
 pool = mp.Pool()
@@ -49,7 +48,5 @@ columns, data = zip(*pool.map(partial_freq, [ 'identifier', 'node', 'alarmtype',
                                               'fhsseverity', 'severity', 'class', 'fhsproblemarea', 'summary' ]))
 print pd.DataFrame(list(data), index=list(columns), columns=['unique', 'unique_ratio', 'nan', 'nan_ratio'])
 
-sys.exit()
-    
 partial_save = partial(save_word_model, path=sys.argv[1])
 pool.map(partial_save, ['identifier', 'node', 'alarmtype',  'fhsproblemarea' ])
