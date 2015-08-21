@@ -25,7 +25,7 @@ def write_failure_log(node, hdf5_path, node_dir, window_length, unique_fhsseveri
     with pd.get_store(hdf5_path) as store:
         failures = store.select('tacos', columns=['fhsseverity'], where='node == node').sort()
 
-    with pd.HDFStore('{}/{}.h5'.format(node_dir, node), 'w') as node_store:
+    with pd.HDFStore('{}/{}.h5'.format(node_dir, node), 'w', complevel=9, complib='blosc') as node_store:
         targets = []
         for index in failures.index:
             target = { key: 0 for key in unique_fhsseverity }
