@@ -10,8 +10,6 @@ import sys
 
 import pandas as pd
 
-force_int = lambda x: -1 if pd.isnull(x) else x
-
 with pd.HDFStore(sys.argv[1], 'a', complevel=9, complib='blosc') as store:
     for input_file in sys.argv[2:]:
         

@@ -1,5 +1,5 @@
 '''
-File for various utilities. 
+Various utilities. 
 
 Author: Axel.Tidemann@telenor.com
 '''
