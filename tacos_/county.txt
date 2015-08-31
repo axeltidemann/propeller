@@ -1,0 +1,10 @@
+
+kpafylke  <lambda>    0.414856
+dtype: float64% of nodes with kpafylke have more than one kpafylke assigned.
+kpafylke  <lambda>    52.561732
+dtype: float64% of unique nodes have exactly one kpafylke assigned.
+Using nodes, we can fill in kpafylke  len    84.192849
+dtype: float64% of the missing kpafylke values.
+
+185.23user 17.55system 3:21.71elapsed 100%CPU (0avgtext+0avgdata 29670952maxresident)k
+0inputs+16outputs (0major+7569828minor)pagefaults 0swaps
