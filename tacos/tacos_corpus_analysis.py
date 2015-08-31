@@ -13,7 +13,6 @@ from functools import partial
 import pandas as pd
 import gensim
 import logging
-import ipdb
 
 #logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
