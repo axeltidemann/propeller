@@ -36,7 +36,3 @@ with pd.get_store(path) as store, \
 
         # You can access the timestamps like this: train.index
         # You can access the columns like this: train.alarmtype
-        
-
-
-        
