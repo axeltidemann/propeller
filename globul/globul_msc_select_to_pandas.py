@@ -1,7 +1,7 @@
 '''
 Import CSV data to pandas. This is the shortened version, where only callingSubscriberIMSI and cell_ID are loaded.
 
-python bulgaria_msc_to_pandas.py /path/to/data.h5 /path/to/msc*.csv
+python globul_msc_to_pandas.py /path/to/data.h5 /path/to/msc.csv
 
 Author: Axel.Tidemann@telenor.com
 '''
@@ -18,12 +18,10 @@ with pd.HDFStore(sys.argv[1], 'w', complevel=9, complib='blosc') as store:
     csv = pd.read_csv(input_file, 
                       parse_dates={ 'timestamp': ['startDateCharge','startTimeCharge'] },
                       date_parser=lambda x: pd.to_datetime(x, coerce=True),
-                      converters={'startTimeCharge': lambda x: str(x)},
+                      converters={'startTimeCharge': str, 'callingSubscriberIMSI': str, 'cell_ID': str},
                       index_col='timestamp',
                       usecols=['callingSubscriberIMSI', 'cell_ID', 'startDateCharge','startTimeCharge'],
                       chunksize=50000,
-                      dtype={'callingSubscriberIMSI': np.dtype('float64'),
-                             'cell_ID': np.dtype('float64')},
                       error_bad_lines=False)
 
     dropped = []

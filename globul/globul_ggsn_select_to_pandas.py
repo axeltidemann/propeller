@@ -1,7 +1,7 @@
 '''
 Import GGSN CSV data to pandas. This is the shortened version, where only IMSI and cell_id are loaded.
 
-python bulgaria_ggsn_select_to_pandas.py /path/to/data.h5 /path/to/ggsn.csv
+python globul_ggsn_select_to_pandas.py /path/to/data.h5 /path/to/ggsn.csv
 
 Author: Axel.Tidemann@telenor.com
 '''
@@ -18,11 +18,10 @@ with pd.HDFStore(sys.argv[1], 'w', complevel=9, complib='blosc') as store:
      csv = pd.read_csv(input_file,
                        parse_dates={ 'timestamp': ['recordOpeningDate', 'recordOpeningTime'] },
                        date_parser=lambda x: pd.to_datetime(x, coerce=True),
+                       converters={'IMSI': str, 'cell_ID': str},
                        index_col='timestamp',
                        usecols=['IMSI', 'cell_ID', 'recordOpeningDate', 'recordOpeningTime'],
                        chunksize=50000,
-                       dtype={'IMSI': np.dtype('float64'),
-                              'cell_ID': np.dtype('float64')},
                        error_bad_lines=False)
 
      dropped = []
