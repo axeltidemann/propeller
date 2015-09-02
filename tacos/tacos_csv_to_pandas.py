@@ -12,7 +12,7 @@ import pandas as pd
 
 dateparse = lambda x: pd.NaT if pd.isnull(x) else pd.datetime.strptime(x, '%Y-%m-%d %H:%M:%S.%f')
 
-with pd.HDFStore(sys.argv[1], 'a', complevel=9, complib='blosc') as store:
+with pd.HDFStore(sys.argv[1], 'w', complevel=9, complib='blosc') as store:
     for input_file in sys.argv[2:]:
         csv = pd.read_csv(input_file,
                           index_col=0,
@@ -22,7 +22,7 @@ with pd.HDFStore(sys.argv[1], 'a', complevel=9, complib='blosc') as store:
                                  'kpafylke','kpakommune','fhsseverity','severity','networkclass','fhsproblemarea','summary'],
                           header=0,
                           converters={'kpafylke': str, 'kpakommune': str,'fhsseverity': str,
-                                      'severity': str, 'class': str}
+                                      'severity': str, 'networkclass': str},
                           chunksize=50000)
 
         for chunk in csv:
