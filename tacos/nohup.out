@@ -1,2 +1,6 @@
 /home/tidemann/.virtualenvs/summer9/lib/python2.7/site-packages/matplotlib-1.5.dev1-py2.7-linux-x86_64.egg/matplotlib/collections.py:620: FutureWarning: elementwise comparison failed; returning scalar instead, but in the future will perform elementwise comparison
   if self._edgecolors == str('face'):
+19535.09user 145.52system 5:28:45elapsed 99%CPU (0avgtext+0avgdata 29703744maxresident)k
+152inputs+5768outputs (0major+118494432minor)pagefaults 0swaps
+/home/tidemann/.virtualenvs/summer9/lib/python2.7/site-packages/matplotlib-1.5.dev1-py2.7-linux-x86_64.egg/matplotlib/collections.py:620: FutureWarning: elementwise comparison failed; returning scalar instead, but in the future will perform elementwise comparison
+  if self._edgecolors == str('face'):

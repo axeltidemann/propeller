@@ -17,25 +17,37 @@ mpl.use('agg')
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-with pd.get_store(sys.argv[1]) as store:
-    data = store.select('tacos', columns=['alarmtype', 'node'])
-
-    alarmtypes = data.alarmtype.unique()
+def plot_alarms_distribution(alarms, title=''):
+    alarmtypes = np.unique([ c for counter in alarms.values() for c in counter.keys() ])
     alarmtypes_index = { alarm: i for i,alarm in enumerate(alarmtypes) }
     
-    alarms = defaultdict(lambda : Counter())
-    for name, group in data.groupby(['node', 'alarmtype'], sort=False):
-        alarms[name[0]][name[1]] = len(group)
+    heat = np.zeros((len(alarmtypes), len(alarms)))
 
-    heat = np.zeros((len(alarms), len(alarmtypes)))
-
-    for row, node in enumerate(alarms.keys()):
+    for col, node in enumerate(alarms.keys()):
         for alarmtype in alarms[node].keys():
-            heat[row,alarmtypes_index[alarmtype]] = alarms[node][alarmtype]
+            heat[alarmtypes_index[alarmtype], col] = alarms[node][alarmtype]
 
+    heat_norm = normalize(heat, axis=0, norm='l1')
 
-    heat_norm = normalize(heat, axis=1, norm='l1')
-    sns.heatmap(heat_norm, xticklabels=False, yticklabels=False)
-    plt.xlabel('Alarm types')
-    plt.ylabel('Nodes')
-    plt.savefig('node alarmtypes heat map.png', dpi=300)
+    sns.heatmap(heat_norm, xticklabels=False, yticklabels=False, cmap=plt.get_cmap('Greys'))
+    plt.title(title)
+    plt.ylabel('Alarm types')
+    plt.xlabel('Nodes grouped by class' if len(title) == 0 else 'Nodes')
+    plt.tight_layout()
+    plt.savefig('figures/{} node alarmtypes heat map.png'.format(title), dpi=600)
+    plt.clf()
+
+with pd.get_store(sys.argv[1]) as store:
+    data = store.select('tacos', columns=['alarmtype', 'node', 'networkclass'])
+    alarms = defaultdict(Counter)
+    for (networkclass, node, alarmtype), group in data.groupby(['networkclass', 'node', 'alarmtype']):
+        alarms[node][alarmtype] = len(group)
+    
+    # Beware: some nodes are in several network classes.
+    plot_alarms_distribution(alarms)
+
+    for networkclass, group_1 in data.groupby(['networkclass']):
+        alarms = defaultdict(Counter)
+        for (node, alarmtype), group_2 in group_1.groupby(['node', 'alarmtype']):
+            alarms[node][alarmtype] = len(group_2)
+        plot_alarms_distribution(alarms, 'Class {}'.format(networkclass))

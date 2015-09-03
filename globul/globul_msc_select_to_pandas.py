@@ -11,10 +11,11 @@ import sys
 import pandas as pd
 import numpy as np
 
+hdf5_file = sys.argv[1]
 input_file = sys.argv[2]
 print 'Reading only callingSubscriberIMSI and cell_ID from {}'.format(input_file)
 
-with pd.HDFStore(sys.argv[1], 'w', complevel=9, complib='blosc') as store:
+with pd.HDFStore(hdf5_file, 'w', complevel=9, complib='blosc') as store:
     csv = pd.read_csv(input_file, 
                       parse_dates={ 'timestamp': ['startDateCharge','startTimeCharge'] },
                       date_parser=lambda x: pd.to_datetime(x, coerce=True),
@@ -30,4 +31,4 @@ with pd.HDFStore(sys.argv[1], 'w', complevel=9, complib='blosc') as store:
         chunk.drop(chunk.index[pd.isnull(chunk.index)], inplace=True) # NaT as index
         store.append('msc', chunk, data_columns=True)
 
-    print '{} stored in HDF5. {}% was dropped since NaT was used as an index.'.format(input_file, 100*np.mean(dropped))
+    print '{} stored in {}. {}% was dropped since NaT was used as an index.'.format(input_file, hdf5_file, 100*np.mean(dropped))
