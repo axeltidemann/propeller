@@ -1,7 +1,7 @@
 '''
-Import GGSN CSV data to pandas. This is the shortened version, where only IMSI and cell_id are loaded.
+Import selected columns of the GGSN CSV data to pandas.
 
-python globul_ggsn_select_to_pandas.py /path/to/data.h5 /path/to/ggsn.csv
+python globul_ggsn_select_to_pandas.py /path/to/ggsn.h5 /path/to/ggsn.csv
 
 Author: Axel.Tidemann@telenor.com
 '''
@@ -9,26 +9,17 @@ Author: Axel.Tidemann@telenor.com
 import sys
 
 import pandas as pd
-import numpy as np
 
-hdf5_file = sys.argv[1]
-input_file = sys.argv[2]
-print 'Reading only IMSI and cell_id from {}'.format(input_file)
-     
-with pd.HDFStore(hdf5_file, 'w', complevel=9, complib='blosc') as store:
-     csv = pd.read_csv(input_file,
-                       parse_dates={ 'timestamp': ['recordOpeningDate', 'recordOpeningTime'] },
-                       date_parser=lambda x: pd.to_datetime(x, coerce=True),
-                       converters={'IMSI': str, 'cell_ID': str},
-                       index_col='timestamp',
-                       usecols=['IMSI', 'cell_ID', 'recordOpeningDate', 'recordOpeningTime'],
-                       chunksize=50000,
-                       error_bad_lines=False)
+from globul_to_pandas import to_hdf5
 
-     dropped = []
-     for chunk in csv:
-          dropped.append(np.mean(pd.isnull(chunk.index)))
-          chunk.drop(chunk.index[pd.isnull(chunk.index)], inplace=True) # NaT as index
-          store.append('ggsn', chunk, data_columns=True)
+usecols = ['IMSI', 'cell_ID', 'recordType', 'recordOpeningDate', 'recordOpeningTime']
 
-     print '{} stored in {}. {}% was dropped since NaT was used as an index.'.format(input_file, hdf5_file, 100*np.mean(dropped))
+csv_kwargs = {'parse_dates': { 'timestamp': ['recordOpeningDate', 'recordOpeningTime'] },
+              'date_parser': lambda x: pd.to_datetime(x, coerce=True),
+              'converters': { col: str for col in usecols },
+              'index_col': 'timestamp',
+              'usecols': usecols,
+              'chunksize': 50000,
+              'error_bad_lines': False}
+
+to_hdf5(sys.argv[1], sys.argv[2], csv_kwargs)
