@@ -34,7 +34,7 @@ def plot_alarms_distribution(alarms, title=''):
     plt.ylabel('Alarm types')
     plt.xlabel('Nodes grouped by class' if len(title) == 0 else 'Nodes')
     plt.tight_layout()
-    plt.savefig('figures/{} node alarmtypes heat map.png'.format(title), dpi=600)
+    plt.savefig('figures/{} node alarmtypes heat map.png'.format(title), dpi=300)
     plt.clf()
 
 with pd.get_store(sys.argv[1]) as store:
@@ -50,4 +50,8 @@ with pd.get_store(sys.argv[1]) as store:
         alarms = defaultdict(Counter)
         for (node, alarmtype), group_2 in group_1.groupby(['node', 'alarmtype']):
             alarms[node][alarmtype] = len(group_2)
-        plot_alarms_distribution(alarms, 'Class {}'.format(networkclass))
+
+        try:
+            plot_alarms_distribution(alarms, 'Class {}'.format(networkclass))
+        except:
+            print 'Error plotting for class {} failed'.format(networkclass)
