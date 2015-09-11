@@ -1,6 +1,6 @@
 from keras.models import Sequential
 from keras.layers.core import Dense, Activation, Dropout, TimeDistributedDense
-from keras.layers.recurrent import LSTM
+from keras.layers.recurrent import LSTM, GRU
 
 import sys, calendar, datetime, math
 import numpy as np
@@ -13,7 +13,7 @@ from numpy import linalg as LA
 
 model_path = sys.argv[1]
 test_size = 100
-seq_size = 10
+seq_size = 5
 
 X_test = np.zeros((test_size, seq_size, len_circ_repr), dtype=np.float)
 y_test = np.zeros((test_size, 60), dtype=np.bool)
@@ -22,7 +22,7 @@ params = {
 #    "freqs":{'D':86400,'H':3600,'T':60,'S':1, 'B':86400, 'W-SUN':86400*7 },
     "freqs":{'S':1},
     "add_noise": False,
-    "mult": 3
+    "mult": 1
 }
 
 freqs = get_random_batch(X_test, y_test, params)
@@ -30,11 +30,10 @@ freqs = get_random_batch(X_test, y_test, params)
 ## build the model: 2 stacked LSTM
 print('Build model...')
 model = Sequential()
-model.add(Dense(len_circ_repr, 10), activation="sigm")
-model.add(Dense(10, 10), activation="sigm")
-model.add(LSTM(len_circ_repr, 32, return_sequences=True))
+model.add(GRU(len_circ_repr, 32, return_sequences=True))
 model.add(Dropout(0.2))
-model.add(LSTM(32, 32, return_sequences=False))
+model.add(TimeDistributedDense(32, 32))
+model.add(GRU(32, 32, return_sequences=False))
 model.add(Dropout(0.2))
 model.add(Dense(32, 60))
 model.add(Activation('softmax'))
