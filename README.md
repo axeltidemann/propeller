@@ -152,5 +152,3 @@ Then continue installing the required packages.
 pip install keras
 pip install gensim
 ```
-
-This is all, actually.
