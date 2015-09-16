@@ -126,7 +126,7 @@ HDF5_DIR=$VIRTUAL_ENV pip install tables
 
 ## Installation instructions on abel.uio.no
 
-First of all, load the python module by issuing `module load python`. This should be put in a `.profile`, see below. A very thorough list of almost everything we need has already been installed by the good folks at abel, so very little extra installation is needed. In fact, this influences the rest of this guide - it is done with as few steps as possible (read: their virtualenvwrapper installation is messed up).
+First of all, load the python module by issuing `module load python`. This should be put in a `.profile`, see below. A very thorough list of almost everything we need has already been installed by the good folks at abel, so very little extra installation is needed. In fact, this influences the rest of this guide - it is done with as few steps as possible.
 
 
 At abel, they insist that external software packages should be put in `~/nobackup`. So we need to put our virtualenvs there.
@@ -143,7 +143,7 @@ PS1="\[\e[33m\]\t \e[35m\e[37m\e[36m\h\e[37m:\e[32m\w\e[0m\n> "
 
 module load python2
 
-source $HOME/nobackup/summer02/bin/activate
+source $HOME/nobackup/summer/bin/activate
 ```
 
 Then continue installing the required packages.
@@ -152,3 +152,5 @@ Then continue installing the required packages.
 pip install keras
 pip install gensim
 ```
+
+This is all, actually.
