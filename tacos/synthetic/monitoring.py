@@ -6,7 +6,7 @@ plt.ion()
 fig = plt.figure()   
 ax = fig.add_subplot(211)
 ax2 = fig.add_subplot(212)
-line1, = ax.plot([], [], 'r-') 
+line1, = ax.plot([], [], 'r-')
 line2, = ax2.plot([], [], 'r-')
 
 class LossHistory(Callback):
