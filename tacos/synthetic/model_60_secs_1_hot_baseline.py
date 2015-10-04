@@ -43,19 +43,12 @@ def build_model():
     return graph
 
 
-def train_model(graph):
+def train_model(graph, seq_params):
     nb_iter = 1
     nb_epochs = 10000
     len_seq=20
     num_seqs=100000
 
-    seq_params = {
-        "freqs":{'S':1},
-        "add_noise": False,
-        "mult": 30,
-        "time_repr": one_hot_time_representation,
-        "label_repr": label_representation
-    }
     X_train = np.zeros((num_seqs, len_seq, 60), dtype=np.bool)
     y_train = np.zeros((num_seqs, 60), dtype=np.bool)
 
@@ -80,7 +73,7 @@ def next_prediction(graph, seq):
     return y_pred['out1'][0,:]
 
 
-def demo(graph):
+def demo(graph, seq_params):
     plt.ion()
     fig_size = plt.rcParams["figure.figsize"]
     fig_size[0] = 16
@@ -97,16 +90,8 @@ def demo(graph):
 
     num_seqs = 200
     len_seq = 10
-    X = np.zeros((num_seqs, len_seq, 60), dtype=np.float)
+    X = np.zeros((num_seqs, len_seq, 60), dtype=np.bool)
     y = np.zeros((num_seqs, 60), dtype=np.bool)
-    seq_params = {
-        #"freqs":{'D':86400,'H':3600,'T':60,'S':1, 'B':86400, 'W-SUN':86400*7 },
-        "freqs":{'S':1},
-        "add_noise": False,
-        "mult": 59,
-        "time_repr": label_representation,
-        "label_repr": label_representation
-    }
 
     freqs, data = get_random_batch(X, y, seq_params)
 
@@ -129,8 +114,25 @@ def demo(graph):
 
 
 if __name__ == '__main__':
+    seq_params = {
+        "freqs":{'S':1},
+        "add_noise": False,
+        "mult": 30,
+        "time_repr": one_hot_time_representation,
+        "label_repr": label_representation
+    }
+
     graph = build_model()
-    train_model(graph)
+    train_model(graph, seq_params)
     #load_model(graph)
-    demo(graph)
+
+    seq_params = {
+        "freqs":{'S':1},
+        "add_noise": False,
+        "mult": 59,
+        "time_repr": one_hot_time_representation,
+        "label_repr": label_representation
+    }
+
+    demo(graph, seq_params)
 
