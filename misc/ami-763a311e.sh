@@ -1,7 +1,11 @@
 #!/bin/bash
 sudo apt-get -y install emacs24-nox
 sudo apt-get -y install htop
-cd caffe
+wget http://download.redis.io/redis-stable.tar.gz
+tar xvzf redis-stable.tar.gz
+cd redis-stable
+sudo make install
+cd ../caffe
 sudo pip install -r examples/web_demo/requirements.txt
 ./scripts/download_model_binary.py models/bvlc_reference_caffenet # Once, this took 1 hour !
 ./data/ilsvrc12/get_ilsvrc_aux.sh
