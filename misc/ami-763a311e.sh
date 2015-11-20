@@ -13,4 +13,4 @@ pip install -r examples/web_demo/requirements.txt
 cd /home/ubuntu
 git clone https://github.com/axeltidemann/propeller.git
 cd propeller/web_demos/caffe
-nohup PYTHONPATH=/home/ubuntu/caffe/python/ MPLBACKEND="Agg" python app.py -p 80 # add -g for GPU processing
+nohup PYTHONPATH=/home/ubuntu/caffe/python/ MPLBACKEND="Agg" python app.py -p 80 & # add -g for GPU processing
