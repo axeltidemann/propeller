@@ -8,9 +8,9 @@ cd redis-stable
 make install
 cd ../caffe
 pip install -r examples/web_demo/requirements.txt
-./scripts/download_model_binary.py models/bvlc_reference_caffenet # Once, this took 1 hour !
+./scripts/download_model_binary.py models/bvlc_reference_caffenet
 ./data/ilsvrc12/get_ilsvrc_aux.sh
 cd /home/ubuntu
 git clone https://github.com/axeltidemann/propeller.git
-cd propeller/web_demos/caffe
-nohup PYTHONPATH=/home/ubuntu/caffe/python/ MPLBACKEND="Agg" python app.py -p 80 -g & # add -g for GPU processing
+cd propeller/caffe/web_demo
+nohup PYTHONPATH=/home/ubuntu/caffe/python/ MPLBACKEND="Agg" python app.py -p 80 -g &
