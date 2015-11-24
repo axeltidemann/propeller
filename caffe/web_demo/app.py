@@ -21,23 +21,128 @@ from PIL import Image
 import cStringIO as StringIO
 import urllib
 import exifutil
+import random
 
 import caffe
+
+from functools import wraps
+from flask import request, Response
+
+import redis
+
+red = redis.Redis("localhost")
 
 REPO_DIRNAME = os.path.expanduser('~/caffe')
 UPLOAD_FOLDER = '/tmp/caffe_demos_uploads'
 ALLOWED_IMAGE_EXTENSIONS = set(['png', 'bmp', 'jpg', 'jpe', 'jpeg', 'gif'])
 
+# For the position of the word webs
+OFFSET = 800
+
 # Obtain the flask app object
 app = flask.Flask(__name__)
 
+@app.template_filter('split_path')
+def split_path(path):
+    full_path = ''
+    hrefs = []
+    for s in path.split('/'):
+        if len(s):
+            full_path += '/{}'.format(s)
+            hrefs.append([s, full_path])
+
+    hrefs.insert(0, ['~', '/'])
+    return hrefs
+
+# Remove caching
+@app.after_request
+def add_header(response):
+    response.cache_control.max_age = 0
+    return response
+
+def check_auth(username, password):
+    """This function is called to check if a username /
+    password combination is valid.
+    """
+    return username == 'telenor' and password == 'research'
+
+def authenticate():
+    """Sends a 401 response that enables basic auth"""
+    return Response(
+        'Ask for credentials.', 401,
+        {'WWW-Authenticate': 'Basic realm="Login Required"'})
+
+def requires_auth(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        auth = request.authorization
+        if not auth or not check_auth(auth.username, auth.password):
+            return authenticate()
+        return f(*args, **kwargs)
+    return decorated
+
+@app.route('/test')
+def test():
+    return flask.render_template('images.html', has_result=False)
 
 @app.route('/')
 def index():
     return flask.render_template('index.html', has_result=False)
 
+@app.route('/embeddings')
+@app.route('/embeddings/wow') # Removed when more categories are included
+@requires_auth
+def embeddings():
+    return flask.render_template('wow.html', has_result=False)
 
-@app.route('/classify_url', methods=['GET'])
+@app.route('/embeddings/wow/<path:bu>')
+@requires_auth
+def show_word(bu):
+    return flask.render_template("network.html", bu=bu)
+
+def get_neighbors(word, nodes, links, pos, level, bu):
+    neighbors = red.hgetall(str("wow:"+bu+":") + word)
+    neighbors = sorted(neighbors.items(), key=lambda x: x[1])[:7]
+    for n in neighbors:
+        name = n[0]
+        if name not in pos and level > 0:
+            nodes.append({"name":name, "x":OFFSET*random.random() , "y":OFFSET*random.random(), "distan\
+ce":round(float(n[1]), 2), "to":word})
+            pos[name] = len(nodes)-1
+        if name in pos:
+            links.append({"source":pos[word],"target":pos[name],"value":1.0-float(n[1])})
+
+    if level == 0:
+        return
+
+    for n in neighbors:
+        get_neighbors(str(n[0]), nodes, links, pos, level-1, bu)
+
+
+@app.route('/embeddings/wow/json/<path:bu>/<path:word>')
+def get_json(bu, word):
+    word = word.strip().lower().encode("utf-8")
+
+    if word == "_":
+        word = red.srandmember('wow:'+bu+':vocab')
+
+    tmp = {}
+    nodes = []
+    nodes.append({"name": word, "x":OFFSET*random.random() , "y":OFFSET*random.random(), "distance":0.0\
+, "to":"self"})
+    tmp[word] = 0
+    links = []
+    get_neighbors(word, nodes, links, tmp, 2, bu)
+    return flask.jsonify({"nodes":nodes, "links":links})
+
+
+
+@app.route('/images')
+def images():
+    return flask.render_template('images.html', has_result=False)
+
+
+@app.route('/images/classify_url', methods=['GET'])
 def classify_url():
     imageurl = flask.request.args.get('imageurl', '')
     try:
@@ -50,17 +155,17 @@ def classify_url():
         # not continue.
         logging.info('URL Image open error: %s', err)
         return flask.render_template(
-            'index.html', has_result=True,
+            'images.html', has_result=True,
             result=(False, 'Cannot open image from URL.')
         )
 
     logging.info('Image: %s', imageurl)
     result = app.clf.classify_image(image)
     return flask.render_template(
-        'index.html', has_result=True, result=result, imagesrc=imageurl)
+        'images.html', has_result=True, result=result, imagesrc=imageurl)
 
 
-@app.route('/classify_upload', methods=['POST'])
+@app.route('/images/classify_upload', methods=['POST'])
 def classify_upload():
     try:
         # We will save the file to disk for possible data collection.
@@ -75,13 +180,13 @@ def classify_upload():
     except Exception as err:
         logging.info('Uploaded image open error: %s', err)
         return flask.render_template(
-            'index.html', has_result=True,
+            'images.html', has_result=True,
             result=(False, 'Cannot open uploaded image.')
         )
 
     result = app.clf.classify_image(image)
     return flask.render_template(
-        'index.html', has_result=True, result=result,
+        'images.html', has_result=True, result=result,
         imagesrc=embed_image_html(image)
     )
 
