@@ -138,11 +138,13 @@ def get_json(bu, word):
 
 
 @app.route('/images')
+@requires_auth
 def images():
     return flask.render_template('images.html', has_result=False)
 
 
 @app.route('/images/classify_url', methods=['GET'])
+@requires_auth
 def classify_url():
     imageurl = flask.request.args.get('imageurl', '')
     try:
@@ -166,6 +168,7 @@ def classify_url():
 
 
 @app.route('/images/classify_upload', methods=['POST'])
+@requires_auth
 def classify_upload():
     try:
         # We will save the file to disk for possible data collection.
@@ -257,6 +260,53 @@ class ImagenetClassifier(object):
         # We could use better psychological models here...
         self.bet['infogain'] -= np.array(self.bet['preferences']) * 0.1
 
+
+    def iteratively_classify_image(self, image):
+        try:
+            starttime = time.time()
+            scores = np.array([ self.net.predict([image], oversample=True).flatten() for _ in range(100) ])
+            endtime = time.time()
+
+            means = scores.mean(axis=0)
+            stds = scores.std(axis=0)
+
+            top_five = (-means).argsort()[:5]
+            dist = zip(means[top_five], stds[top_five], self.labels[top_five])
+            
+            # Summing up
+            scores = scores.mean(axis=0)
+            indices = (-scores).argsort()[:5]
+            predictions = self.labels[indices]
+
+            # In addition to the prediction text, we will also produce
+            # the length for the progress bar visualization.
+            meta = [
+                (p, '%.5f' % scores[i], '%.5f' % stds[i])
+                for i, p in zip(indices, predictions)
+            ]
+            logging.info('result: %s', str(meta))
+
+            # Compute expected information gain
+            expected_infogain = np.dot(
+                self.bet['probmat'], scores[self.bet['idmapping']])
+            expected_infogain *= self.bet['infogain']
+
+            # sort the scores
+            infogain_sort = expected_infogain.argsort()[::-1]
+            bet_result = [(self.bet['words'][v], '%.5f' % expected_infogain[v])
+                          for v in infogain_sort[:5]]
+            logging.info('bet result: %s', str(bet_result))
+
+            return (True, meta, bet_result, '%.3f' % (endtime - starttime))
+
+        except Exception as err:
+            logging.info('Classification error: %s', err)
+            return (False, 'Something went wrong when classifying the '
+                           'image. Maybe try another one?')
+
+        
+        
+        
     def classify_image(self, image):
         try:
             starttime = time.time()

@@ -58,7 +58,7 @@
     <A HREF="mailto:axel.tidemann@telenor.com">Axel Tidemann</A>.
     <BR>
     <BR>
-    <img src="{{ url_for('static', filename='telenor.png') }}">
+    <img src="{{ url_for('static', filename='telenor.svg') }}" onerror="this.src='{{ url_for('static', filename='telenor.png') }}'; this.onerror=null;" width=100>
     {% endblock %}
 
 
