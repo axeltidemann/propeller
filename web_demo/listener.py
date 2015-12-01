@@ -31,3 +31,4 @@ for msg in pubsub.listen():
     key = msg['channel']
     key = key[key.find(':')+1:]
     r_server.lpush('tasks', key)
+    print key
