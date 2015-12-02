@@ -6,10 +6,22 @@ Author: Axel.Tidemann@telenor.com
 
 import argparse
 from collections import namedtuple
+import cStringIO as StringIO
+import urllib
 
+import matplotlib
+matplotlib.use('Agg')
+import caffe
 import redis
 
+from app import ImagenetClassifier
+
+ImagenetClassifier.default_args.update({'gpu_mode': True})
+model = ImagenetClassifier(**ImagenetClassifier.default_args)
+model.net.forward()
+
 Task = namedtuple('Task', 'queue key')
+Result = namedtuple('Result', 'OK maximally_accurate maximally_specific computation_time')
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument(
@@ -34,30 +46,12 @@ while True:
     description = r_server.hgetall(task.key)
     description = namedtuple('Description', description.keys())(**description)
     print description
-    r_server.hmset(task.key.replace('classify:','result:'),
-                   {'category': 'nonsense',
-                    'probability': 0.5})
+
+    string_buffer = StringIO.StringIO(urllib.urlopen(description.path).read())
+    image = caffe.io.load_image(string_buffer)
+
+    result = Result(*model.classify_image(image))
     
-#import matplotlib
-#matplotlib.use('Agg')
-#import caffe
-
-# sys.path.insert(0, '../web_demo')
-# from app import ImagenetClassifier
-
-
-
-    # pub = r_server.pubsub(ignore_subscribe_messages=True)
-# pub.subscribe('classify_image')
-
-# # models = {}
-# # ImagenetClassifier.default_args.update({'gpu_mode': True})
-# # models['caffe'] = ImagenetClassifier(**ImagenetClassifier.default_args)
-
-# # for model in models.itervalues():
-# #     model.net.forward()
-
-
-# for message in pub.listen():
-#     print message
+    r_server.hmset(task.key.replace('classify:','result:'), result._asdict())
     
+    r_server.hset('category:{}'.format(result.maximally_specific[0][0]), task.key.replace('classify:', ''), description.path)

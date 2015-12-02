@@ -12,6 +12,9 @@ import redis
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument(
+    'img_path',
+    help='the path to the image')
+parser.add_argument(
     '-s', '--server',
     help='the redis server address',
     default='localhost')
@@ -19,9 +22,6 @@ parser.add_argument(
     '-p', '--port',
     help='the redis port',
     default='6379')
-parser.add_argument(
-    '-i', '--img_path',
-    help='the path to the image')
 parser.add_argument(
     '-k', '--key',
     help='key for the image, randomly generated if not provided',
