@@ -41,6 +41,7 @@ for result in pubsub.listen():
     key = key[key.find(':')+1:]
     description = r_server.hgetall(key)
     description = namedtuple('Description', description.keys())(**description)
+
     print description
     pubsub.unsubscribe()
     break

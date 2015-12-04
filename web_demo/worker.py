@@ -8,6 +8,7 @@ import argparse
 from collections import namedtuple
 import cStringIO as StringIO
 import urllib
+import logging
 
 import matplotlib
 matplotlib.use('Agg')
@@ -15,6 +16,9 @@ import caffe
 import redis
 
 from app import ImagenetClassifier
+
+logging.getLogger().setLevel(logging.INFO)
+logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %I:%M:%S')
 
 ImagenetClassifier.default_args.update({'gpu_mode': True})
 model = ImagenetClassifier(**ImagenetClassifier.default_args)
@@ -43,15 +47,16 @@ r_server.config_set('notify-keyspace-events', 'Kh')
 
 while True:
     task = Task(*r_server.brpop(args.queue))
-    description = r_server.hgetall(task.key)
-    description = namedtuple('Description', description.keys())(**description)
-    print description
+    classify = r_server.hgetall(task.key)
+    classify = namedtuple('Classify', classify.keys())(**classify)
+    logging.info(classify)
 
-    string_buffer = StringIO.StringIO(urllib.urlopen(description.path).read())
+    string_buffer = StringIO.StringIO(urllib.urlopen(classify.path).read())
     image = caffe.io.load_image(string_buffer)
 
     result = Result(*model.classify_image(image))
     
-    r_server.hmset(task.key.replace('classify:','result:'), result._asdict())
-    
-    r_server.hset('category:{}'.format(result.maximally_specific[0][0]), task.key.replace('classify:', ''), description.path)
+    r_server.hmset(task.key.replace('classify:','prediction:'), result.maximally_specific[0][0])
+
+    # sorted sets, based on how secure you are
+    r_server.hset('category:{}'.format(result.maximally_specific[0][0]), task.key.replace('classify:', ''), classify.path)

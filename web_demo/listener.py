@@ -5,8 +5,12 @@ Author: Axel.Tidemann@telenor.com
 '''
 
 import argparse
+import logging
 
 import redis
+
+logging.getLogger().setLevel(logging.INFO)
+logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %I:%M:%S')
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument(
@@ -31,4 +35,4 @@ for msg in pubsub.listen():
     key = msg['channel']
     key = key[key.find(':')+1:]
     r_server.lpush('tasks', key)
-    print key
+    logging.info(key)
