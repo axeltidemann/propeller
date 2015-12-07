@@ -5,7 +5,6 @@ Author: Axel.Tidemann@telenor.com
 '''
 
 import argparse
-import uuid
 from collections import namedtuple
 
 import redis
@@ -23,22 +22,21 @@ parser.add_argument(
     help='the redis port',
     default='6379')
 parser.add_argument(
-    '-k', '--key',
-    help='key for the image, randomly generated if not provided',
-    default=uuid.uuid4())
+    '-u', '--user',
+    help='user for the image',
+    default='web')
 args = parser.parse_args()
 
 r_server = redis.StrictRedis(args.server, args.port)
 r_server.config_set('notify-keyspace-events', 'Kh')
 
-pubsub = r_server.pubsub(ignore_subscribe_messages=True)
-pubsub.psubscribe('__keyspace*__:result:{}'.format(args.key))
+r_server.hmset('classify', {'user': args.user, 'path': args.img_path})
 
-r_server.hset('classify:{}'.format(args.key), 'path', args.img_path)
+key = 'prediction:{}:{}'.format(args.user, args.img_path)
+pubsub = r_server.pubsub(ignore_subscribe_messages=True)
+pubsub.psubscribe('__keyspace*__:{}'.format(key))
 
 for result in pubsub.listen():
-    key = result['channel']
-    key = key[key.find(':')+1:]
     description = r_server.hgetall(key)
     description = namedtuple('Description', description.keys())(**description)
 

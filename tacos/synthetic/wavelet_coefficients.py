@@ -7,40 +7,72 @@ Author: Axel.Tidemann@telenor.com
 '''
 
 import pywt
+from scipy.signal import argrelextrema
 import numpy as np
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 
-fig = plt.figure()
-ax = fig.add_subplot(111, projection='3d')
+def random():
+    fig, (ax_w, ax_f) = plt.subplots(2)
 
-distributions = [.2, .4, .6, .8, .99]
-colors = ['b', 'r', 'g', 'm', 'c']
+    distributions = [.2, .4, .6, .8, .99]
+    colors = ['b', 'r', 'g', 'm', 'c']
 
-for d,c in zip(distributions, colors):
-    x_wavelet, y_wavelet, z_wavelet, x_fourier, y_fourier, z_fourier = [[] for _ in range(6)]
-    for i in range(int(1e3)):
-        signal = np.random.rand(1e5) > d
-        (cA3, cD3), (cA2, cD2), (cA1, cD1) = pywt.swt(signal, 'haar', level=3)
-        x_wavelet.append(np.mean(cA1))
-        y_wavelet.append(np.mean(cA2))
-        z_wavelet.append(np.mean(cA3))
+    for d,c in zip(distributions, colors):
+        x_wavelet, y_wavelet, x_fourier, y_fourier = [],[],[],[]
+        for i in range(int(1e3)):
+            signal = np.random.rand(1e5) > d
+            (cA2, cD2), (cA1, cD1) = pywt.swt(signal, 'haar', level=2)
+            x_wavelet.append(np.mean(cA1))
+            y_wavelet.append(np.mean(cA2))
 
-        fourier = np.fft.fft(signal)
-        freqs = np.fft.fftfreq(len(fourier))
-        idx = np.argsort(np.abs(fourier))[::-1]
-        freq = freqs[idx[:3]] # Three most powerful frequencies
-        x_fourier.append(freq[0])
-        y_fourier.append(freq[1])
-        z_fourier.append(freq[2])
-    plt.scatter(x_wavelet, y_wavelet, z_wavelet, c=c, depthshade=False, label='wavelet: rand(1e5) > {}'.format(d), linewidth=0, alpha=1)
-    plt.scatter(x_fourier, y_fourier, z_fourier, c=c, depthshade=False, label='fourier: rand(1e5) > {}'.format(d), marker='+', linewidth=0, alpha=1)
+            fourier = np.fft.fft(signal)
+            freqs = np.fft.fftfreq(len(fourier))
+            peaks = argrelextrema(np.abs(fourier), np.greater)
 
-ax.set_ylabel('mean(cA1)')
-ax.set_xlabel('mean(cA2)')
-ax.set_zlabel('mean(cA3)')
+            x_fourier.append(freqs[peaks[0][0]])
+            y_fourier.append(freqs[peaks[0][1]])
+            
+        ax_w.scatter(x_wavelet, y_wavelet, marker='o', c=c, label='w: rand(1e5) > {}'.format(d), linewidth=0)
+        ax_f.scatter(x_fourier, y_fourier, marker='+', c=c, label='f: rand(1e5) > {}'.format(d))
 
-plt.legend(loc=2)
-plt.show()
-        
+    ax_w.set_title('Random signals')
+    ax_w.set_xlabel('Wavelet transform')
+    ax_f.set_xlabel('Fourier transform')
+    #plt.legend()
 
+    plt.show()
+
+
+def periodic(): # Perfect for Fourier
+    # Number of samplepoints
+    N = 600
+    # sample spacing
+    T = 1.0 #/ 800.0
+    x = np.linspace(0.0, N*T, N)
+    y = np.sin(50.0 * 2.0*np.pi*x) + 0.5*np.sin(80.0 * 2.0*np.pi*x)
+    yf = np.fft.fft(y)
+    idx = np.argsort(yf)[::-1]
+    freqs = np.fft.fftfreq(N, T)
+    print freqs[idx[:4]]
+
+    peaks = argrelextrema(np.abs(yf), np.greater)
+    print peaks, freqs[peaks]
+    
+    xf = np.linspace(0.0, 1.0/(2.0*T), N/2)
+    plt.figure()
+    plt.plot(xf, 2.0/N * np.abs(yf[0:N/2]))
+    
+    plt.axvline(x=freqs[peaks[0][0]], color='r')
+    plt.axvline(x=freqs[peaks[0][1]], color='r')
+
+    plt.show()
+
+def bursts():
+    pass
+
+
+
+if __name__ == '__main__':
+    #random()
+    periodic()
+    
