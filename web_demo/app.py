@@ -23,6 +23,8 @@ import urllib
 import exifutil
 import random
 
+import matplotlib
+matplotlib.use('Agg')
 import caffe
 
 from functools import wraps
