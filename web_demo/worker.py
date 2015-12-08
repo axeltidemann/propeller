@@ -7,25 +7,16 @@ Author: Axel.Tidemann@telenor.com
 import argparse
 from collections import namedtuple
 import cStringIO as StringIO
-import urllib
 import logging
+import cPickle as pickle
 
+import requests
 import matplotlib
 matplotlib.use('Agg')
 import caffe
 import redis
 
 from app import ImagenetClassifier
-
-logging.getLogger().setLevel(logging.INFO)
-logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %I:%M:%S')
-
-ImagenetClassifier.default_args.update({'gpu_mode': True})
-model = ImagenetClassifier(**ImagenetClassifier.default_args)
-model.net.forward()
-
-Task = namedtuple('Task', 'queue key')
-Result = namedtuple('Result', 'OK maximally_accurate maximally_specific computation_time')
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument(
@@ -39,24 +30,40 @@ parser.add_argument(
 parser.add_argument(
     '-q', '--queue',
     help='redis queue to read from',
-    default='tasks')
+    default='classify')
 args = parser.parse_args()
+
+logging.getLogger().setLevel(logging.INFO)
+logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %I:%M:%S')
+
+ImagenetClassifier.default_args.update({'gpu_mode': True})
+model = ImagenetClassifier(**ImagenetClassifier.default_args)
+model.net.forward()
+
+Task = namedtuple('Task', 'queue value')
+Result = namedtuple('Result', 'OK maximally_accurate maximally_specific computation_time')
 
 r_server = redis.StrictRedis(args.server, args.port)
 r_server.config_set('notify-keyspace-events', 'Kh')
 
 while True:
     task = Task(*r_server.brpop(args.queue))
-    classify = r_server.hgetall(task.key)
-    classify = namedtuple('Classify', classify.keys())(**classify)
-    logging.info(classify)
+    specs = pickle.loads(task.value)
+    specs = namedtuple('Specs', specs.keys())(**specs)
+    logging.info(specs)
+    result_key = 'prediction:{}:{}'.format(specs.user, specs.path)
 
-    string_buffer = StringIO.StringIO(urllib.urlopen(classify.path).read())
-    image = caffe.io.load_image(string_buffer)
+    try:
+        response = requests.get(specs.path, timeout=10)
+        string_buffer = StringIO.StringIO(response.content)
+        image = caffe.io.load_image(string_buffer)
 
-    result = Result(*model.classify_image(image))
-    
-    r_server.hmset(task.key.replace('classify:','prediction:'), result.maximally_specific[0][0])
+        result = Result(*model.classify_image(image))
+        
+        r_server.hmset(result_key, result._asdict())
+        r_server.zadd('prediction:{}:category:{}'.format(specs.user, result.maximally_specific[0][0]),
+                      result.maximally_specific[0][1], specs.path)
 
-    # sorted sets, based on how secure you are
-    r_server.hset('category:{}'.format(result.maximally_specific[0][0]), task.key.replace('classify:', ''), classify.path)
+    except:
+        logging.error('Something went wrong when classifying the image.')
+        r_server.hmset(result_key, {'OK': 'False'})

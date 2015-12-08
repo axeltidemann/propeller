@@ -6,6 +6,7 @@ Author: Axel.Tidemann@telenor.com
 
 import argparse
 import logging
+import cPickle as pickle
 
 import redis
 
@@ -25,14 +26,23 @@ parser.add_argument(
     '-k', '--key',
     help='key to listen to',
     default='classify:*')
+parser.add_argument(
+    '-q', '--queue',
+    help='redis queue to post to',
+    default='tasks')
+
 args = parser.parse_args()
 
 r_server = redis.StrictRedis(args.server, args.port)
 pubsub = r_server.pubsub(ignore_subscribe_messages=True)
 pubsub.psubscribe('__keyspace*__:{}'.format(args.key))
 
+import sys
+print 'currently not needed - will be in restful API'
+sys.exit(0)
+
 for msg in pubsub.listen():
-    key = msg['channel']
-    key = key[key.find(':')+1:]
-    r_server.lpush('tasks', key)
-    logging.info(key)
+    print msg
+    # request = r_server.hgetall(args.key) 
+    # r_server.lpush(args.queue, pickle.dumps(request))
+    # logging.info(request)

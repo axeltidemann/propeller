@@ -1,5 +1,5 @@
 '''
-Client that publishes images to be processed by the Caffe framework, waits for the result.
+Client that publishes a list of images to be processed by the Caffe framework.
 
 Author: Axel.Tidemann@telenor.com
 '''
@@ -12,8 +12,8 @@ import redis
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument(
-    'img_path',
-    help='the path to the image')
+    'img_list',
+    help='the path to the image list file')
 parser.add_argument(
     '-s', '--server',
     help='the redis server address',
@@ -30,16 +30,20 @@ parser.add_argument(
     '-q', '--queue', 
     help='which task queue to post to',
     default='classify')
+parser.add_argument(
+    '-f', '--flush',
+    help='number of images to flush to the redis server',
+    default=10000)
 args = parser.parse_args()
 
 r_server = redis.StrictRedis(args.server, args.port)
-r_server.lpush(args.queue, pickle.dumps({'user': args.user, 'path': args.img_path}))
+pipe = r_server.pipeline()
 
-key = 'prediction:{}:{}'.format(args.user, args.img_path)
-pubsub = r_server.pubsub(ignore_subscribe_messages=True)
-pubsub.psubscribe('__keyspace*__:{}'.format(key))
-
-for result in pubsub.listen():
-    print r_server.hgetall(key)
-    pubsub.unsubscribe()
-    break
+with open(args.img_list) as f:
+    i = 0
+    for line in f:
+        pipe.lpush(args.queue, pickle.dumps({'user': args.user, 'path': line.rstrip()}))
+        i += 1
+        if i % args.flush == 0:
+            pipe.execute()
+    pipe.execute()
