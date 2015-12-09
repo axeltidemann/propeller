@@ -17,6 +17,7 @@ import caffe
 import redis
 
 from app import ImagenetClassifier
+import exifutil
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument(
@@ -60,15 +61,21 @@ while True:
     result_key = 'prediction:{}:{}'.format(specs.user, specs.path)
 
     try:
-        response = requests.get(specs.path, timeout=10)
-        string_buffer = StringIO.StringIO(response.content)
-        image = caffe.io.load_image(string_buffer)
+
+        store = 'http://' in specs.path
+        if store:
+            response = requests.get(specs.path, timeout=10)
+            string_buffer = StringIO.StringIO(response.content)
+            image = caffe.io.load_image(string_buffer)
+        else:
+            image = exifutil.open_oriented_im(specs.path)
 
         result = Result(*model.classify_image(image))
-        
         r_server.hmset(result_key, result._asdict())
-        r_server.zadd('prediction:{}:category:{}'.format(specs.user, result.maximally_specific[0][0]),
-                      result.maximally_specific[0][1], specs.path)
+
+        if store:
+            r_server.zadd('prediction:{}:category:{}'.format(specs.user, result.maximally_specific[0][0]),
+                          result.maximally_specific[0][1], specs.path)
 
     except:
         logging.error('Something went wrong when classifying the image.')

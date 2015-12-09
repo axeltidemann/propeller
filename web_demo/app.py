@@ -157,18 +157,33 @@ def images(category):
                                  result=red.zrevrangebyscore('prediction:web:category:{}'.format(category),
                                                              np.inf, 0, start=0, num=25))
 
-@app.route('/images/prediction/<path:user>/<path:path>')
-def prediction(user, path):
+def wait_for_result(user, path):
+    print 'RESULTS'
     key = 'prediction:{}:{}'.format(user, path)
     result = red.hgetall(key)
+    print 'BE GOT!', result
     if not result:
+        print 'OH NOES!'
         pubsub.psubscribe('__keyspace*__:{}'.format(key))
         for _ in pubsub.listen():
             pubsub.punsubscribe('__keyspace*__:{}'.format(key))
-            result = red.hgetall(key)
-            break
-    return eval(result['maximally_specific'])[0][0] # Subject to change 
-        
+            return red.hgetall(key)
+    print 'WE ARE SO CLOSE'
+    return result
+    
+@app.route('/images/prediction/<path:user>/<path:path>')
+def prediction(user, path):
+    print 'YES!'
+    result = wait_for_result(user, path)
+    if eval(result['OK']):
+        return eval(result['maximally_specific'])[0][0] # Subject to change
+    else:
+        return 'Something went wrong when classifying the image.'
+
+@app.route('/images/prediction/<path:user>/category/<path:category>')
+def images_in_category(user, category):
+    return '\n'.join(red.zrevrangebyscore('prediction:{}:category:{}'.format(user, category), np.inf, 0))
+
 @app.route('/images/classify', methods=['POST'])
 def classify():
     my_file = StringIO.StringIO(request.files['file'].read())
@@ -186,22 +201,12 @@ def classify():
 @requires_auth
 def classify_url():
     imageurl = flask.request.args.get('imageurl', '')
-    try:
-        string_buffer = StringIO.StringIO(
-            urllib.urlopen(imageurl).read())
-        image = caffe.io.load_image(string_buffer)
+    red.lpush('classify', cPickle.dumps({'user': 'web', 'path': imageurl}))
 
-    except Exception as err:
-        # For any exception we encounter in reading the image, we will just
-        # not continue.
-        logging.info('URL Image open error: %s', err)
-        return flask.render_template(
-            'classify_image.html', has_result=True,
-            result=(False, 'Cannot open image from URL.')
-        )
+    result = wait_for_result('web', imageurl)
+    result = (eval(result['OK']), eval(result['maximally_accurate']), eval(result['maximally_specific']),
+              eval(result['computation_time']))
 
-    logging.info('Image: %s', imageurl)
-    result = app.clf.classify_image(image)
     return flask.render_template(
         'classify_image.html', has_result=True, result=result, imagesrc=imageurl)
 
@@ -218,19 +223,24 @@ def classify_upload():
         imagefile.save(filename)
         logging.info('Saving to %s.', filename)
         image = exifutil.open_oriented_im(filename)
+        red.lpush('classify', cPickle.dumps({'user': 'web', 'path': filename}))
+        
+        result = wait_for_result('web', filename)
+        result = (eval(result['OK']), eval(result['maximally_accurate']), eval(result['maximally_specific']),
+                  eval(result['computation_time']))
 
     except Exception as err:
         logging.info('Uploaded image open error: %s', err)
         return flask.render_template(
             'classify_image.html', has_result=True,
-            result=(False, 'Cannot open uploaded image.')
-        )
+            result=(False, 'Cannot open uploaded image.'))
+        
 
-    result = app.clf.classify_image(image)
+    #result = app.clf.classify_image(image)
     return flask.render_template(
         'classify_image.html', has_result=True, result=result,
-        imagesrc=embed_image_html(image)
-    )
+        imagesrc=embed_image_html(image))
+
 
 
 def embed_image_html(image):
@@ -405,17 +415,17 @@ def start_from_terminal(app):
         '-p', '--port',
         help="which port to serve content on",
         type='int', default=5000)
-    parser.add_option(
-        '-g', '--gpu',
-        help="use gpu mode",
-        action='store_true', default=False)
+    # parser.add_option(
+    #     '-g', '--gpu',
+    #     help="use gpu mode",
+    #     action='store_true', default=False)
 
     opts, args = parser.parse_args()
-    ImagenetClassifier.default_args.update({'gpu_mode': opts.gpu})
+    # ImagenetClassifier.default_args.update({'gpu_mode': opts.gpu})
 
-    # Initialize classifier + warm start by forward for allocation
-    app.clf = ImagenetClassifier(**ImagenetClassifier.default_args)
-    app.clf.net.forward()
+    # # Initialize classifier + warm start by forward for allocation
+    # app.clf = ImagenetClassifier(**ImagenetClassifier.default_args)
+    # app.clf.net.forward()
 
     if opts.debug:
         app.run(debug=True, host='0.0.0.0', port=opts.port)
