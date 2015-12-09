@@ -83,10 +83,6 @@ def requires_auth(f):
         return f(*args, **kwargs)
     return decorated
 
-@app.route('/test')
-def test():
-    return flask.render_template('images.html', has_result=False)
-
 @app.route('/')
 def index():
     return flask.render_template('index.html', has_result=False)
@@ -137,13 +133,25 @@ def get_json(bu, word):
     get_neighbors(word, nodes, links, tmp, 2, bu)
     return flask.jsonify({"nodes":nodes, "links":links})
 
-
-
 @app.route('/images')
 @requires_auth
-def images():
-    return flask.render_template('images.html', has_result=False)
+def classify_image():
+    return flask.render_template('classify_image.html', has_result=False)
 
+@app.route('/images/categories')
+@requires_auth
+def categories():
+    result = red.keys('prediction:web:category:*')
+    result = [ cat[cat.rfind(':')+1:] for cat in result ]
+    return flask.render_template('categories.html', result=result)
+
+@app.route('/images/categories/<path:category>/')
+@requires_auth
+def images(category):
+    return flask.render_template('images.html',
+                                 category=category,
+                                 result=red.zrevrangebyscore('prediction:web:category:{}'.format(category),
+                                                             np.inf, 0, start=0, num=25))
 
 @app.route('/images/classify_url', methods=['GET'])
 @requires_auth
@@ -159,14 +167,14 @@ def classify_url():
         # not continue.
         logging.info('URL Image open error: %s', err)
         return flask.render_template(
-            'images.html', has_result=True,
+            'classify_image.html', has_result=True,
             result=(False, 'Cannot open image from URL.')
         )
 
     logging.info('Image: %s', imageurl)
     result = app.clf.classify_image(image)
     return flask.render_template(
-        'images.html', has_result=True, result=result, imagesrc=imageurl)
+        'classify_image.html', has_result=True, result=result, imagesrc=imageurl)
 
 
 @app.route('/images/classify_upload', methods=['POST'])
@@ -185,13 +193,13 @@ def classify_upload():
     except Exception as err:
         logging.info('Uploaded image open error: %s', err)
         return flask.render_template(
-            'images.html', has_result=True,
+            'classify_image.html', has_result=True,
             result=(False, 'Cannot open uploaded image.')
         )
 
     result = app.clf.classify_image(image)
     return flask.render_template(
-        'images.html', has_result=True, result=result,
+        'classify_image.html', has_result=True, result=result,
         imagesrc=embed_image_html(image)
     )
 

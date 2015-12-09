@@ -6,6 +6,7 @@ wget http://download.redis.io/redis-stable.tar.gz
 tar xvzf redis-stable.tar.gz
 cd redis-stable
 make install
+pip install --upgrade https://storage.googleapis.com/tensorflow/linux/gpu/tensorflow-0.5.0-cp27-none-linux_x86_64.whl
 cd ../caffe
 pip install -r examples/web_demo/requirements.txt
 ./scripts/download_model_binary.py models/bvlc_reference_caffenet

@@ -41,6 +41,7 @@ model = ImagenetClassifier(**ImagenetClassifier.default_args)
 model.net.forward()
 
 Task = namedtuple('Task', 'queue value')
+Specs = namedtuple('Specs', 'user path')
 Result = namedtuple('Result', 'OK maximally_accurate maximally_specific computation_time')
 
 r_server = redis.StrictRedis(args.server, args.port)
@@ -48,8 +49,7 @@ r_server.config_set('notify-keyspace-events', 'Kh')
 
 while True:
     task = Task(*r_server.brpop(args.queue))
-    specs = pickle.loads(task.value)
-    specs = namedtuple('Specs', specs.keys())(**specs)
+    specs = Specs(**pickle.loads(task.value))
     logging.info(specs)
     result_key = 'prediction:{}:{}'.format(specs.user, specs.path)
 

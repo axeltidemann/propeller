@@ -24,7 +24,7 @@ parser.add_argument(
     default='6379')
 parser.add_argument(
     '-u', '--user',
-    help='user for the image',
+    help='user for the images',
     default='web')
 parser.add_argument(
     '-q', '--queue', 
