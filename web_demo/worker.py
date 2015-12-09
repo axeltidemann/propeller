@@ -31,12 +31,18 @@ parser.add_argument(
     '-q', '--queue',
     help='redis queue to read from',
     default='classify')
+parser.add_argument(
+    '-g', '--gpu_id',
+    help='which GPU id to use',
+    type=int,
+    default=0)
 args = parser.parse_args()
 
 logging.getLogger().setLevel(logging.INFO)
 logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %I:%M:%S')
 
 ImagenetClassifier.default_args.update({'gpu_mode': True})
+ImagenetClassifier.default_args.update({'gpu_device': args.gpu_id})
 model = ImagenetClassifier(**ImagenetClassifier.default_args)
 model.net.forward()
 

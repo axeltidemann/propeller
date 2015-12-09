@@ -14,4 +14,4 @@ pip install -r examples/web_demo/requirements.txt
 cd /home/ubuntu
 git clone https://github.com/axeltidemann/propeller.git
 cd propeller/caffe/web_demo
-nohup PYTHONPATH=/home/ubuntu/caffe/python/ MPLBACKEND="Agg" python app.py -p 80 -g &
+# nohup PYTHONPATH=/home/ubuntu/caffe/python/ python app.py -p 80 -g & # should be done in screen, leaving it for reference

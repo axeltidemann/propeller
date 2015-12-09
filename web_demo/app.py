@@ -8,6 +8,7 @@ Authors: (listed above) and Axel.Tidemann@telenor.com
 import os
 import time
 import cPickle
+from collections import namedtuple
 import datetime
 import logging
 import flask
@@ -22,6 +23,7 @@ import cStringIO as StringIO
 import urllib
 import exifutil
 import random
+import time
 
 import matplotlib
 matplotlib.use('Agg')
@@ -33,6 +35,8 @@ from flask import request, Response
 import redis
 
 red = redis.Redis("localhost")
+pubsub = red.pubsub(ignore_subscribe_messages=True)
+pipe = red.pipeline()
 
 REPO_DIRNAME = os.path.expanduser('~/caffe')
 UPLOAD_FOLDER = '/tmp/caffe_demos_uploads'
@@ -142,7 +146,7 @@ def classify_image():
 @requires_auth
 def categories():
     result = red.keys('prediction:web:category:*')
-    result = [ cat[cat.rfind(':')+1:] for cat in result ]
+    result = sorted([ cat[cat.rfind(':')+1:] for cat in result ], key=lambda s: s.lower())
     return flask.render_template('categories.html', result=result)
 
 @app.route('/images/categories/<path:category>/')
@@ -152,6 +156,31 @@ def images(category):
                                  category=category,
                                  result=red.zrevrangebyscore('prediction:web:category:{}'.format(category),
                                                              np.inf, 0, start=0, num=25))
+
+@app.route('/images/prediction/<path:user>/<path:path>')
+def prediction(user, path):
+    key = 'prediction:{}:{}'.format(user, path)
+    result = red.hgetall(key)
+    if not result:
+        pubsub.psubscribe('__keyspace*__:{}'.format(key))
+        for _ in pubsub.listen():
+            pubsub.punsubscribe('__keyspace*__:{}'.format(key))
+            result = red.hgetall(key)
+            break
+    return eval(result['maximally_specific'])[0][0] # Subject to change 
+        
+@app.route('/images/classify', methods=['POST'])
+def classify():
+    my_file = StringIO.StringIO(request.files['file'].read())
+
+    i = 0
+    for line in my_file:
+        task = {'user': request.form['user'], 'path': line.strip()}
+        pipe.lpush('classify', cPickle.dumps(task))
+        i += 1
+
+    pipe.execute()
+    return '{} images queued for classification.'.format(i)
 
 @app.route('/images/classify_url', methods=['GET'])
 @requires_auth
@@ -240,11 +269,13 @@ class ImagenetClassifier(object):
                 "File for {} is missing. Should be at: {}".format(key, val))
     default_args['image_dim'] = 256
     default_args['raw_scale'] = 255.
+    default_args['gpu_device'] = 0
 
     def __init__(self, model_def_file, pretrained_model_file, mean_file,
-                 raw_scale, class_labels_file, bet_file, image_dim, gpu_mode):
+                 raw_scale, class_labels_file, bet_file, image_dim, gpu_mode, gpu_device):
         logging.info('Loading net and associated files...')
         if gpu_mode:
+            caffe.set_device(gpu_device)
             caffe.set_mode_gpu()
         else:
             caffe.set_mode_cpu()

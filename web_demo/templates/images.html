@@ -3,6 +3,10 @@
 {% block header %}{{ category }}{% endblock %}
 
 {% block content %}
+{% if result | length == 25 %}
+Showing best 25 predictions.
+<BR>
+{% endif %}
 {% for image in result %}
 <A HREF="{{ image }}"><IMG SRC="{{ image }}" WIDTH=200></A>
 {% endfor %}
