@@ -1,6 +1,5 @@
 # TensorFlow machine
 #!/bin/bash
-apt-get install -y htop
-apt-get install -y imagemagick
+apt-get -y install htop
 pip install redis
 pip install ipython
