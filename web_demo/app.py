@@ -158,22 +158,17 @@ def images(category):
                                                              np.inf, 0, start=0, num=25))
 
 def wait_for_result(user, path):
-    print 'RESULTS'
     key = 'prediction:{}:{}'.format(user, path)
     result = red.hgetall(key)
-    print 'BE GOT!', result
     if not result:
-        print 'OH NOES!'
         pubsub.psubscribe('__keyspace*__:{}'.format(key))
         for _ in pubsub.listen():
             pubsub.punsubscribe('__keyspace*__:{}'.format(key))
             return red.hgetall(key)
-    print 'WE ARE SO CLOSE'
     return result
     
 @app.route('/images/prediction/<path:user>/<path:path>')
 def prediction(user, path):
-    print 'YES!'
     result = wait_for_result(user, path)
     if eval(result['OK']):
         return eval(result['maximally_specific'])[0][0] # Subject to change
