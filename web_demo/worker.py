@@ -16,7 +16,7 @@ matplotlib.use('Agg')
 import caffe
 import redis
 
-from app import ImagenetClassifier
+from bvlc import ImagenetClassifier
 import exifutil
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -61,8 +61,7 @@ while True:
     result_key = 'prediction:{}:{}'.format(specs.user, specs.path)
 
     try:
-
-        store = 'http://' in specs.path
+        store = 'http' in specs.path
         if store:
             response = requests.get(specs.path, timeout=10)
             string_buffer = StringIO.StringIO(response.content)
@@ -77,6 +76,6 @@ while True:
             r_server.zadd('prediction:{}:category:{}'.format(specs.user, result.maximally_specific[0][0]),
                           result.maximally_specific[0][1], specs.path)
 
-    except:
-        logging.error('Something went wrong when classifying the image.')
+    except Exception as e:
+        logging.error('Something went wrong when classifying the image: {}'.format(e))
         r_server.hmset(result_key, {'OK': 'False'})
