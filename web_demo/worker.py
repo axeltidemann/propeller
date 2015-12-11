@@ -9,6 +9,7 @@ from collections import namedtuple
 import cStringIO as StringIO
 import logging
 import cPickle as pickle
+import os
 
 import requests
 import matplotlib
@@ -61,8 +62,8 @@ while True:
     result_key = 'prediction:{}:{}'.format(specs.user, specs.path)
 
     try:
-        store = 'http' in specs.path
-        if store:
+        URL = not os.path.isfile(specs.path)
+        if URL:
             response = requests.get(specs.path, timeout=10)
             string_buffer = StringIO.StringIO(response.content)
             image = caffe.io.load_image(string_buffer)
@@ -72,7 +73,7 @@ while True:
         result = Result(*model.classify_image(image))
         r_server.hmset(result_key, result._asdict())
 
-        if store:
+        if URL:
             r_server.zadd('prediction:{}:category:{}'.format(specs.user, result.maximally_specific[0][0]),
                           result.maximally_specific[0][1], specs.path)
 

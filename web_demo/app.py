@@ -148,10 +148,10 @@ def categories():
 @app.route('/images/categories/<path:category>/')
 @requires_auth
 def images(category):
-    return flask.render_template('images.html',
-                                 category=category,
-                                 result=red.zrevrangebyscore('prediction:web:category:{}'.format(category),
-                                                             np.inf, 0, start=0, num=25))
+    result = red.zrevrangebyscore('prediction:web:category:{}'.format(category),
+                                  np.inf, 0, start=0, num=25)
+    result = [ unicode(url, 'utf-8') for url in result ]
+    return flask.render_template('images.html', category=category, result=result)
 
 def wait_for_prediction(user, path):
     key = 'prediction:{}:{}'.format(user, path)
@@ -200,6 +200,7 @@ def classify():
         i += 1
         if i % 10000 == 0:
             pipe.execute()
+            logging.info('Piping 10K items to redis.')
 
     pipe.execute()
     return '{} images queued for classification.'.format(i)
