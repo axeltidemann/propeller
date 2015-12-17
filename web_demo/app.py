@@ -138,6 +138,11 @@ def get_json(bu, word):
 def classify_image():
     return flask.render_template('classify_image.html', has_result=False)
 
+@app.route('/images/restful_api')
+@requires_auth
+def restful():
+    return flask.render_template('restful.html')
+
 @app.route('/images/categories')
 @requires_auth
 def categories():
@@ -169,15 +174,15 @@ def generic_result(result):
                 eval(result['computation_time']))
     return (False, 'Something went wrong when classifying the image.')
 
-def specific_result(result):
+def accurate_result(result):
     if eval(result['OK']):
-        return eval(result['maximally_specific'])[0][0]
+        return eval(result['maximally_accurate'])[0][0]
     return 'Something went wrong when classifying the image.'
     
 @app.route('/images/prediction/<path:user>/<path:path>')
 @requires_auth
 def prediction(user, path):
-    return specific_result(wait_for_prediction(user, path))
+    return accurate_result(wait_for_prediction(user, path))
 
 @app.route('/images/prediction/<path:user>/category/<path:category>')
 @requires_auth

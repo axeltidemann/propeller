@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+
+{% block header %}RESTful API{% endblock %}
+
+{% block content %}
+You can classify pictures by using example code from our <A HREF="https://github.com/axeltidemann/propeller/blob/master/web_demo/classify.py">GitHub</A> page:
+
+<PRE>
+  python classify.py -s research.telenor.io -u USER INPUT
+</PRE>
+
+where <I>INPUT</I> is either a URL to an image, or the path to a local text file with URLs. If you input a URL, the client will return the classification immediately, otherwise the return string will be how many pictures are queued for classification.
+<I>USER</I> is the user for the image. In order to retrieve the classifications, you can retrieve this with <b>curl</b> for instance:
+
+<PRE>
+curl -u telenor:research research.telenor.io/images/prediction/USER/URL
+</PRE>
+
+If you want to retrieve all the pictures of dogs for a given user, you can do it like this:
+
+<PRE>
+curl -u telenor:research research.telenor.io/images/prediction/USER/category/dog
+</PRE>
+{% endblock %}
