@@ -6,18 +6,18 @@
 You can classify pictures by using example code from our <A HREF="https://github.com/axeltidemann/propeller/blob/master/web_demo/classify.py">GitHub</A> page:
 
 <PRE>
-python classify.py -u USER INPUT
+python classify.py -u GROUP INPUT
 </PRE>
 
 where <I>INPUT</I> is either a URL to an image, or the path to a local text file with URLs. If you input a URL, the client will return the classification immediately, otherwise the return string will be how many pictures are queued for classification.
-<I>USER</I> is the user for the image (not the username/password to use the server). In order to retrieve the classifications, you can retrieve this with <b>curl</b> for instance:
+<I>GROUP</I> is how you define your users/groups. In order to retrieve the classifications, you can retrieve this with <b>curl</b> for instance:
 
 <PRE>
-curl -u USERNAME:PASSWORD research.telenor.io/images/prediction/USER/URL
+curl -u USERNAME:PASSWORD research.telenor.io/images/prediction/GROUP/URL
 </PRE>
 Where <I>USERNAME:PASSWORD</I> are the same you used to log onto this server. If you want to retrieve all the pictures of dogs for a given user, you can do it like this:
 
 <PRE>
-curl -u USERNAME:PASSWORD research.telenor.io/images/prediction/USER/category/dog
+curl -u USERNAME:PASSWORD research.telenor.io/images/prediction/GROUP/category/dog
 </PRE>
 {% endblock %}

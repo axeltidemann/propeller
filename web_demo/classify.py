@@ -20,8 +20,8 @@ parser.add_argument(
     help='the server address',
     default='research.telenor.io')
 parser.add_argument(
-    '-u', '--user',
-    help='user for the image',
+    '-g', '--group',
+    help='group for the image',
     default='web')
 parser.add_argument(
     '-un', '--username',
@@ -44,11 +44,11 @@ else:
     my_file = open(args.img, 'r')   
 
 r = requests.post('http://{}/images/classify'.format(args.server),
-                  data={'user': args.user}, files={'file': my_file},
+                  data={'user': args.group}, files={'file': my_file},
                   auth=(args.username, args.password))
 
 if URL:
-    print requests.get('http://{}/images/prediction/{}/{}'.format(args.server, args.user, args.img),
+    print requests.get('http://{}/images/prediction/{}/{}'.format(args.server, args.group, args.img),
                        auth=(args.username, args.password)).text
 else:
     print r.text
