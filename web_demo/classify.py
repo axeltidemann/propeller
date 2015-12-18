@@ -18,7 +18,7 @@ parser.add_argument(
 parser.add_argument(
     '-s', '--server',
     help='the server address',
-    default='localhost')
+    default='research.telenor.io')
 parser.add_argument(
     '-u', '--user',
     help='user for the image',
@@ -27,7 +27,7 @@ parser.add_argument(
     '-un', '--username',
     help='username for the service')
 parser.add_argument(
-    '-p', '--password',
+    '-pw', '--password',
     help='password for the service')
 args = parser.parse_args()
 

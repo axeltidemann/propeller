@@ -54,9 +54,11 @@
 
     {% block footer %}
     <hr>
-    Contact <A HREF="mailto:cyril.banino-rokkones@telenor.com">Cyril Banino-Rokkones</A> or
-    <A HREF="mailto:axel.tidemann@telenor.com">Axel Tidemann</A>.
+    Contact <A HREF="mailto:cyril.banino-rokkones@telenor.com">Cyril Banino-Rokkones</A> or <A HREF="mailto:axel.tidemann@telenor.com">Axel Tidemann</A>.
     <BR>
+    <SMALL>
+      Note: this a demo server, so the service might be intermittent and not prepared for very heavy loads.
+    </SMALL>
     <BR>
     <img src="{{ url_for('static', filename='telenor.svg') }}" onerror="this.src='{{ url_for('static', filename='telenor.png') }}'; this.onerror=null;" width=100>
     {% endblock %}
