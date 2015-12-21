@@ -40,7 +40,9 @@ from collections import namedtuple
 import cStringIO as StringIO
 import logging
 import cPickle as pickle
-
+import os
+import tempfile
+from contextlib import contextmanager
 
 # pylint: disable=unused-import,g-bad-import-order
 import tensorflow.python.platform
@@ -49,6 +51,7 @@ import numpy as np
 import tensorflow as tf
 import redis
 import requests
+from wand.image import Image
 # pylint: enable=unused-import,g-bad-import-order
 
 from tensorflow.python.platform import gfile
@@ -72,6 +75,26 @@ tf.app.flags.DEFINE_string('image_file', '',
                            """Absolute path to image file.""")
 tf.app.flags.DEFINE_integer('num_top_predictions', 5,
                             """Display this many predictions.""")
+
+# Maybe integrate with tf.app.flags? 
+parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser.add_argument(
+    '-s', '--server',
+    help='the redis server address',
+    default='localhost')
+parser.add_argument(
+    '-p', '--port',
+    help='the redis port',
+    default='6379')
+parser.add_argument(
+    '-q', '--queue',
+    help='redis queue to read from',
+    default='classify')
+args = parser.parse_args()
+
+Task = namedtuple('Task', 'queue value')
+Specs = namedtuple('Specs', 'user path')
+Result = namedtuple('Result', 'OK maximally_accurate maximally_specific computation_time')
 
 # pylint: disable=line-too-long
 DATA_URL = 'http://download.tensorflow.org/models/image/imagenet/inception-2015-12-05.tgz'
@@ -194,32 +217,6 @@ def run_inference_on_image(image):
       score = predictions[node_id]
       print '%s (score = %.5f)' % (human_string, score)
 
-# start ugly AXL code
-parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument(
-    '-s', '--server',
-    help='the redis server address',
-    default='localhost')
-parser.add_argument(
-    '-p', '--port',
-    help='the redis port',
-    default='6379')
-parser.add_argument(
-    '-q', '--queue',
-    help='redis queue to read from',
-    default='classify')
-args = parser.parse_args()
-
-Task = namedtuple('Task', 'queue value')
-Specs = namedtuple('Specs', 'user path')
-Result = namedtuple('Result', 'OK maximally_accurate maximally_specific computation_time')
-
-import os
-import tempfile
-from contextlib import contextmanager
-
-from wand.image import Image
-
 @contextmanager
 def convert_to_jpg(data):
   tmp = tempfile.NamedTemporaryFile(delete=False)
@@ -257,10 +254,7 @@ def classify_images():
         image_data = gfile.FastGFile(jpg).read()
 
         softmax_tensor = sess.graph.get_tensor_by_name('softmax:0')
-
-        predictions = sess.run(softmax_tensor,
-                               {'DecodeJpeg/contents:0': image_data})
-          
+        predictions = sess.run(softmax_tensor,{'DecodeJpeg/contents:0': image_data})
         predictions = np.squeeze(predictions)
 
         # Creates node ID --> English string lookup.
@@ -270,6 +264,7 @@ def classify_images():
           score = predictions[node_id]
           logging.info('%s (score = %.5f)' % (human_string, score))
 
+          
 def maybe_download_and_extract():
   """Download and extract model tar file."""
   dest_directory = FLAGS.model_dir
