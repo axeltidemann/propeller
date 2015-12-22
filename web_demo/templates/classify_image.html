@@ -4,98 +4,57 @@
 
 {% block content %}
 
-    <!-- Script to instantly classify an image once it is uploaded. -->
-    <script type="text/javascript">
-      $(document).ready(
-        function(){
-          $('#classifyfile').attr('disabled',true);
-          $('#imagefile').change(
-            function(){
-              if ($(this).val()){
-                $('#formupload').submit();
-              }
-            }
-          );
-        }
-      );
-    </script>
-
-
-The <a href="http://caffe.berkeleyvision.org">Caffe</a> neural network library makes implementing state-of-the-art computer vision systems easy.
+This classifier is made with Google's <A HREF="https://www.tensorflow.org">TensorFlow</A> machine learning library, as 
+described <A HREF="https://www.tensorflow.org/versions/master/tutorials/image_recognition/index.html">here</A>. 
+This is the <A HREF="http://arxiv.org/abs/1512.00567">Inception v3</A> model.
 
 <h2>Classification</h2>
-<a href="/images/classify_url?imageurl=http%3A%2F%2Fi.telegraph.co.uk%2Fmultimedia%2Farchive%2F02351%2Fcross-eyed-cat_2351472k.jpg">Click for a Quick Example</a>
+<a href="/images/classify_url?imageurl=http%3A%2F%2Fi.telegraph.co.uk%2Fmultimedia%2Farchive%2F02351%2Fcross-eyed-cat_2351472k.jpg">Click for a quick example</a>
 
 {% if has_result %}
 {% if not result[0] %}
-      <!-- we have error in the result. -->
-      <div class="alert alert-danger">{{ result[1] }} Did you provide a valid URL or a valid image file? </div>
-      {% else %}
-      <div class="media">
-        <a class="pull-left" href="#"><img class="media-object" width="192" height="192" src={{ imagesrc }}></a>
-        <div class="media-body">
-          <div class="bs-example bs-example-tabs">
-            <ul id="myTab" class="nav nav-tabs">
-              <li class="active"><a href="#infopred" data-toggle="tab">Maximally accurate</a></li>
-              <li><a href="#flatpred" data-toggle="tab">Maximally specific</a></li>
-            </ul>
-            <div id="myTabContent" class="tab-content">
-              <div class="tab-pane fade in active" id="infopred">
-                <ul class="list-group">
-                  {% for single_pred in result[2] %}
-                  <li class="list-group-item">
-                  <span class="badge">{{ single_pred[1] }}</span>
-                  <h4 class="list-group-item-heading">
-                    <a href="https://www.google.com/#q={{ single_pred[0] }}" target="_blank">{{ single_pred[0] }}</a>
-                  </h4>
-                  </li>
-                  {% endfor %}
-                </ul>
-              </div>
-              <div class="tab-pane fade" id="flatpred">
-                <ul class="list-group">
-                  {% for single_pred in result[1] %}
-                  <li class="list-group-item">
-                  <span class="badge">{{ single_pred[1] }}</span>
-                  <h4 class="list-group-item-heading">
-                    <a href="https://www.google.com/#q={{ single_pred[0] }}" target="_blank">{{ single_pred[0] }}</a>
-                  </h4>
-                  </li>
-                  {% endfor %}
-                </ul>
-              </div>
-            </div>
-          </div>
+<!-- we have error in the result. -->
+<div class="alert alert-danger">{{ result[1] }} Did you provide a valid URL? </div>
+{% else %}
+<div class="media">
+  <a class="pull-left" href="#"><img class="media-object" height="225" src={{ imagesrc }}></a>
+  <div class="media-body">
+    <ul class="list-group">
+      {% for single_pred in result[1] %}
+      <li class="list-group-item">
+        <span class="badge">{{ single_pred[1] }}</span>
+        <h4 class="list-group-item-heading">
+          <a href="/images/categories/{{ single_pred[0] }}/">{{ single_pred[0] }}</a>
+        </h4>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  Other images of <A HREF="/images/categories/{{ result[1][0][0] }}">{{ result[1][0][0] }}</A>:<BR>
+  {% for image, score in similar %}
+  <A HREF="{{ image }}"><IMG SRC="{{ image }}" TITLE="{{ score }}" WIDTH=100></A>
+  {% endfor %}
+  <p> The neural network computation time was {{ '%0.3f' % result[2] }} seconds.</p>
+</div>
+{% endif %}
+<hr>
+{% endif %}
 
-        </div>
-      </div>
-      <p> CNN took {{ result[3] }} seconds.</p>
-      {% endif %}
-      <hr>
-      {% endif %}
 
-      <form role="form" action="/images/classify_url" method="get">
-        <div class="form-group">
-          <div class="input-group">
-            <input type="text" class="form-control" name="imageurl" id="imageurl" placeholder="Provide an image URL">
-            <span class="input-group-btn">
-              <input class="btn btn-primary" value="Classify URL" type="submit" id="classifyurl"></input>
-            </span>
-          </div><!-- /input-group -->
-        </div>
-      </form>
-
-      <form id="formupload" class="form-inline" role="form" action="/images/classify_upload" method="post" enctype="multipart/form-data">
-        <div class="form-group">
-          <label for="imagefile">Or upload an image:</label>
-          <input type="file" name="imagefile" id="imagefile">
-        </div>
-        <!--<input type="submit" class="btn btn-primary" value="Classify File" id="classifyfile"></input>-->
-	<div class="media">
-	  You can also check out some of the <A HREF="/images/categories">categories</A> the classifier has made so far.
-	</div>
-	<div class="media">
-	  For developers: you can classify pictures via a <A HREF="/images/restful_api">RESTful API</A>.
-	</div>
-      </form>
+<form role="form" action="/images/classify_url" method="get">
+  <div class="form-group">
+    <div class="input-group">
+      <input type="text" class="form-control" name="imageurl" id="imageurl" placeholder="Provide an image URL">
+      <span class="input-group-btn">
+        <input class="btn btn-primary" value="Classify URL" type="submit" id="classifyurl"></input>
+      </span>
+    </div><!-- /input-group -->
+  </div>
+</form>
+<div class="media">
+  You can also check out some of the <A HREF="/images/categories">categories</A> the classifier has made so far.
+</div>
+<div class="media">
+  For developers: you can classify pictures via a <A HREF="/images/restful_api">RESTful API</A>.
+</div>
 {% endblock %}

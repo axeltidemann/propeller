@@ -4,6 +4,6 @@
 
 {% block content %}
 {% for category in result %}
-<A HREF="{{ request.path }}/{{ category }}">{{ category }}</A> {% if not loop.last %}|{% endif %}
+<A HREF="{{ request.path }}/{{ category }}">{{ category | commastrip }}</A> {% if not loop.last %}|{% endif %}
 {% endfor %}
 {% endblock %}

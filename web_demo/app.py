@@ -1,41 +1,29 @@
 '''
-Code for the Caffe web demo. Original source from http://caffe.berkeleyvision.org. This code requires that 
-caffe is installed in $HOME, and that PYTHONPATH points to the same location.
+Web frontend for the image classifier. Posts images to be classified to the redis server,
+which the workers read from.
 
-Authors: (listed above) and Axel.Tidemann@telenor.com
+Authors: Axel.Tidemann@telenor.com
 '''
 
 import os
 import time
-import cPickle
+import cPickle as pickle
 from collections import namedtuple
 import datetime
 import logging
-import flask
-import werkzeug
-import optparse
-import tornado.wsgi
-import tornado.httpserver
-import numpy as np
-import pandas as pd
-from PIL import Image
+import argparse
 import cStringIO as StringIO
 import urllib
-import exifutil
 import random
-import time
-
 from functools import wraps
+
 from flask import request, Response
-
+import flask
+import werkzeug
 import redis
+import tornado.wsgi
+import tornado.httpserver
 
-red = redis.Redis("localhost")
-pubsub = red.pubsub(ignore_subscribe_messages=True)
-pipe = red.pipeline()
-
-UPLOAD_FOLDER = '/tmp/caffe_demos_uploads'
-ALLOWED_IMAGE_EXTENSIONS = set(['png', 'bmp', 'jpg', 'jpe', 'jpeg', 'gif'])
 
 # For the position of the word webs
 OFFSET = 800
@@ -54,6 +42,10 @@ def split_path(path):
 
     hrefs.insert(0, ['~', '/'])
     return hrefs
+
+@app.template_filter('commastrip')
+def commastrip(path):
+    return path[:path.find(',')] if ',' in path else path
 
 # Remove caching
 @app.after_request
@@ -146,48 +138,43 @@ def restful():
 @app.route('/images/categories')
 @requires_auth
 def categories():
-    result = red.keys('prediction:web:category:*')
+    result = red.keys('archive:web:category:*')
     result = sorted([ cat[cat.rfind(':')+1:] for cat in result ], key=lambda s: s.lower())
     return flask.render_template('categories.html', result=result)
+
+
+def get_images_from_category(category, num=-1, group='web'):
+    result = red.zrevrangebyscore('archive:{}:category:{}'.format(group, category),
+                                  1, 0, start=0, num=num, withscores=True)
+    return [ (unicode(url, 'utf-8'), score) for url, score in result ]
+    
 
 @app.route('/images/categories/<path:category>/')
 @requires_auth
 def images(category):
-    result = red.zrevrangebyscore('prediction:web:category:{}'.format(category),
-                                  np.inf, 0, start=0, num=25)
-    result = [ unicode(url, 'utf-8') for url in result ]
-    return flask.render_template('images.html', category=category, result=result)
+    return flask.render_template('images.html', category=category, result=get_images_from_category(category))
 
-def wait_for_prediction(user, path):
-    key = 'prediction:{}:{}'.format(user, path)
-    result = red.hgetall(key)
-    if not result:
-        pubsub.psubscribe('__keyspace*__:{}'.format(key))
-        for _ in pubsub.listen():
-            pubsub.punsubscribe('__keyspace*__:{}'.format(key))
+def wait_for_prediction(group, path):
+    key = 'archive:{}:{}'.format(group, path)
+    while True:
+        if red.exists(key):
             return red.hgetall(key)
-    return result
+        time.sleep(.1)
 
-def generic_result(result):
+def parse_result(result):
     if eval(result['OK']):
-        return (eval(result['OK']), eval(result['maximally_accurate']), eval(result['maximally_specific']),
-                eval(result['computation_time']))
+        return (eval(result['OK']), eval(result['predictions']), eval(result['computation_time']))
     return (False, 'Something went wrong when classifying the image.')
-
-def accurate_result(result):
-    if eval(result['OK']):
-        return eval(result['maximally_accurate'])[0][0]
-    return 'Something went wrong when classifying the image.'
     
-@app.route('/images/prediction/<path:user>/<path:path>')
+@app.route('/images/archive/<path:group>/<path:path>')
 @requires_auth
-def prediction(user, path):
-    return accurate_result(wait_for_prediction(user, path))
+def prediction(group, path):
+    return wait_for_prediction(group, path)
 
-@app.route('/images/prediction/<path:user>/category/<path:category>')
+@app.route('/images/archive/<path:group>/category/<path:category>')
 @requires_auth
-def images_in_category(user, category):
-    return '\n'.join(red.zrevrangebyscore('prediction:{}:category:{}'.format(user, category), np.inf, 0))
+def images_in_category(group, category):
+    return '\n'.join(red.zrevrangebyscore('prediction:{}:category:{}'.format(group, category), 1, 0))
 
 @app.route('/images/classify', methods=['POST'])
 @requires_auth
@@ -196,11 +183,11 @@ def classify():
 
     i = 0
     for line in my_file:
-        task = {'user': request.form['user'], 'path': line.strip()}
+        task = {'group': request.form['group'], 'path': line.strip()}
         if i == 0: 
-            pipe.rpush('classify', cPickle.dumps(task))
+            pipe.rpush(args.queue, pickle.dumps(task))
         else: 
-            pipe.lpush('classify', cPickle.dumps(task))
+            pipe.lpush(args.queue, pickle.dumps(task))
 
         i += 1
         if i % 10000 == 0:
@@ -214,57 +201,13 @@ def classify():
 @requires_auth
 def classify_url():
     imageurl = flask.request.args.get('imageurl', '')
-    red.rpush('classify', cPickle.dumps({'user': 'web', 'path': imageurl}))
+    red.rpush(args.queue, pickle.dumps({'group': 'web', 'path': imageurl})) # SPECS COMMON!
 
-    result = generic_result(wait_for_prediction('web', imageurl))
+    result = parse_result(wait_for_prediction('web', imageurl))
+    similar = get_images_from_category(result[1][0][0], 10)
     return flask.render_template(
-        'classify_image.html', has_result=True, result=result, imagesrc=imageurl)
-
-@app.route('/images/classify_upload', methods=['POST'])
-@requires_auth
-def classify_upload():
-    try:
-        # We will save the file to disk for possible data collection.
-        imagefile = flask.request.files['imagefile']
-        filename_ = str(datetime.datetime.now()).replace(' ', '_') + \
-            werkzeug.secure_filename(imagefile.filename)
-        filename = os.path.join(UPLOAD_FOLDER, filename_)
-        imagefile.save(filename)
-        logging.info('Saving to %s.', filename)
-        image = exifutil.open_oriented_im(filename)
-        red.rpush('classify', cPickle.dumps({'user': 'web', 'path': filename}))
-        
-        result = generic_result(wait_for_prediction('web', filename))
-
-    except Exception as err:
-        logging.info('Uploaded image open error: %s', err)
-        return flask.render_template(
-            'classify_image.html', has_result=True,
-            result=(False, 'Cannot open uploaded image.'))
-        
-
-    #result = app.clf.classify_image(image)
-    return flask.render_template(
-        'classify_image.html', has_result=True, result=result,
-        imagesrc=embed_image_html(image))
-
-
-
-def embed_image_html(image):
-    """Creates an image embedded in HTML base64 format."""
-    image_pil = Image.fromarray((255 * image).astype('uint8'))
-    image_pil = image_pil.resize((256, 256))
-    string_buf = StringIO.StringIO()
-    image_pil.save(string_buf, format='png')
-    data = string_buf.getvalue().encode('base64').replace('\n', '')
-    return 'data:image/png;base64,' + data
-
-
-def allowed_file(filename):
-    return (
-        '.' in filename and
-        filename.rsplit('.', 1)[1] in ALLOWED_IMAGE_EXTENSIONS
-    )
+        'classify_image.html', has_result=True, result=result, imagesrc=imageurl, 
+        similar=similar)
 
 def start_tornado(app, port=5000):
     http_server = tornado.httpserver.HTTPServer(
@@ -273,29 +216,37 @@ def start_tornado(app, port=5000):
     print("Tornado server starting on port {}".format(port))
     tornado.ioloop.IOLoop.instance().start()
 
+logging.getLogger().setLevel(logging.INFO)
 
-def start_from_terminal(app):
-    """
-    Parse command line options and start the server.
-    """
-    parser = optparse.OptionParser()
-    parser.add_option(
-        '-d', '--debug',
-        help="enable debug mode",
-        action="store_true", default=False)
-    parser.add_option(
-        '-p', '--port',
-        help="which port to serve content on",
-        type='int', default=5000)
-    opts, args = parser.parse_args()
-    if opts.debug:
-        app.run(debug=True, host='0.0.0.0', port=opts.port)
-    else:
-        start_tornado(app, opts.port)
+parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser.add_argument(
+    '-d', '--debug',
+    help="enable debug mode",
+    action="store_true", default=False)
+parser.add_argument(
+    '-p', '--port',
+    help="which port to serve content on",
+    type=int, default=5000)
+parser.add_argument(
+    '-rs', '--redis_server',
+    help='the redis server address',
+    default='localhost')
+parser.add_argument(
+    '-rp', '--redis_port',
+    help='the redis port',
+    default='6379')
+parser.add_argument(
+    '-q', '--queue',
+    help='redis queue to post image classification tasks to',
+    default='classify')
 
+args = parser.parse_args()
 
-if __name__ == '__main__':
-    logging.getLogger().setLevel(logging.INFO)
-    if not os.path.exists(UPLOAD_FOLDER):
-        os.makedirs(UPLOAD_FOLDER)
-    start_from_terminal(app)
+red = redis.StrictRedis(args.redis_server, args.redis_port)
+pubsub = red.pubsub(ignore_subscribe_messages=True)
+pipe = red.pipeline()
+
+if args.debug:
+    app.run(debug=True, host='0.0.0.0', port=args.port)
+else:
+    start_tornado(app, args.port)
