@@ -169,7 +169,7 @@ def parse_result(result):
 @app.route('/images/archive/<path:group>/<path:path>')
 @requires_auth
 def prediction(group, path):
-    return wait_for_prediction(group, path)
+    return wait_for_prediction(group, path)['predictions']
 
 @app.route('/images/archive/<path:group>/category/<path:category>')
 @requires_auth
