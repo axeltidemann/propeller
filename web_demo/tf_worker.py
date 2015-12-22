@@ -35,7 +35,7 @@ import os.path
 import re
 import sys
 import tarfile
-import argparse
+#import argparse
 from collections import namedtuple
 import cStringIO as StringIO
 import logging
@@ -43,6 +43,7 @@ import cPickle as pickle
 import os
 import tempfile
 from contextlib import contextmanager
+import time
 
 # pylint: disable=unused-import,g-bad-import-order
 import tensorflow.python.platform
@@ -76,25 +77,33 @@ tf.app.flags.DEFINE_string('image_file', '',
 tf.app.flags.DEFINE_integer('num_top_predictions', 5,
                             """Display this many predictions.""")
 
+tf.app.flags.DEFINE_string('redis_server', '', 
+                           """Redis server address""")
+tf.app.flags.DEFINE_integer('redis_port', 6379,
+                            """Redis server port""")
+tf.app.flags.DEFINE_string('redis_queue', 'classify',
+                           """Redis queue to read images from""")
+
+
 # Maybe integrate with tf.app.flags? 
-parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument(
-    '-s', '--server',
-    help='the redis server address',
-    default='localhost')
-parser.add_argument(
-    '-p', '--port',
-    help='the redis port',
-    default='6379')
-parser.add_argument(
-    '-q', '--queue',
-    help='redis queue to read from',
-    default='classify')
-args = parser.parse_args()
+# parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+# parser.add_argument(
+#     '-rs', '--server',
+#     help='the redis server address',
+#     default='localhost')
+# parser.add_argument(
+#     '-rp', '--port',
+#     help='the redis port',
+#     default='6379')
+# parser.add_argument(
+#     '-q', '--queue',
+#     help='redis queue to read from',
+#     default='classify')
+# args = parser.parse_args()
 
 Task = namedtuple('Task', 'queue value')
-Specs = namedtuple('Specs', 'user path')
-Result = namedtuple('Result', 'OK maximally_accurate maximally_specific computation_time')
+Specs = namedtuple('Specs', 'group path')
+Result = namedtuple('Result', 'OK predictions computation_time')
 
 # pylint: disable=line-too-long
 DATA_URL = 'http://download.tensorflow.org/models/image/imagenet/inception-2015-12-05.tgz'
@@ -229,41 +238,46 @@ def convert_to_jpg(data):
     
   tmp.close()
   yield tmp.name
-  os.unlink(tmp.name)
+  os.remove(tmp.name)
 
 def classify_images():
   create_graph()
   node_lookup = NodeLookup()
+  gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.1) # So you can run 10 in parallel
 
-  with tf.Session() as sess:
-  # read from redis queue
-    #r_server = redis.StrictRedis(args.server, args.port)
-    #r_server.config_set('notify-keyspace-events', 'Kh')
+  with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
+    r_server = redis.StrictRedis(FLAGS.redis_server, FLAGS.redis_port)
+    softmax_tensor = sess.graph.get_tensor_by_name('softmax:0')
 
-    for specs in [ Specs('test', 'http://lightswitchtimer.co.uk/wp-content/uploads/2013/12/lights-for-pets.jpg'),
-                   Specs('test', 'http://static.ddmcdn.com/gif/dog-groups-sporting-group0.jpg'),
-                   Specs('test', 'http://exmoorpet.com/wp-content/uploads/2012/08/cat.png') ]:
-    #while True:
-      #task = Task(*r_server.brpop(args.queue))
-      #specs = Specs(**pickle.loads(task.value))
+    while True:
+      task = Task(*r_server.brpop(FLAGS.redis_queue))
+      specs = Specs(**pickle.loads(task.value))
       logging.info(specs)
-      result_key = 'prediction:{}:{}'.format(specs.user, specs.path)
+      result_key = 'archive:{}:{}'.format(specs.group, specs.path)
 
-      response = requests.get(specs.path, timeout=10)
-      with convert_to_jpg(response.content) as jpg:
-        image_data = gfile.FastGFile(jpg).read()
+      try: 
+        response = requests.get(specs.path, timeout=10)
+        with convert_to_jpg(response.content) as jpg:
+          image_data = gfile.FastGFile(jpg).read()
 
-        softmax_tensor = sess.graph.get_tensor_by_name('softmax:0')
+        starttime = time.time()
         predictions = sess.run(softmax_tensor,{'DecodeJpeg/contents:0': image_data})
+        endtime = time.time()
+
         predictions = np.squeeze(predictions)
 
-        # Creates node ID --> English string lookup.
         top_k = predictions.argsort()[-FLAGS.num_top_predictions:][::-1]
-        for node_id in top_k:
-          human_string = node_lookup.id_to_string(node_id)
-          score = predictions[node_id]
-          logging.info('%s (score = %.5f)' % (human_string, score))
+        result = Result(True, 
+                        [ (node_lookup.id_to_string(node_id), predictions[node_id]) for node_id in top_k ], 
+                        endtime - starttime)
 
+        r_server.hmset(result_key, result._asdict())
+        r_server.zadd('archive:{}:category:{}'.format(specs.group, result.predictions[0][0]),
+                      result.predictions[0][1], specs.path)
+        logging.info(result)
+      except Exception as e:
+        logging.error('Something went wrong when classifying the image: {}'.format(e))
+        r_server.hmset(result_key, {'OK': False})
           
 def maybe_download_and_extract():
   """Download and extract model tar file."""

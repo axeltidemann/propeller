@@ -44,7 +44,7 @@ else:
     my_file = open(args.img, 'r')   
 
 r = requests.post('http://{}/images/classify'.format(args.server),
-                  data={'user': args.group}, files={'file': my_file},
+                  data={'group': args.group}, files={'file': my_file},
                   auth=(args.username, args.password))
 
 if URL:
