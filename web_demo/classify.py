@@ -48,7 +48,7 @@ r = requests.post('http://{}/images/classify'.format(args.server),
                   auth=(args.username, args.password))
 
 if URL:
-    print requests.get('http://{}/images/prediction/{}/{}'.format(args.server, args.group, args.img),
+    print requests.get('http://{}/images/archive/{}/{}'.format(args.server, args.group, args.img),
                        auth=(args.username, args.password)).text
 else:
     print r.text
