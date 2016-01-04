@@ -28,6 +28,9 @@ import tornado.httpserver
 # For the position of the word webs
 OFFSET = 800
 
+# Timeout seconds for waiting on the redis key
+TIMEOUT = 5
+
 # Obtain the flask app object
 app = flask.Flask(__name__)
 
@@ -156,9 +159,12 @@ def images(category):
 
 def wait_for_prediction(group, path):
     key = 'archive:{}:{}'.format(group, path)
+    t0 = time.time()
     while True:
         if red.exists(key):
             return red.hgetall(key)
+        if time.time() - t0 > TIMEOUT:
+            return {'OK': 'False'}
         time.sleep(.1)
 
 def parse_result(result):
@@ -203,7 +209,8 @@ def classify_url():
     imageurl = flask.request.args.get('imageurl', '')
     red.rpush(args.queue, pickle.dumps({'group': 'web', 'path': imageurl})) # SPECS COMMON!
 
-    result = parse_result(wait_for_prediction('web', imageurl))
+    prediction = wait_for_prediction('web', imageurl)
+    result = parse_result(prediction)
     similar = get_images_from_category(result[1][0][0], 10)
     return flask.render_template(
         'classify_image.html', has_result=True, result=result, imagesrc=imageurl, 
