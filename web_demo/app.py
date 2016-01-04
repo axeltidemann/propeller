@@ -254,6 +254,6 @@ pubsub = red.pubsub(ignore_subscribe_messages=True)
 pipe = red.pipeline()
 
 if args.debug:
-    app.run(debug=True, host='0.0.0.0', port=args.port)
+    app.run(debug=True, host='0.0.0.0', port=args.port, threaded=True)
 else:
-    start_tornado(app, args.port)
+    start_tornado(app, args.port, threaded=True)
