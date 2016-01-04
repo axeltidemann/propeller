@@ -1,8 +1,6 @@
 
 # Telenor Research web demos
 
-# Web Demo
-
 ## Requirements
 
 The demo web server runs on Python with some dependencies, to install them run `pip install -r requirements.txt`. 
