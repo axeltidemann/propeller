@@ -256,4 +256,4 @@ pipe = red.pipeline()
 if args.debug:
     app.run(debug=True, host='0.0.0.0', port=args.port, threaded=True)
 else:
-    start_tornado(app, args.port, threaded=True)
+    start_tornado(app, args.port)
