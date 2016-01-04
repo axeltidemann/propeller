@@ -4,3 +4,8 @@ tornado
 numpy
 pandas
 pillow
+redis
+tensorflow
+six
+requests
+Wand
