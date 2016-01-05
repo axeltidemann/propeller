@@ -142,7 +142,8 @@ def restful():
 @requires_auth
 def categories():
     result = red.keys('archive:web:category:*')
-    result = sorted([ cat[cat.rfind(':')+1:] for cat in result ], key=lambda s: s.lower())
+    result = sorted([ cat[cat.rfind(':')+1:] for cat in result ],
+                    key=lambda s: s.lower())
     return flask.render_template('categories.html', result=result)
 
 
@@ -180,7 +181,7 @@ def prediction(group, path):
 @app.route('/images/archive/<path:group>/category/<path:category>')
 @requires_auth
 def images_in_category(group, category):
-    return '\n'.join(red.zrevrangebyscore('prediction:{}:category:{}'.format(group, category), 1, 0))
+    return '\n'.join(red.zrevrangebyscore('archive:{}:category:{}'.format(group, category), 1, 0))
 
 @app.route('/images/classify', methods=['POST'])
 @requires_auth
