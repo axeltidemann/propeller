@@ -1,0 +1,18 @@
+{
+    "Comment": "Updating DNS entry for image classifier stack",
+    "Changes": [
+	    { 
+		"Action": "UPSERT",
+		"ResourceRecordSet": {
+		    "Name": "research.telenor.io",
+		    "Type": "A",
+		    "TTL": 3600,
+		    "ResourceRecords": [
+			{
+			    "Value": "54.165.237.69"
+			}
+		    ]
+		}
+	    }
+    ]
+}
