@@ -8,12 +8,8 @@ Author: Axel.Tidemann@telenor.com
 import argparse
 
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
-#plt.style.use('ggplot')
 from mpl_toolkits.basemap import Basemap
-import seaborn as sns
-import ipdb
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('meshgrid_file', help='Basemap meshgrid shape file')
