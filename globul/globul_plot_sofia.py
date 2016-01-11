@@ -31,7 +31,7 @@ sofia = site_info.query("Region == 'SOFIA_CITY'")
 m = Basemap(projection='ortho',lon_0=min(sofia.Longitude),lon_1=max(sofia.Longitude),
             lat_0=min(sofia.Latitude), lat_1=max(sofia.Latitude), resolution='l')
 
-bulgaria = m.readshapefile(args.meshgrid_file, 'bulgaria', linewidth=1)
+m.readshapefile(args.meshgrid_file, 'bulgaria', linewidth=1)
 
 xmin, ymin = m(min(sofia.Longitude), min(sofia.Latitude))
 xmax, ymax = m(max(sofia.Longitude), max(sofia.Latitude))
