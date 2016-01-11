@@ -2,7 +2,7 @@
 Web frontend for the image classifier. Posts images to be classified to the redis server,
 which the workers read from.
 
-Authors: Axel.Tidemann@telenor.com
+Author: Axel.Tidemann@telenor.com, Cyril.Banino-Rokkones@telenor.com
 '''
 
 import os
