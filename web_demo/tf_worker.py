@@ -186,7 +186,9 @@ def convert_to_jpg(data):
 def classify_images():
   create_graph()
   node_lookup = NodeLookup()
-  gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.1) # So you can run 10 in parallel
+  # 4 instances running in parallel on g2.2xlarge seems to be the magic number.
+  # If running more instances, memcpy errors will be thrown after some time.
+  gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=1./4) 
 
   with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
     r_server = redis.StrictRedis(FLAGS.redis_server, FLAGS.redis_port)
