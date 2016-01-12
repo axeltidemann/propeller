@@ -16,6 +16,7 @@ import cStringIO as StringIO
 import urllib
 import random
 from functools import wraps
+import threading
 
 from flask import request, Response
 import flask
@@ -23,6 +24,8 @@ import werkzeug
 import redis
 import tornado.wsgi
 import tornado.httpserver
+import tornado.web
+import tornado.websocket
 
 
 # For the position of the word webs
@@ -33,6 +36,33 @@ TIMEOUT = 5
 
 # Obtain the flask app object
 app = flask.Flask(__name__)
+
+listeners = []
+
+def redis_listener(server, port):
+    logging.info('redis listener started')
+    _red = redis.StrictRedis(server, port)
+    _pubsub = _red.pubsub(ignore_subscribe_messages=True)
+    _pubsub.subscribe('latest')
+    for msg in _pubsub.listen():
+        result = pickle.loads(msg['data'])
+        # We must unfortunately format the string here, due to the async nature/JavaScript combination.
+        display = '<SPAN style="width:200px; float:left; text-align:center;">{}<BR><A HREF="{}"><IMG SRC="{}" TITLE="{}" WIDTH=200></A></SPAN>'.format(
+            result['category'], result['path'], result['path'], result['value'])
+        for socket in listeners:
+            socket.write_message(display)
+
+class WebSocket(tornado.websocket.WebSocketHandler):
+    def open(self):
+        logging.info("Socket opened, starting to listen to redis channel.")
+        listeners.append(self)
+
+    def on_message(self, message):
+        logging.info("Received message: " + message)
+
+    def on_close(self):
+        logging.info("Socket closed.")
+        listeners.remove(self)
 
 @app.template_filter('split_path')
 def split_path(path):
@@ -133,6 +163,11 @@ def get_json(bu, word):
 def classify_image():
     return flask.render_template('classify_image.html', has_result=False)
 
+@app.route('/images/live')
+@requires_auth
+def socket():
+    return flask.render_template('socket.html')
+
 @app.route('/images/restful_api')
 @requires_auth
 def restful():
@@ -218,13 +253,17 @@ def classify_url():
         similar=similar)
 
 def start_tornado(app, port=5000):
-    http_server = tornado.httpserver.HTTPServer(
-        tornado.wsgi.WSGIContainer(app))
-    http_server.listen(port)
-    print("Tornado server starting on port {}".format(port))
+    container = tornado.wsgi.WSGIContainer(app)
+    server = tornado.web.Application([
+        (r'/websocket', WebSocket),
+        (r'.*', tornado.web.FallbackHandler, dict(fallback=container))
+    ])
+    server.listen(port)
+    logging.info("Tornado server starting on port {}".format(port))
     tornado.ioloop.IOLoop.instance().start()
 
 logging.getLogger().setLevel(logging.INFO)
+logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %I:%M:%S')
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument(
@@ -254,7 +293,11 @@ red = redis.StrictRedis(args.redis_server, args.redis_port)
 pubsub = red.pubsub(ignore_subscribe_messages=True)
 pipe = red.pipeline()
 
+threading.Thread(target=redis_listener, args=(args.redis_server, args.redis_port)).start()
+
 if args.debug:
     app.run(debug=True, host='0.0.0.0', port=args.port)
 else:
     start_tornado(app, args.port)
+
+

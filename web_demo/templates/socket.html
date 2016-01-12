@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+
+{% block header %}Classification live stream{% endblock %}
+
+{% block content %}
+
+<script type="text/javascript" charset="utf-8">
+var socket = null;
+$(document).ready(function() {
+    socket = new WebSocket("ws://" + document.domain + "/websocket");
+
+    socket.onopen = function() {
+	socket.send("Socket opened.");
+    }
+
+    socket.onmessage = function(message) {
+	var txt = message.data;
+	$(".live_container").prepend(txt);
+    }
+});
+</script>
+
+<div class="live_container"></div>
+
+{% endblock %}
