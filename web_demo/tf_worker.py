@@ -93,7 +93,7 @@ DATA_URL = 'http://download.tensorflow.org/models/image/imagenet/inception-2015-
 # pylint: enable=line-too-long
 
 logging.getLogger().setLevel(logging.INFO)
-logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %I:%M:%S')
+logging.basicConfig(format='%(asctime)s %(message)s')
 
 class NodeLookup(object):
   """Converts integer node ID's to human readable labels."""
@@ -219,6 +219,9 @@ def classify_images():
         r_server.hmset(result_key, result._asdict())
         r_server.zadd('archive:{}:category:{}'.format(specs.group, result.predictions[0][0]),
                       result.predictions[0][1], specs.path)
+        # The publishing was only added since AWS ElastiCache does not support subscribing to keyspace notifications.
+        r_server.publish('latest', pickle.dumps({'path': specs.path, 'group': specs.group, 
+                                                 'category': result.predictions[0][0], 'value': float(result.predictions[0][1])}))
         logging.info(result)
       except Exception as e:
         logging.error('Something went wrong when classifying the image: {}'.format(e))
