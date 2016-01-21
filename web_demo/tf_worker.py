@@ -93,7 +93,7 @@ DATA_URL = 'http://download.tensorflow.org/models/image/imagenet/inception-2015-
 # pylint: enable=line-too-long
 
 logging.getLogger().setLevel(logging.INFO)
-logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %I:%M:%S')
+logging.basicConfig(format='%(asctime)s %(message)s')
 
 class NodeLookup(object):
   """Converts integer node ID's to human readable labels."""
