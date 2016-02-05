@@ -1,0 +1,130 @@
+{% extends "layout.html" %}
+
+{% block header %}Word embeddings{% endblock %}
+
+{% block content %}
+
+<style>
+
+.node {
+  stroke: #fff;
+  stroke-width: 1.5px;
+}
+
+.link {
+  stroke: #999;
+  stroke-opacity: .6;
+}
+
+</style>
+
+<script type="text/javascript" src="{{ url_for('static', filename='lib/d3.v3.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='lib/seedrandom-min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='lib/chart.js') }}"></script>
+
+Search for a word, and get words with similar embeddings. Or pick a word at random.
+
+<form  name="input" action="javascript:search();" >
+  <input type="text" id="word" value="" autofocus="autofocus">
+    <input type="submit" value="search" />
+<button type="button" onclick="javascript:random();">random</button>
+</form>
+
+<script>
+
+var bu = '{{ bu }}';
+
+var width = screen.width,
+height = screen.height;
+
+var force = d3.layout.force().alpha(0)
+    .charge(-600)
+    .linkDistance(90)
+    .size([width-200, height]);
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+var nodes_set = {};
+var links_set = {};
+var nodes = [];
+var links = [];
+var node_id=0;
+var graph;
+
+var word = ""
+
+function random() {
+   word = "_"
+   render()
+}
+function search() {
+   word = ""
+   render()
+}
+
+function render() {
+svg.selectAll("*").remove();
+
+    if (word=="") { 
+        word = document.getElementById("word").value;
+    }
+    d3.xhr("/embeddings/wow/json/"+ bu + "/" + encodeURIComponent(word), function (R) {
+        var d = JSON.parse(R.response);
+        var nodes = d.nodes
+        var links = d.links
+
+            force.nodes(nodes)
+             .links(links)
+             .start(); 
+            
+var link = svg.selectAll(".link")
+      .data(links)
+    .enter().append("line")
+      .attr("class", "link")
+      .attr("opacity", 30)
+//      .style("stroke-width", function(d) { return Math.sqrt(d.value); });
+      .style("stroke-width", function(d) { return 0.2; });
+
+  var gnodes = svg.selectAll('g.gnode')
+     .data(nodes)
+     .enter()
+     .append('g')
+     .classed('gnode', true);
+    
+  var node = gnodes.append("circle")
+      .attr("class", "node")
+      .attr("r", 5)
+      .attr("opacity", 0)
+      .style("fill", function(d) { return get_random_color(d.name); })
+      .call(force.drag);
+
+  var labels = gnodes.append("text")
+      .text(function(d) { return d.name; });
+
+  var titles = gnodes.append("title")
+       .text(function(d) { return "distance to " + d.to + ": " + d.distance});
+            
+
+  force.on("tick", function() {
+    link.attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
+
+    gnodes.attr("transform", function(d) { 
+        return 'translate(' + [d.x, d.y] + ')'; 
+    });
+      
+    
+      
+  });
+
+
+});
+
+}
+</script>
+
+{% endblock %}

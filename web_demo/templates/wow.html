@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+
+{% block header %}Word embeddings{% endblock %}
+
+{% block content %}
+We downloaded all the WOW articles that we could get between 2013 to 2015 for each BU (sometimes the extraction was not possible), and trained a <a href="http://nlp.stanford.edu/projects/glove/">model</a> to represent words with vectors of 50 real numbers. Two words that appear often in the same context will get <a href="https://en.wikipedia.org/wiki/Word_embedding">word embedding vectors</a> in the same ballpark. For example these are the 15 first numbers of the embeddings for the words <b>sigve brekke</b>:
+ <pre>
+sigve   0.038924 1.650491 0.330676 -0.561492  0.044752 0.701135 0.706698 -0.618572 -0.874811 -0.819678 0.454824 -0.803185 -0.282590 -0.109760 
+brekke -0.284284 2.415252 0.257506 -0.646425 -0.105736 0.835098 0.431191 -0.635625 -0.869970 -0.977618 0.522747 -0.696887 -0.167114  0.068844 
+</pre>
+
+ You can check out the different text corpora below.
+
+        <h2>WOW articles corpora</h2>
+	<a href="/embeddings/wow/groupunits">group units</a><br>
+	<a href="/embeddings/wow/telenorbulgaria">telenor bulgaria</a><br>
+	<a href="/embeddings/wow/grameenphone">grameenphone</a><br>
+	<a href="/embeddings/wow/global">global</a><br>
+	<a href="/embeddings/wow/telenornorway">telenor norway</a><br>
+	<a href="/embeddings/wow/dtac">dtac</a><br>
+	<a href="/embeddings/wow/telenorsweden">telenor sweden</a><br>
+	<a href="/embeddings/wow/telenorserbia">telenor serbia</a><br>
+	<a href="/embeddings/wow/telenorpakistan">telenor pakistan</a><br>
+	<a href="/embeddings/wow/telenorindia">telenor india</a><br>
+	<a href="/embeddings/wow/telenordenmark">telenor denmark</a>
+
+{% endblock %}
+
+

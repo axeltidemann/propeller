@@ -1,0 +1,9 @@
+{% extends "layout.html" %}
+
+{% block header %}Categories{% endblock %}
+
+{% block content %}
+{% for category in result %}
+<A HREF="{{ request.path }}/{{ category }}">{{ category | commastrip }}</A> {% if not loop.last %}|{% endif %}
+{% endfor %}
+{% endblock %}

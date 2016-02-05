@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+
+{% block header %}{{ category }}{% endblock %}
+
+{% block content %}
+Showing {{ result | length }} examples. Click image to see full size, hover to see prediction value (1 is highest, 0 lowest).
+<br><br>
+{% for image, score in result %}
+<A HREF="{{ image }}"><IMG CLASS="lazy" data-original="{{ image }}" TITLE="{{ score }}" WIDTH=200></A>
+{% endfor %}
+
+<script type="text/javascript" charset="utf-8">
+$(function() {
+    $("img.lazy").lazyload(); 
+});
+</script>
+
+{% endblock %}

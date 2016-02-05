@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{% block title %}Telenor Research showcase{% endblock %}</title>
+
+    <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
+
+    <script type="text/javascript" src="//code.jquery.com/jquery-2.1.1.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+
+    <style>
+    body {
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      line-height:1.5em;
+      color: #232323;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    h1, h2, h3 {
+      font-family: Times, serif;
+      line-height:1.5em;
+      border-bottom: 1px solid #ccc;
+    }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      {% if request.path | split_path | length > 1 %}
+      <BR>
+      <SMALL>
+      {% for text, link in request.path | split_path %}
+      {% if loop.last %}
+      {{text}}
+      {% else %}
+      <A HREF={{link}}>{{ text }}</A> /
+      {% endif %}
+      {% endfor %}
+      </SMALL>
+      {% endif %}
+    <h1>{% block header %}Header{% endblock %}</h1>
+
+    
+    {% block content %}
+
+    --- content ---
+
+    {% endblock %}
+
+
+
+    {% block footer %}
+    <hr style="clear: both;">
+    Contact <A HREF="mailto:cyril.banino-rokkones@telenor.com">Cyril Banino-Rokkones</A> or <A HREF="mailto:axel.tidemann@telenor.com">Axel Tidemann</A>.
+    <BR>
+    <SMALL>
+      Note: this a demo server, so the service might be intermittent and not prepared for very heavy loads.
+    </SMALL>
+    <BR>
+    <img src="{{ url_for('static', filename='telenor.svg') }}" onerror="this.src='{{ url_for('static', filename='telenor.png') }}'; this.onerror=null;" width=100>
+    {% endblock %}
+
+
+    </div>
+  </body>
+</html>

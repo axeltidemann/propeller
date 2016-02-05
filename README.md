@@ -129,19 +129,19 @@ HDF5_DIR=$VIRTUAL_ENV pip install tables
 First of all, load the python module by issuing `module load python`. This should be put in a `.profile`, see below. A very thorough list of almost everything we need has already been installed by the good folks at abel, so very little extra installation is needed. In fact, this influences the rest of this guide - it is done with as few steps as possible.
 
 
-At abel, they insist that external software packages should be put in `~/nobackup`. So we need to put our virtualenvs there.
+At abel, they insist that external software packages should be put in `~/nobackup`. So we need to put our virtualenvs there (here, the virtualenv is named `summer` for historical and humorous reasons).
 
 ```
 cd nobackup
 virtualenv summer
 ``` 
 
-Now, activate this virtualenv automatically. My `.profile` looks like this:
+Now, activate this virtualenv automatically, and load the necessary packages. My `.profile` looks like this:
 
 ```
-PS1="\[\e[33m\]\t \e[35m\e[37m\e[36m\h\e[37m:\e[32m\w\e[0m\n> "
-
 module load python2
+module load cuda
+module load gcc
 
 source $HOME/nobackup/summer/bin/activate
 ```
