@@ -13,36 +13,21 @@
 # limitations under the License.
 # ==============================================================================
 
-"""Simple image classification with Inception.
+# Modified by Axel.Tidemann@telenor.com. This inherits the original Google license.
 
-Run image classification with Inception trained on ImageNet 2012 Challenge data
-set.
-
-This program creates a graph from a saved GraphDef protocol buffer,
-and runs inference on an input JPEG image. It outputs human readable
-strings of the top 5 predictions along with their probabilities.
-
-Change the --image_file argument to any jpg image to compute a
-classification of that image.
-
-Please see the tutorial and website for a detailed description of how
-to use this script to perform image recognition.
-
-https://tensorflow.org/tutorials/image_recognition/
+"""
+This collects the next to last layer states from the Inception model in order to do
+transfer learning.
 """
 
 import os.path
 import re
 import sys
 import tarfile
-#import argparse
-from collections import namedtuple
 import cStringIO as StringIO
 import logging
 import cPickle as pickle
 import os
-import tempfile
-from contextlib import contextmanager
 import time
 import glob
 
@@ -51,7 +36,6 @@ import tensorflow.python.platform
 from six.moves import urllib
 import numpy as np
 import tensorflow as tf
-import ipdb
 
 # pylint: enable=unused-import,g-bad-import-order
 

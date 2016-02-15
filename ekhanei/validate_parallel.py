@@ -1,5 +1,7 @@
 '''
-Validates the categories, typicall found in a test folder. Calculates the average.
+Validates the categories, typically found in a folder named "test". Calculates the average.
+The correct answer depends on the enumerated ID of the folder names, so these must be the same 
+as for the training. This should already be taken care of by the create_test_train_set.py program.
 
 Author: Axel.Tidemann@telenor.com
 '''
@@ -8,7 +10,6 @@ import argparse
 import multiprocessing as mp
 import glob
 import subprocess
-from functools import partial
 
 from split import chop
 import numpy as np
@@ -24,7 +25,7 @@ def launch_tensorflow(info):
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument(
     '--folder',
-    help='Folder with image folders',
+    help='Folder with image folders for testing',
     default='/mnt/data/images/')
 parser.add_argument(
     '--gpus',
@@ -40,11 +41,12 @@ args = parser.parse_args()
 
 pool = mp.Pool(processes=args.gpus)
 folders = sorted(glob.glob('{}/*'.format(args.folder)))
-n = int(np.ceil(1.0*len(folders)/args.gpus))
+items_per_gpu = int(np.ceil(1.0*len(folders)/args.gpus))
 
 specs = [ (answer, folder, args.classifier) for answer, folder in enumerate(folders) ]
 
-pool.map(launch_tensorflow, enumerate(chop(n, specs)))
+cuda_device_and_specs = enumerate(chop(items_per_gpu, specs))
+pool.map(launch_tensorflow, cuda_device_and_specs)
 
 top1 = np.mean([ np.load('{}/top1.npy'.format(folder)) for folder in folders ])
 top5 = np.mean([ np.load('{}/top5.npy'.format(folder)) for folder in folders ])
