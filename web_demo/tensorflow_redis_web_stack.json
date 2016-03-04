@@ -280,7 +280,11 @@
 		    "cd /home/ubuntu/\n",
 		    "aws elasticache describe-cache-clusters ",
                     "         --cache-cluster-id ", {"Ref" : "RedisCluster"},
-                    "         --show-cache-node-info --region ", { "Ref" : "AWS::Region" }, " > cacheclusterconfig\n"
+                    "         --show-cache-node-info --region ", { "Ref" : "AWS::Region" }, " > cacheclusterconfig\n",
+		    "mkdir /mnt/tmp",
+		    "chmod 777 /mnt/tmp",
+		    "rm -rf /tmp",
+		    "ln -s /mnt/tmp /tmp"
 		]]}}
 		
 	    }
