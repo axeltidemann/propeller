@@ -20,6 +20,7 @@ The outputs are:
 
 - a folder with all the sources, each source in one file
 - a folder with all the events, where each file lists the sources that have this interesting event
+- a file with a set of all the events
 
 Author: Axel.Tidemann@telenor.com
 '''
@@ -51,6 +52,11 @@ parser.add_argument(
     '--eoi_dir',
     help='''Destination of events of interest files. If not specified, "[data]_eoi" created where --data csv is.
 Note: this folder will be deleted when the script is run!''',
+    default=False)
+parser.add_argument(
+    '--events_filename',
+    help='''Destination of the set of events file. If not specified, "[data]_events.csv" created where --data csv is.
+Note: this file will be deleted when the script is run!''',
     default=False)
 parser.add_argument(
     '--max',
