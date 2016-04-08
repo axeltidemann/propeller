@@ -42,7 +42,8 @@ parser.add_argument(
     help='The data csv file.')
 parser.add_argument(
     '--eoi',
-    help='The events of interest csv file.')
+    help='The events of interest csv file. If omitted, just csv demultiplexing is performed.',
+    default=False)
 parser.add_argument(
     '--source_dir',
     help='''Destination of source files. If not specified, "[data]_sources" created where --data csv is.
@@ -121,7 +122,7 @@ n = min(args.max, len(source_files)/mp.cpu_count()) or 1
 eoi = pd.read_csv(args.eoi,
                   header=None,
                   names=['event'],
-                  dtype=str)
+                  dtype=str) if args.eoi else pd.DataFrame(data=[], columns=['event'])
 
 par_proc = partial(sort_eoi, eoi, args.eoi_dir)
 data = chunks(source_files, n)
