@@ -74,6 +74,7 @@ args = parser.parse_args()
 
 args.source_dir = args.source_dir or '{}_sources'.format(args.data)
 args.eoi_dir = args.eoi_dir or '{}_eoi'.format(args.data)
+args.events_filename = args.events_filename or '{}_events'.format(args.data)
 
 shutil.rmtree(args.source_dir, ignore_errors=True)
 shutil.rmtree(args.eoi_dir, ignore_errors=True)
@@ -81,6 +82,8 @@ os.makedirs(args.source_dir)
 os.makedirs(args.eoi_dir)
 
 def sort_eoi(eoi, eoi_dir, files):
+    unique_events = set()
+    
     for csv in files:
         data = pd.read_csv(csv,
                            names=['timestamp', 'event'],
@@ -91,10 +94,14 @@ def sort_eoi(eoi, eoi_dir, files):
         data.to_csv(csv, mode='w')
 
         local_events = data.event.unique()
+        unique_events.update(local_events)
+        
         for event in eoi.event:
             if event in local_events:
                 with open('{}/{}'.format(eoi_dir, safe_filename(event)), 'a+') as _file:
                     print(os.path.basename(os.path.normpath(csv)), file=_file)
+                    
+    return unique_events
         
 def split_sources(source_dir, chunk):
     for source in filter(pd.notnull, chunk.source.unique()):
@@ -126,4 +133,11 @@ eoi = pd.read_csv(args.eoi,
 
 par_proc = partial(sort_eoi, eoi, args.eoi_dir)
 data = chunks(source_files, n)
-pool.map(par_proc, data)
+
+unique_events = set()
+for subset in pool.map(par_proc, data):
+    unique_events.update(subset)
+
+with open(args.events_filename, 'w') as _file:
+    for event in unique_events:
+        print(event, file=_file)
