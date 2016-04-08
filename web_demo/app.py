@@ -17,6 +17,7 @@ import urllib
 import random
 from functools import wraps
 import threading
+from collections import defaultdict
 
 from flask import request, Response
 import flask
@@ -158,6 +159,66 @@ def get_json(bu, word):
     get_neighbors(word, nodes, links, tmp, 2, bu)
     return flask.jsonify({"nodes":nodes, "links":links})
 
+
+################################### Network Utilization ###########################################
+    
+@app.route('/network/telenorbulgaria')
+@requires_auth
+def render_network_usage():
+        return flask.render_template("bulgaria.html")
+
+
+@app.route('/telenor/research/bulgaria/json/<path:threshold_obs>/<path:distance_min>/<path:distance_max>/<path:traj_min>/<path:traj_max>')
+def get_json_bulgaria(threshold_obs, distance_min, distance_max, traj_min, traj_max):
+    threshold_obs = int(threshold_obs.strip().encode("utf-8"))
+    distance_min = float(distance_min.strip().encode("utf-8"))
+    distance_max = float(distance_max.strip().encode("utf-8"))
+    traj_min = traj_min.strip().encode("utf-8")
+    traj_max = traj_max.strip().encode("utf-8")
+    
+    union_key = "bulgaria_trajectories:" + traj_min + "-" + traj_max
+    if red_db_1.zcard(union_key) == 0:
+        keys = []
+        for t_l in range(int(traj_min), int(traj_max)):
+            keys.append("bulgaria_trajectories:" + str(t_l))
+        red_db_1.zunionstore(union_key, keys)
+
+    edges_union = red_db_1.zrevrangebyscore(union_key, "+inf", threshold_obs, withscores=True)
+
+    edges = defaultdict(lambda: 0)
+    for e in edges_union:
+        edges[e[0]] = e[1]
+        
+    edges_dist = set(red_db_1.zrangebyscore("bulgaria_network:edges_dist", distance_min, distance_max))
+
+    for e in edges.keys():
+        if edges[e] < threshold_obs or not(e in edges_dist):
+            del edges[e]
+
+    print "kept", len(edges), "edges"
+
+    return flask.jsonify({"edges":edges})
+        
+@app.route('/telenor/research/bulgaria2/json/<path:threshold_obs>/<path:distance_min>/<path:distance_max>')
+def get_json_bulgaria2(threshold_obs, distance_min, distance_max):
+    threshold_obs = int(threshold_obs.strip().encode("utf-8"))-1
+    distance_min = float(distance_min.strip().encode("utf-8"))
+    distance_max = float(distance_max.strip().encode("utf-8"))
+    
+    vertices = red_db_1.zrevrangebyscore("bulgaria_network:vertices", "+inf", threshold_obs, withscores=True)
+    print "got", len(vertices), "vertices"
+    edges_obs = red_db_1.zrevrangebyscore("bulgaria_network:edges", "+inf", threshold_obs, withscores=True)
+    print "got", len(edges_obs), "edges_obs"
+    edges_dist = set(red_db_1.zrangebyscore("bulgaria_network:edges_dist", distance_min, distance_max))
+    print "got", len(edges_dist), "edges_dist"
+
+    kept_edges = [x for x in edges_obs if x[0] in edges_dist]
+    print "kept", len(kept_edges), "edges"
+    return flask.jsonify({"vertices":vertices, "edges":kept_edges})
+                                                    
+
+################################### Images ###########################################
+    
 @app.route('/images')
 @requires_auth
 def classify_image():
@@ -211,7 +272,20 @@ def parse_result(result):
 @app.route('/images/archive/<path:group>/<path:path>')
 @requires_auth
 def prediction(group, path):
-    return wait_for_prediction(group, path)['predictions']
+    response = wait_for_prediction(group, path)
+    if 'predictions' in response:
+        predictions = eval(response['predictions'])
+        json_preds = {}
+        for p in predictions:
+            json_preds[p[0]] = p[1]
+        return flask.jsonify({'predictions': json_preds})
+
+    error = {
+        'group':group,
+        'path': path,
+        'message': 'You must submit the picture in \'path\' for classification first with the classify.py script.'
+    }
+    return flask.jsonify({'error': error})
 
 @app.route('/images/archive/<path:group>/category/<path:category>')
 @requires_auth
@@ -290,6 +364,7 @@ parser.add_argument(
 args = parser.parse_args()
 
 red = redis.StrictRedis(args.redis_server, args.redis_port)
+red_db_1 = redis.StrictRedis(args.redis_server, args.redis_port, db=1)
 pubsub = red.pubsub(ignore_subscribe_messages=True)
 pipe = red.pipeline()
 
