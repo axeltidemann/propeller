@@ -31,6 +31,7 @@ import multiprocessing as mp
 import os
 import shutil
 from functools import partial
+import time
 
 import pandas as pd
 
@@ -103,14 +104,20 @@ def sort_eoi(eoi, eoi_dir, files):
                     
     return unique_events
         
-def split_sources(source_dir, chunk):
-    for source in filter(pd.notnull, chunk.source.unique()):
-        data = chunk[ chunk.source == source ]
-        data.to_csv('{}/{}'.format(source_dir, safe_filename(source)), # We can get sources that are invalid filenames
-                    mode='a', # Should manage concurrent writes on proper filesystems
-                    header=False, # So we can append various times without messing up the file
-                    index=False, # This because the query appends a new index
-                    columns=['timestamp', 'event'])
+def split_sources(source_dir, q):
+    while True:
+        chunk = q.get()
+
+        if not isinstance(chunk, pd.DataFrame):
+            break
+
+        for source in filter(pd.notnull, chunk.source.unique()):
+            data = chunk[ chunk.source == source ]
+            data.to_csv('{}/{}'.format(source_dir, safe_filename(source)), # We can get sources that are invalid filenames
+                        mode='a', # Should manage concurrent writes on proper filesystems
+                        header=False, # So we can append various times without messing up the file
+                        index=False, # This because the query appends a new index
+                        columns=['timestamp', 'event'])
 
 csv = pd.read_csv(args.data,
                   header=0,
@@ -119,13 +126,22 @@ csv = pd.read_csv(args.data,
                   parse_dates=[0],
                   chunksize=args.chunksize)
 
-par_split = partial(split_sources, args.source_dir)
+q = mp.Queue()
+cpus = mp.cpu_count()
 
-pool = mp.Pool()
-pool.map(par_split, csv)
+for _ in range(cpus):
+    mp.Process(target=split_sources, args=(args.source_dir, q,)).start()
 
+for chunk in csv:
+    while q.qsize() > cpus:
+        time.sleep(10)
+    q.put(chunk)
+
+for _ in range(cpus):
+    q.put('DIE!')
+        
 source_files = [ os.path.join(args.source_dir, f) for f in os.listdir(args.source_dir) ]
-n = min(args.max, len(source_files)/mp.cpu_count()) or 1
+n = min(args.max, len(source_files)/cpus) or 1
 eoi = pd.read_csv(args.eoi,
                   header=None,
                   names=['event'],
@@ -135,6 +151,8 @@ par_proc = partial(sort_eoi, eoi, args.eoi_dir)
 data = chunks(source_files, n)
 
 unique_events = set()
+
+pool = mp.Pool()
 for subset in pool.map(par_proc, data):
     unique_events.update(subset)
 
