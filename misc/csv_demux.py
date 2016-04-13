@@ -70,7 +70,11 @@ parser.add_argument(
     help='Chunksize for the csv file iterator.',
     type=int,
     default=50000)
-
+parser.add_argument(
+    '--cores',
+    help='Number of CPU cores to use.',
+    type=int,
+    default=mp.cpu_count())
 args = parser.parse_args()
 
 args.source_dir = args.source_dir or '{}_sources'.format(args.data)
@@ -79,6 +83,7 @@ args.events_filename = args.events_filename or '{}_events'.format(args.data)
 
 shutil.rmtree(args.source_dir, ignore_errors=True)
 shutil.rmtree(args.eoi_dir, ignore_errors=True)
+
 os.makedirs(args.source_dir)
 os.makedirs(args.eoi_dir)
 
@@ -111,6 +116,8 @@ def split_sources(source_dir, q):
         if not isinstance(chunk, pd.DataFrame):
             break
 
+        # split by using defaultdict instead, loop over each line, put in correct place in defaultdicdt
+
         for source in filter(pd.notnull, chunk.source.unique()):
             data = chunk[ chunk.source == source ]
             data.to_csv('{}/{}'.format(source_dir, safe_filename(source)), # We can get sources that are invalid filenames
@@ -127,21 +134,20 @@ csv = pd.read_csv(args.data,
                   chunksize=args.chunksize)
 
 q = mp.Queue()
-cpus = mp.cpu_count()
 
-for _ in range(cpus):
+for _ in range(args.cores):
     mp.Process(target=split_sources, args=(args.source_dir, q,)).start()
 
 for chunk in csv:
-    while q.qsize() > cpus:
-        time.sleep(10)
+    while q.qsize() > 2*args.cores:
+        time.sleep(1)
     q.put(chunk)
 
-for _ in range(cpus):
+for _ in range(args.cores):
     q.put('DIE!')
         
 source_files = [ os.path.join(args.source_dir, f) for f in os.listdir(args.source_dir) ]
-n = min(args.max, len(source_files)/cpus) or 1
+n = min(args.max, len(source_files)/args.cores) or 1
 eoi = pd.read_csv(args.eoi,
                   header=None,
                   names=['event'],
@@ -152,7 +158,7 @@ data = chunks(source_files, n)
 
 unique_events = set()
 
-pool = mp.Pool()
+pool = mp.Pool(processes=args.cores)
 for subset in pool.map(par_proc, data):
     unique_events.update(subset)
 
