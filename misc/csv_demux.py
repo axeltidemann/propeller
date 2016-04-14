@@ -124,16 +124,23 @@ def split_sources(source_dir, q):
             break
 
         data = defaultdict(list)
-        
+
+        t0 = time.time()
+
         for row in chunk.itertuples(index=False):
             timestamp, source, event = row
             data[source].append((timestamp, event))
+
+        print('Demuxing chunk: {} seconds'.format(time.time()-t0))
+
+        t0 = time.time()
 
         for source in filter(pd.notnull, data.keys()):
             with open('{}/{}'.format(source_dir, safe_filename(source)), 'a+') as _file:
                 for timestamp, event in data[source]:
                     print('{},{}'.format(timestamp, event), file=_file)
 
+        print('Writing source csv files to disk: {} seconds.'.format(time.time()-t0))
                     
 csv = pd.read_csv(args.data,
                   header=0,
