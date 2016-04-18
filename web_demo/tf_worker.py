@@ -198,9 +198,9 @@ def classify_images():
       task = Task(*r_server.brpop(FLAGS.redis_queue))
       specs = Specs(**pickle.loads(task.value))
       logging.info(specs)
-      result_key = 'archive:{}:{}'.format(specs.group, specs.path)
 
       try: 
+        result_key = 'archive:{}:{}'.format(specs.group, specs.path)
         response = requests.get(specs.path, timeout=10)
         with convert_to_jpg(response.content) as jpg:
           image_data = gfile.FastGFile(jpg).read()
