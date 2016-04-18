@@ -3,21 +3,25 @@
 {% block header %}RESTful API{% endblock %}
 
 {% block content %}
-You can classify pictures by using example code from our <A HREF="https://github.com/axeltidemann/propeller/blob/master/web_demo/classify.py">GitHub</A> page:
+You can classify pictures by using example code from our <A HREF="https://github.com/axeltidemann/propeller/blob/master/web_demo/classify.py">GitHub</A> page. First, you must ask the server to classify an image. This you can do the following way:
 
 <PRE>
-python classify.py -g GROUP INPUT
+python classify.py -g &lt;GROUP&gt; &lt;INPUT&gt;
 </PRE>
 
-where <I>INPUT</I> is either a URL to an image, or the path to a local text file with URLs. If you input a URL, the client will return the classification immediately, otherwise the return string will be how many pictures are queued for classification.
-<I>GROUP</I> is how you define your users/groups. In order to retrieve the classifications, you can retrieve this with <b>curl</b> for instance:
+where <I>&lt;INPUT&gt;</I> is either a URL to an image, or the path to a local text file with URLs. If you input a URL, the client will return the classification immediately, otherwise the return string will be how many pictures are queued for classification.
+<I>&lt;GROUP&gt;</I> is how you define your users/groups. For instance, for our web server, we use the group <b>web</b>, but you can use your own name, the city name, etc.
+
+<br><br>
+After you asked the server to classify an image, you can retrieve the classification with <b>curl</b> like this:
 
 <PRE>
-curl -u USERNAME:PASSWORD research.telenor.io/images/archive/GROUP/URL
+curl -u &lt;USERNAME&gt;:&lt;PASSWORD&gt; research.telenor.io/images/archive/&lt;GROUP&gt;/&lt;URL&gt;
 </PRE>
-Where <I>USERNAME:PASSWORD</I> are the same you used to log onto this server. If you want to retrieve all the pictures of dogs for a given user, you can do it like this:
+
+Where <I>&lt;USERNAME&gt;:&lt;PASSWORD&gt;</I> are the same you used to log onto this server. If you want to retrieve all the pictures of dogs for a given user, you can do it like this:
 
 <PRE>
-curl -u USERNAME:PASSWORD research.telenor.io/images/archive/GROUP/category/dog
+curl -u &lt;USERNAME&gt;:&lt;PASSWORD&gt; research.telenor.io/images/archive/&lt;GROUP&gt;/category/dog
 </PRE>
 {% endblock %}
