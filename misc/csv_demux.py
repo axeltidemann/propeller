@@ -149,31 +149,57 @@ csv = pd.read_csv(args.data,
                   parse_dates=[0],
                   chunksize=args.chunksize)
 
-q = mp.Queue()
-
-t0 = time.time()
-
-processes = [ mp.Process(target=split_sources, args=(args.source_dir, q)) for _ in range(args.cores) ]
-
-for p in processes:
-    p.start()
+t_start = time.time()
 
 for chunk in csv:
-    while not args.flush_queue and q.qsize() > 2*args.cores:
-        time.sleep(1)
-    q.put(chunk)
+    data = defaultdict(list)
 
-for _ in range(args.cores):
-    q.put('DIE!')
+    t0 = time.time()
 
-for p in processes:
-    p.join()
+    for row in chunk.itertuples(index=False):
+        timestamp, source, event = row
+        data[source].append((timestamp, event))
+
+    print('Demuxing chunk: {} seconds'.format(time.time()-t0))
+
+    t0 = time.time()
+
+    sources = filter(pd.notnull, data.keys())
     
-t1 = time.time()-t0
+    for source in sources:
+        with open('{}/{}'.format(args.source_dir, safe_filename(source)), 'a+') as _file:
+            for timestamp, event in data[source]:
+                print('{},{}'.format(timestamp, event), file=_file)
+
+    print('Writing {} source csv files to disk: {} seconds.'.format(len(sources), time.time()-t0))
+
+# q = mp.Queue()
+
+# t0 = time.time()
+
+# processes = [ mp.Process(target=split_sources, args=(args.source_dir, q)) for _ in range(args.cores) ]
+
+# for p in processes:
+#     p.start()
+
+# for chunk in csv:
+#     while not args.flush_queue and q.qsize() > 2*args.cores:
+#         time.sleep(1)
+#     q.put(chunk)
+
+# for _ in range(args.cores):
+#     q.put('DIE!')
+
+# for p in processes:
+#     p.join()
     
+# t1 = time.time()-t0
+
+t_end = time.time()-t_start
+
 source_files = [ os.path.join(args.source_dir, f) for f in os.listdir(args.source_dir) ]
 
-print('{} sources demultiplexed in {} seconds.'.format(len(source_files), t1))
+print('{} sources demultiplexed in {} seconds.'.format(len(source_files), t_end))
 
 n = min(args.max, len(source_files)/args.cores) or 1
 eoi = pd.read_csv(args.eoi,
