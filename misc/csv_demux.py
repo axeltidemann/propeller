@@ -36,7 +36,7 @@ from collections import defaultdict
 
 import pandas as pd
 
-from utils import chunks, safe_filename
+from utils import chunks, safe_filename, file_len, pretty_float
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument(
@@ -62,25 +62,21 @@ parser.add_argument(
 Note: this file will be deleted when the script is run!''',
     default=False)
 parser.add_argument(
-    '--max',
-    help='Maximum number of files per processing unit, split evenly across CPUs (i.e. there might be less).',
-    type=int,
-    default=1000)
-parser.add_argument(
     '--chunksize',
     help='Chunksize for the csv file iterator.',
     type=int,
     default=50000)
 parser.add_argument(
+    '--max',
+    help='Maximum number of files per processing unit, split evenly across CPUs (i.e. there might be less).',
+    type=int,
+    default=1000)
+parser.add_argument(
     '--cores',
     help='Number of CPU cores to use.',
     type=int,
     default=mp.cpu_count())
-parser.add_argument(
-    '--flush_queue',
-    help='Whether to successively put items on the queue, instead of all at once. On Mac OS X, this needs to be set.',
-    action='store_true',
-    default=False)
+
 args = parser.parse_args()
 
 args.source_dir = args.source_dir or '{}_sources'.format(args.data)
@@ -95,6 +91,7 @@ os.makedirs(args.eoi_dir)
 
 def sort_eoi(eoi, eoi_dir, files):
     unique_events = set()
+    events_to_sources = defaultdict(list)
     
     for csv in files:
         data = pd.read_csv(csv,
@@ -110,37 +107,11 @@ def sort_eoi(eoi, eoi_dir, files):
         
         for event in eoi.event:
             if event in local_events:
-                with open('{}/{}'.format(eoi_dir, safe_filename(event)), 'a+') as _file:
-                    print(os.path.basename(os.path.normpath(csv)), file=_file)
+                events_to_sources[safe_filename(event)].append(os.path.basename(os.path.normpath(csv)))
+                # with open('{}/{}'.format(eoi_dir, safe_filename(event)), 'a+') as _file:
+                #     print(os.path.basename(os.path.normpath(csv)), file=_file)
                     
-    return unique_events
-
-
-def split_sources(source_dir, q):
-    while True:
-        chunk = q.get()
-
-        if not isinstance(chunk, pd.DataFrame):
-            break
-
-        data = defaultdict(list)
-
-        t0 = time.time()
-
-        for row in chunk.itertuples(index=False):
-            timestamp, source, event = row
-            data[source].append((timestamp, event))
-
-        print('Demuxing chunk: {} seconds'.format(time.time()-t0))
-
-        t0 = time.time()
-
-        for source in filter(pd.notnull, data.keys()):
-            with open('{}/{}'.format(source_dir, safe_filename(source)), 'a+') as _file:
-                for timestamp, event in data[source]:
-                    print('{},{}'.format(timestamp, event), file=_file)
-
-        print('Writing source csv files to disk: {} seconds.'.format(time.time()-t0))
+    return unique_events, events_to_sources
                     
 csv = pd.read_csv(args.data,
                   header=0,
@@ -149,57 +120,39 @@ csv = pd.read_csv(args.data,
                   parse_dates=[0],
                   chunksize=args.chunksize)
 
+length = file_len(args.data)
+print('There are {} lines of data in {}.'.format(length, args.data))
+
 t_start = time.time()
 
-for chunk in csv:
+for i, chunk in enumerate(csv):
     data = defaultdict(list)
 
     t0 = time.time()
 
     for row in chunk.itertuples(index=False):
         timestamp, source, event = row
-        data[source].append((timestamp, event))
+        if pd.notnull(source):
+            data[source].append((timestamp, event))
 
-    print('Demuxing chunk: {} seconds'.format(time.time()-t0))
+    print('Demuxing chunk: {} seconds.'.format(pretty_float(time.time()-t0)), end=' ')
 
     t0 = time.time()
 
-    sources = filter(pd.notnull, data.keys())
-    
-    for source in sources:
+    for source in data.keys():
         with open('{}/{}'.format(args.source_dir, safe_filename(source)), 'a+') as _file:
             for timestamp, event in data[source]:
                 print('{},{}'.format(timestamp, event), file=_file)
 
-    print('Writing {} source csv files to disk: {} seconds.'.format(len(sources), time.time()-t0))
+    print('Writing {} source csv files to disk: {} seconds.'.format(len(data.keys()), pretty_float(time.time()-t0)), end=' ')
 
-# q = mp.Queue()
-
-# t0 = time.time()
-
-# processes = [ mp.Process(target=split_sources, args=(args.source_dir, q)) for _ in range(args.cores) ]
-
-# for p in processes:
-#     p.start()
-
-# for chunk in csv:
-#     while not args.flush_queue and q.qsize() > 2*args.cores:
-#         time.sleep(1)
-#     q.put(chunk)
-
-# for _ in range(args.cores):
-#     q.put('DIE!')
-
-# for p in processes:
-#     p.join()
+    print('{}% done.'.format(100*(i+1)*args.chunksize/length))
     
-# t1 = time.time()-t0
-
 t_end = time.time()-t_start
 
 source_files = [ os.path.join(args.source_dir, f) for f in os.listdir(args.source_dir) ]
 
-print('{} sources demultiplexed in {} seconds.'.format(len(source_files), t_end))
+print('{} sources demultiplexed in {} seconds.'.format(len(source_files), pretty_float(t_end)))
 
 n = min(args.max, len(source_files)/args.cores) or 1
 eoi = pd.read_csv(args.eoi,
@@ -215,10 +168,31 @@ unique_events = set()
 t0 = time.time()
 
 pool = mp.Pool(processes=args.cores)
-for subset in pool.map(par_proc, data):
-    unique_events.update(subset)
+for subset_unique_events, subset_events_to_sources in pool.map(par_proc, data):
+    unique_events.update(subset_unique_events)
+    for event in subset_events_to_sources.keys():
+        with open('{}/{}'.format(eoi_dir, event), 'a+') as _file:
+            print(os.path.basename(os.path.normpath(csv)), file=_file)
 
-print('Sorting and determining events of interest done in {} seconds.'.format(time.time()-t0))
+
+# for csv in source_files:
+#     data = pd.read_csv(csv,
+#                        names=['timestamp', 'event'],
+#                        dtype={'event': str},
+#                        parse_dates=[0],
+#                        index_col=0)
+#     data.sort_index(inplace=True)
+#     data.to_csv(csv, mode='w')
+
+#     local_events = data.event.unique()
+#     unique_events.update(local_events)
+
+#     for event in eoi.event:
+#         if event in local_events:
+#             with open('{}/{}'.format(args.eoi_dir, safe_filename(event)), 'a+') as _file:
+#                 print(os.path.basename(os.path.normpath(csv)), file=_file)
+
+print('Sorting and determining events of interest done in {} seconds.'.format(pretty_float(time.time()-t0)))
     
 with open(args.events_filename, 'w') as _file:
     for event in unique_events:
