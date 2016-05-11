@@ -89,7 +89,7 @@ shutil.rmtree(args.eoi_dir, ignore_errors=True)
 os.makedirs(args.source_dir)
 os.makedirs(args.eoi_dir)
 
-def sort_eoi(eoi, eoi_dir, files):
+def sort_eoi(eoi, files):
     unique_events = set()
     events_to_sources = defaultdict(list)
     
@@ -108,8 +108,6 @@ def sort_eoi(eoi, eoi_dir, files):
         for event in eoi.event:
             if event in local_events:
                 events_to_sources[safe_filename(event)].append(os.path.basename(os.path.normpath(csv)))
-                # with open('{}/{}'.format(eoi_dir, safe_filename(event)), 'a+') as _file:
-                #     print(os.path.basename(os.path.normpath(csv)), file=_file)
                     
     return unique_events, events_to_sources
                     
@@ -154,14 +152,14 @@ source_files = [ os.path.join(args.source_dir, f) for f in os.listdir(args.sourc
 
 print('{} sources demultiplexed in {} seconds.'.format(len(source_files), pretty_float(t_end)))
 
-n = min(args.max, len(source_files)/args.cores) or 1
 eoi = pd.read_csv(args.eoi,
                   header=None,
                   names=['event'],
                   dtype=str) if args.eoi else pd.DataFrame(data=[], columns=['event'])
 
-par_proc = partial(sort_eoi, eoi, args.eoi_dir)
-data = chunks(source_files, n)
+par_proc = partial(sort_eoi, eoi)
+
+data = chunks(source_files, min(args.max, len(source_files)/args.cores) or 1)
 
 unique_events = set()
 
@@ -170,27 +168,11 @@ t0 = time.time()
 pool = mp.Pool(processes=args.cores)
 for subset_unique_events, subset_events_to_sources in pool.map(par_proc, data):
     unique_events.update(subset_unique_events)
+    
     for event in subset_events_to_sources.keys():
-        with open('{}/{}'.format(eoi_dir, event), 'a+') as _file:
-            print(os.path.basename(os.path.normpath(csv)), file=_file)
-
-
-# for csv in source_files:
-#     data = pd.read_csv(csv,
-#                        names=['timestamp', 'event'],
-#                        dtype={'event': str},
-#                        parse_dates=[0],
-#                        index_col=0)
-#     data.sort_index(inplace=True)
-#     data.to_csv(csv, mode='w')
-
-#     local_events = data.event.unique()
-#     unique_events.update(local_events)
-
-#     for event in eoi.event:
-#         if event in local_events:
-#             with open('{}/{}'.format(args.eoi_dir, safe_filename(event)), 'a+') as _file:
-#                 print(os.path.basename(os.path.normpath(csv)), file=_file)
+        with open('{}/{}'.format(args.eoi_dir, event), 'a+') as _file:
+            for source in subset_events_to_sources[event]:
+                print(source, file=_file)
 
 print('Sorting and determining events of interest done in {} seconds.'.format(pretty_float(time.time()-t0)))
     
