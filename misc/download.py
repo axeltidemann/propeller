@@ -54,7 +54,7 @@ def get(target_folder, limit, source_filename):
                 save_to_jpg(response.content, category_folder)
                 i += 1
 
-                if i > limit:
+                if i == limit:
                     break
                     
             except Exception as e:

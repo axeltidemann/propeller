@@ -29,6 +29,12 @@ parser.add_argument(
     '--table',
     help='HDF5 table',
     default='data')
+parser.add_argument(
+    '--n',
+    help='Number of pairs',
+    type=int,
+    default=1)
+
 args = parser.parse_args()
 
 t0 = time.time()
@@ -46,9 +52,12 @@ if args.file:
             break
 else:    
     similarity = np.tril(cosine_similarity(X), -1)
+    i = 0
     for index in np.argsort(similarity, axis=None)[::-1]:
         img1, img2 = np.unravel_index(index, similarity.shape)
-
         if similarity[img1, img2] < args.threshold:
             print similarity[img1, img2], data.index[img1], data.index[img2]
+            i += 1
+            
+        if i == args.n:
             break
