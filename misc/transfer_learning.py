@@ -4,7 +4,10 @@
 
 '''
 Trains the final layer of the Inception model. You must have
-collected the next to last layer states beforehand. 
+collected the next to last layer states beforehand. For transfer learning,
+make sure the batch_size is really big, since the amount of data per sample
+is _very_ small compared to when loading images, typically 
+2048/(299*299*3) = 0.8%
 
 Author: Axel.Tidemann@telenor.com
 '''
@@ -24,10 +27,20 @@ parser.add_argument(
     'data_folder',
     help='Folder with Inception states for training')
 parser.add_argument(
-    '--ratio',
-    help='Training/test ratio.',
+    '--train_ratio',
+    help='Train ratio',
     type=float,
     default=.8)
+parser.add_argument(
+    '--validation_ratio',
+    help='Validation ratio',
+    type=float,
+    default=.1)
+parser.add_argument(
+    '--test_ratio',
+    help='Test ratio',
+    type=float,
+    default=.1)
 parser.add_argument(
     '--save_every',
     help='How often (in epochs) to save checkpoints',
@@ -49,7 +62,7 @@ parser.add_argument(
     default=10000)
 parser.add_argument(
     '--print_every',
-    help='Print training accuracy every X steps',
+    help='Print training and validation accuracy every X steps',
     type=int,
     default=100)
 parser.add_argument(
@@ -58,7 +71,9 @@ parser.add_argument(
     default='.')
 args = parser.parse_args()
 
-data = read_data(args.data_folder, args.ratio)
+assert args.train_ratio + args.validation_ratio + args.test_ratio == 1, 'Train/validation/test ratios must sum up to 1'
+
+data = read_data(args.data_folder, args.train_ratio, args.validation_ratio, args.test_ratio)
 
 if not os.path.exists(args.checkpoint_dir):
     os.makedirs(args.checkpoint_dir)
@@ -88,8 +103,11 @@ with tf.Session() as sess:
     saver = tf.train.Saver()
     
     sess.run(tf.initialize_all_variables())
-    
-    for i in range(args.epochs):
+
+    last_i = 0
+    while data.train.epoch < args.epochs:
+        i = data.train.epoch
+        
         batch_x, batch_y = data.train.next_batch(args.batch_size)
         train_step.run(feed_dict={x: batch_x, y_: batch_y})
 
@@ -97,20 +115,27 @@ with tf.Session() as sess:
             saver.save(sess, args.checkpoint_dir + 'model.ckpt',
                        global_step=i+1)
 
-        if i % args.print_every == 0:
+        if i % args.print_every == 0 and last_i != i:
             train_accuracy = accuracy.eval(feed_dict={
                 x:batch_x, y_: batch_y})
-            print 'Epoch {} train accuracy: {}'.format(i, train_accuracy)
+
+            batch_x, batch_y = data.validation.next_batch(args.batch_size)
+
+            validation_accuracy = accuracy.eval(feed_dict={
+                x:batch_x, y_: batch_y})
+            print 'Epoch {} train accuracy: {}, validation accuracy: {}'.format(i, train_accuracy, validation_accuracy)
+            last_i = i
+
 
     output_graph_def = graph_util.convert_variables_to_constants(
         sess, sess.graph.as_graph_def(), ['input', 'output'])
-    
-    with gfile.FastGFile(os.path.join(args.model_dir, 'transfer_classifier.pb'), 'w') as f:
+
+    model_name = 'transfer_classifier_epochs_{}_batch_{}_train_ratio_{}.pb'.format(args.epochs, args.batch_size, args.train_ratio)
+    with gfile.FastGFile(os.path.join(args.model_dir, model_name), 'w') as f:
         f.write(output_graph_def.SerializeToString())
 
-    print 'Trained model saved to {}'.format(os.path.join(args.model_dir, 'transfer_classifier.pb'))
+    print 'Trained model saved to {}'.format(os.path.join(args.model_dir, model_name))
 
-
-    if args.ratio < 1.0:
+    if args.test_ratio > 0:
         test_accuracy = accuracy.eval(feed_dict={x: data.test.X, y_: data.test.Y})
         print 'Evaluation on testing data: {}'.format(test_accuracy)

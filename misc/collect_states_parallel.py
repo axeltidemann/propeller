@@ -15,34 +15,48 @@ import glob
 import subprocess
 
 KILL = 'POISON PILL'
-
-def launch_tensorflow(q, cuda_device):
+# The only argument that changes is the source - simplify the code !
+def launch_tensorflow(q, cuda_device, mem_ratio):
     while True:
-        folder = q.get()
-        if folder == KILL:
+        source, target, limit = q.get()
+        if source == KILL:
             break
-        command = 'CUDA_VISIBLE_DEVICES={} python collect_states.py --data_folder {}'.format(cuda_device, folder)
+        command = 'CUDA_VISIBLE_DEVICES={} python collect_states.py --source {} --target {} --limit {} --mem_ratio {}'.format(cuda_device, source, target, limit, mem_ratio)
         print command
         subprocess.call(command, shell=True)
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument(
-    '--folder',
+    'folder',
     help='Folder with image folders')
+parser.add_argument(
+    'target',
+    help='Where to put the states')
+parser.add_argument(
+    '--limit',
+    help='Maximum amount of images to process',
+    type=int,
+    default=10000)
 parser.add_argument(
     '--gpus',
     help='How many GPUs to use',
     default=4,
     type=int)
+parser.add_argument(
+    '--threads',
+    help='How many threads to use pr GPU',
+    default=1,
+    type=int)
 args = parser.parse_args()
 
 q = mp.Queue()
 
-for i in range(args.gpus):
-    mp.Process(target=launch_tensorflow, args=(q, i,)).start()
+for gpu in range(args.gpus):
+    for _ in range(args.threads):
+        mp.Process(target=launch_tensorflow, args=(q, gpu, args.threads)).start()
 
 for folder in glob.glob('{}/*'.format(args.folder)):
-    q.put(folder)
+    q.put([folder, args.target, args.limit])
 
-for _ in range(args.gpus):
-    q.put(KILL)
+for _ in range(args.gpus*args.threads):
+    q.put([KILL, None, None])

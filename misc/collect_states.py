@@ -13,6 +13,7 @@ import tarfile
 import logging
 import os
 import glob
+from random import shuffle
 
 # pylint: disable=unused-import,g-bad-import-order
 import tensorflow.python.platform
@@ -45,6 +46,10 @@ tf.app.flags.DEFINE_string('source', '',
                            """Folder with images""")
 tf.app.flags.DEFINE_string('target', '',
                            """Where to put the states file""")
+tf.app.flags.DEFINE_integer('limit', 10000,
+                           """Maximum amount of images to process per folder""")
+tf.app.flags.DEFINE_integer('mem_ratio', 1,
+                           """1/x ratio of memory to reserve on the GPU instance""")
 
 
 # pylint: disable=line-too-long
@@ -81,32 +86,36 @@ def maybe_download_and_extract():
     print('Succesfully downloaded', filename, statinfo.st_size, 'bytes.')
   tarfile.open(filepath, 'r:gz').extractall(dest_directory)
     
-def save_states(source, target):
+def save_states(source, target, limit, mem_ratio):
   create_graph()
-  with tf.Session() as sess:
+
+  # 3.95G GPU RAM actually free on AWS, reports as 4G. A little legroom is needed.
+  gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=1./(mem_ratio + .5)) 
+  with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
     next_last_layer = sess.graph.get_tensor_by_name('pool_3:0')
     states = []
 
     images = glob.glob('{}/*.jpg'.format(source))
+    shuffle(images)
+    images = images[:limit]
+    
     for jpg in images:
-        image_data = gfile.FastGFile(jpg).read()
-        hidden_layer = sess.run(next_last_layer,
-                                {'DecodeJpeg/contents:0': image_data})
-        hidden_layer = np.squeeze(hidden_layer)
-        states.append(hidden_layer)
-
-    name = os.path.basename(os.path.dirname(source))
+      image_data = gfile.FastGFile(jpg).read()
+      hidden_layer = sess.run(next_last_layer,
+                              {'DecodeJpeg/contents:0': image_data})
+      hidden_layer = np.squeeze(hidden_layer)
+      states.append(hidden_layer)
 
     df = pd.DataFrame(data={'state': states}, index=images)
     df.index.name='filename'
     
-    h5name = '{}/{}.h5'.format(target, os.path.basename(os.path.dirname(source)))
+    h5name = '{}/{}.h5'.format(target, os.path.basename(source))
     with pd.HDFStore(h5name, 'w') as store:
       store['data'] = df
 
 def main(_):
   maybe_download_and_extract()
-  save_states(FLAGS.source, FLAGS.target)
+  save_states(FLAGS.source, FLAGS.target, FLAGS.limit, FLAGS.mem_ratio)
 
 if __name__ == '__main__':
   tf.app.run()
