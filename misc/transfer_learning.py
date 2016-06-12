@@ -4,15 +4,12 @@
 
 '''
 Trains the final layer of the Inception model. You must have
-collected the next to last layer states beforehand. For transfer learning,
-make sure the batch_size is really big, since the amount of data per sample
-is _very_ small compared to when loading images, typically 
-2048/(299*299*3) = 0.8%
-
-Author: Axel.Tidemann@telenor.com
+collected the next to last layer states beforehand.
 '''
 
+from __future__ import print_function
 import argparse
+import time
 import os
 
 import numpy as np
@@ -26,6 +23,11 @@ parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFo
 parser.add_argument(
     'data_folder',
     help='Folder with Inception states for training')
+parser.add_argument(
+    '--learning_rate',
+    help='Learning rate',
+    type=float,
+    default=.0001)
 parser.add_argument(
     '--train_ratio',
     help='Train ratio',
@@ -54,17 +56,22 @@ parser.add_argument(
     '--batch_size',
     help='Batch size for training',
     type=int,
+    default=2048)
+parser.add_argument(
+    '--hidden_size',
+    help='Size of the ReLU hidden layer',
+    type=int,
     default=1024)
 parser.add_argument(
     '--epochs',
     help='Maximum number of epochs before ending the training',
     type=int,
-    default=10000)
+    default=1000)
 parser.add_argument(
     '--print_every',
     help='Print training and validation accuracy every X steps',
     type=int,
-    default=100)
+    default=1)
 parser.add_argument(
     '--model_dir',
     help='Where to save the transfer learned model',
@@ -87,55 +94,70 @@ def bias_variable(shape, name):
     return tf.Variable(initial,name=name)
 
 with tf.Session() as sess:
-    x = tf.placeholder("float", shape=[None, data.train.X_features], name='input')
-    y_ = tf.placeholder("float", shape=[None, data.train.Y_features], name='target')
+    x = tf.placeholder('float', shape=[None, data.train.X_features], name='input')
+    y_ = tf.placeholder('float', shape=[None, data.train.Y_features], name='target')
 
-    W = weight_variable([data.train.X_features,data.train.Y_features], name='weights')
-    b = bias_variable([data.train.Y_features], name='bias')
+    W_in = weight_variable([data.train.X_features, args.hidden_size], name='weights_in')
+    b_in = bias_variable([args.hidden_size], name='bias_in')
 
-    y = tf.nn.softmax(tf.matmul(x,W) + b, name='output')
-    cross_entropy = -tf.reduce_sum(y_*tf.log(y))
+    hidden = tf.nn.relu(tf.matmul(x,W_in) + b_in)
 
-    train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy)
+    W_out = weight_variable([args.hidden_size,data.train.Y_features], name='weights_out')
+    b_out = bias_variable([data.train.Y_features], name='bias_out')
+
+    logits = tf.matmul(hidden,W_out) + b_out
+    
+    y = tf.nn.softmax(logits, name='output')
+
+    cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits, y_)
+
+    train_step = tf.train.AdamOptimizer(args.learning_rate).minimize(cross_entropy)
     correct_prediction = tf.equal(tf.argmax(y,1), tf.argmax(y_,1))
-    accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
+    accuracy = tf.reduce_mean(tf.cast(correct_prediction, 'float'))
 
     saver = tf.train.Saver()
     
     sess.run(tf.initialize_all_variables())
 
     last_i = 0
+
     while data.train.epoch < args.epochs:
         i = data.train.epoch
-        
         batch_x, batch_y = data.train.next_batch(args.batch_size)
+        
+        t_start = time.time()
         train_step.run(feed_dict={x: batch_x, y_: batch_y})
-
+        t_end = time.time() - t_start
+        
         if (i + 1) % args.save_every == 0:
             saver.save(sess, args.checkpoint_dir + 'model.ckpt',
                        global_step=i+1)
 
         if i % args.print_every == 0 and last_i != i:
             train_accuracy = accuracy.eval(feed_dict={
-                x:batch_x, y_: batch_y})
-
-            batch_x, batch_y = data.validation.next_batch(args.batch_size)
+                x: batch_x, y_: batch_y})
 
             validation_accuracy = accuracy.eval(feed_dict={
-                x:batch_x, y_: batch_y})
-            print 'Epoch {} train accuracy: {}, validation accuracy: {}'.format(i, train_accuracy, validation_accuracy)
+                x: data.validation.X, y_: data.validation.Y})
+            
+            print('''Epoch {} train accuracy: {}, validation accuracy: {}. '''
+                  '''{} states/sec.'''.format(i, train_accuracy, validation_accuracy, args.batch_size/t_end))
+            
             last_i = i
-
 
     output_graph_def = graph_util.convert_variables_to_constants(
         sess, sess.graph.as_graph_def(), ['input', 'output'])
 
-    model_name = 'transfer_classifier_epochs_{}_batch_{}_train_ratio_{}.pb'.format(args.epochs, args.batch_size, args.train_ratio)
+    model_name = ('''transfer_classifier_epochs_{}_batch_{}_ratios_{}_{}_{}_'''
+                  '''learning_rate_{}_hidden_size_{}.pb'''.format(args.epochs, args.batch_size,
+                                                                  args.train_ratio, args.validation_ratio,
+                                                                  args.test_ratio, args.learning_rate, args.hidden_size))
+    
     with gfile.FastGFile(os.path.join(args.model_dir, model_name), 'w') as f:
         f.write(output_graph_def.SerializeToString())
 
-    print 'Trained model saved to {}'.format(os.path.join(args.model_dir, model_name))
+    print('Trained model saved to {}'.format(os.path.join(args.model_dir, model_name)))
 
     if args.test_ratio > 0:
         test_accuracy = accuracy.eval(feed_dict={x: data.test.X, y_: data.test.Y})
-        print 'Evaluation on testing data: {}'.format(test_accuracy)
+        print('Evaluation on testing data: {}'.format(test_accuracy))

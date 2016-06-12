@@ -24,8 +24,15 @@ parser.add_argument(
     help='Limit the number of files to download',
     type=float,
     default=np.inf)
+parser.add_argument(
+    '--less',
+    help='Only display states with less ',
+    type=int,
+    default=10000)
+
 args = parser.parse_args()
 
 for h5_file in glob.glob('{}/*.h5'.format(args.states)):
     data = pd.read_hdf(h5_file, 'data')
-    print('{}: {} images'.format(os.path.basename(h5_file), len(data)))
+    if len(data) < args.less:
+        print('{}: {} images'.format(os.path.basename(h5_file), len(data)))

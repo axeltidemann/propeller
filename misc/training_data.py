@@ -96,6 +96,7 @@ class DataSet:
 
         
 def read_data(data_folder, train_ratio, validation_ratio, test_ratio):
+
     class DataSets:
         pass
 
