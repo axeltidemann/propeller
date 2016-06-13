@@ -108,7 +108,7 @@ def save_states(source, target, limit, mem_ratio):
 
     df = pd.DataFrame(data={'state': states}, index=images)
     df.index.name='filename'
-    
+
     h5name = '{}/{}.h5'.format(target, os.path.basename(source))
     with pd.HDFStore(h5name, 'w') as store:
       store['data'] = df
