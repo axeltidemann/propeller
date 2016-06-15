@@ -45,7 +45,7 @@ parser.add_argument(
 parser.add_argument(
     '--threads',
     help='How many threads to use pr GPU',
-    default=1,
+    default=2,
     type=int)
 args = parser.parse_args()
 
