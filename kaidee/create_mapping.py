@@ -24,6 +24,10 @@ parser.add_argument(
     '--mapping_filename',
     help='Mapping filename', 
     default='mapping.txt')
+parser.add_argument(
+    '--human',
+    help='Whether the mapping will be in human readable text, or just categories.',
+    action='store_true')
 args = parser.parse_args()
 
 book = open_workbook(args.excel_file)
@@ -38,7 +42,7 @@ mapping = {}
 
 for i, h5_file in enumerate(sorted(glob.glob('{}/*.h5'.format(args.data_folder)))):
     category = os.path.basename(h5_file[:h5_file.find('.')])
-    mapping[str(i)] = categories[category]
+    mapping[str(i)] = categories[category] if args.human else category
 
 with open(args.mapping_filename, 'w') as _file:
     json.dump(mapping, _file, sort_keys=True, indent=4)
