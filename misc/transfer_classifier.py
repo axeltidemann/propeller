@@ -65,8 +65,8 @@ tf.app.flags.DEFINE_integer('redis_port', 6379,
 tf.app.flags.DEFINE_string('redis_queue', 'classify',
                            """Redis queue to read images from""")
 
-tf.app.flags.DEFINE_string('transfer_dir', '.',
-                           """Path to transfer_classifier.pb, which contains the transfer learned model.""")
+tf.app.flags.DEFINE_string('classifier', '',
+                           """Path to the transfer learned model.""")
 tf.app.flags.DEFINE_string('mapping', 'mapping.txt',
                            """A mapping from node IDs to readable text""")
 
@@ -95,11 +95,10 @@ def convert_to_jpg(data):
   yield tmp.name
   os.remove(tmp.name)
 
-def load_graph(path, filename):
+def load_graph(path):
   """"Creates a graph from saved GraphDef file and returns a saver."""
   # Creates graph from saved graph_def.pb.
-  with gfile.FastGFile(os.path.join(
-      path, filename), 'r') as f:
+  with gfile.FastGFile(path, 'r') as f:
     graph_def = tf.GraphDef()
     graph_def.ParseFromString(f.read())
     _ = tf.import_graph_def(graph_def, name='')
@@ -108,10 +107,10 @@ def load_graph(path, filename):
 def classify_images(mapping):
   gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=1./4)
   with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
-    load_graph(FLAGS.model_dir, 'classify_image_graph_def.pb')
+    load_graph(os.path.join(FLAGS.model_dir, 'classify_image_graph_def.pb'))
     inception_next_last_layer = sess.graph.get_tensor_by_name('pool_3:0')
     
-    load_graph(FLAGS.transfer_dir, 'transfer_classifier.pb')
+    load_graph(FLAGS.classifier)
     transfer_predictor = sess.graph.get_tensor_by_name('output:0')
     
     r_server = redis.StrictRedis(FLAGS.redis_server, FLAGS.redis_port)
@@ -174,6 +173,7 @@ def main(_):
   maybe_download_and_extract()
   with open(FLAGS.mapping) as f:
     mapping = json.load(f)
+
   classify_images(mapping)
 
 if __name__ == '__main__':
