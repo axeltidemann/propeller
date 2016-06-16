@@ -53,10 +53,10 @@ class DataSet:
         self.shuffle()
 
     def shuffle(self):
-        perm = np.arange(self._num_examples)
-        np.random.shuffle(perm)
-        self._X = self._X[perm]
-        self._Y = self._Y[perm]
+        rng_state = np.random.get_state()
+        np.random.shuffle(self._X)
+        np.random.set_state(rng_state)
+        np.random.shuffle(self._Y)
         
     def next_batch(self, batch_size):
         start = self._index_in_epoch

@@ -8,6 +8,8 @@ as the categories. Handles subcategories as well.
 
 import argparse
 import glob
+import os
+import json
 
 from xlrd import open_workbook
 
@@ -18,16 +20,25 @@ parser.add_argument(
 parser.add_argument(
     'excel_file',
     help='Excel file with categories')
+parser.add_argument(
+    '--mapping_filename',
+    help='Mapping filename', 
+    default='mapping.txt')
 args = parser.parse_args()
 
 book = open_workbook(args.excel_file)
 sheet = book.sheet_by_index(0)
 
-ids = map(int, sheet.co_values(4, start_rowx=1))
+ids = map(lambda x: str(int(x)), sheet.col_values(4, start_rowx=1))
 names = sheet.col_values(5, start_rowx=1)
+
+categories = dict(zip(ids, names))
 
 mapping = {}
 
-for h5_file in sorted(glob.glob('{}/*.h5'.format(args.data_folder))):
-    category = h5_file[h5_file.find('.')]
-    print category
+for i, h5_file in enumerate(sorted(glob.glob('{}/*.h5'.format(args.data_folder)))):
+    category = os.path.basename(h5_file[:h5_file.find('.')])
+    mapping[str(i)] = categories[category]
+
+with open(args.mapping_filename, 'w') as _file:
+    json.dump(mapping, _file, sort_keys=True, indent=4)
