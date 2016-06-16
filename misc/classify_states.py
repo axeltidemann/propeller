@@ -17,7 +17,7 @@ import glob
 from collections import defaultdict
 
 import matplotlib
-matplotlib.use('Agg')
+matplotlib.use('agg')
 
 import matplotlib.pyplot as plt
 import seaborn as sns
