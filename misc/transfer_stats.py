@@ -1,10 +1,8 @@
 # Copyright 2016 Telenor ASA, Author: Axel Tidemann
 # The software includes elements of example code. Copyright 2015 Google, Inc. Licensed under Apache License, Version 2.0.
-# https://www.tensorflow.org/versions/r0.7/tutorials/image_recognition/index.html
 
 """
-Creates a mass insertion proto.txt from a learned model file by running it on 
-all HDF5 files in the folder.
+Calculates the pr category accuracy, top k included.
 """
 
 from __future__ import print_function

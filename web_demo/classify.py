@@ -1,5 +1,5 @@
 '''
-Client that pushes an image to be processed by the Caffe framework, waits for the result.
+Pushes images to be classified. Will wait for a single image.
 
 Author: Axel.Tidemann@telenor.com
 '''

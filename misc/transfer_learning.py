@@ -66,7 +66,7 @@ parser.add_argument(
     '--epochs',
     help='Maximum number of epochs before ending the training',
     type=int,
-    default=1000)
+    default=500)
 parser.add_argument(
     '--print_every',
     help='Print training and validation accuracy every X steps',
@@ -85,6 +85,11 @@ data = read_data(args.data_folder, args.train_ratio, args.validation_ratio, args
 if not os.path.exists(args.checkpoint_dir):
     os.makedirs(args.checkpoint_dir)
 
+model_name = ('''transfer_classifier_epochs_{}_batch_{}_ratios_{}_{}_{}_'''
+              '''learning_rate_{}_hidden_size_{}.pb'''.format(args.epochs, args.batch_size,
+                                                              args.train_ratio, args.validation_ratio,
+                                                              args.test_ratio, args.learning_rate, args.hidden_size))
+    
 def weight_variable(shape, name):
     initial = tf.truncated_normal(shape, stddev=0.1)
     return tf.Variable(initial,name=name)
@@ -93,6 +98,8 @@ def bias_variable(shape, name):
     initial = tf.constant(0.1, shape=shape)
     return tf.Variable(initial,name=name)
 
+
+    
 with tf.Session() as sess:
     x = tf.placeholder('float', shape=[None, data.train.X_features], name='input')
     y_ = tf.placeholder('float', shape=[None, data.train.Y_features], name='target')
@@ -121,7 +128,8 @@ with tf.Session() as sess:
 
     last_i = 0
 
-    while data.train.epoch < args.epochs:
+    t_epoch = time.time()
+    while data.train.epoch <= args.epochs:
         i = data.train.epoch
         batch_x, batch_y = data.train.next_batch(args.batch_size)
         
@@ -129,10 +137,16 @@ with tf.Session() as sess:
         train_step.run(feed_dict={x: batch_x, y_: batch_y})
         t_end = time.time() - t_start
         
-        if (i + 1) % args.save_every == 0:
+        if i % args.save_every == 0 and last_i != i:
+            output_graph_def = graph_util.convert_variables_to_constants(
+                sess, sess.graph.as_graph_def(), ['input', 'output'])
+
+            with gfile.FastGFile(os.path.join(args.model_dir, model_name), 'w') as f:
+                f.write(output_graph_def.SerializeToString())
+
             saver.save(sess, args.checkpoint_dir + 'model.ckpt',
                        global_step=i+1)
-
+        
         if i % args.print_every == 0 and last_i != i:
             train_accuracy = accuracy.eval(feed_dict={
                 x: batch_x, y_: batch_y})
@@ -141,20 +155,11 @@ with tf.Session() as sess:
                 x: data.validation.X, y_: data.validation.Y})
             
             print('''Epoch {} train accuracy: {}, validation accuracy: {}. '''
-                  '''{} states/sec.'''.format(i, train_accuracy, validation_accuracy, args.batch_size/t_end))
-            
+                  '''{} states/sec, {} secs/epoch.'''.format(i, train_accuracy,
+                                                             validation_accuracy, args.batch_size/t_end,
+                                                             time.time() - t_epoch))
+            t_epoch = time.time()
             last_i = i
-
-    output_graph_def = graph_util.convert_variables_to_constants(
-        sess, sess.graph.as_graph_def(), ['input', 'output'])
-
-    model_name = ('''transfer_classifier_epochs_{}_batch_{}_ratios_{}_{}_{}_'''
-                  '''learning_rate_{}_hidden_size_{}.pb'''.format(args.epochs, args.batch_size,
-                                                                  args.train_ratio, args.validation_ratio,
-                                                                  args.test_ratio, args.learning_rate, args.hidden_size))
-    
-    with gfile.FastGFile(os.path.join(args.model_dir, model_name), 'w') as f:
-        f.write(output_graph_def.SerializeToString())
 
     print('Trained model saved to {}'.format(os.path.join(args.model_dir, model_name)))
 
