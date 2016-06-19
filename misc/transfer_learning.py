@@ -61,7 +61,7 @@ parser.add_argument(
     '--hidden_size',
     help='Size of the ReLU hidden layer',
     type=int,
-    default=1024)
+    default=2048)
 parser.add_argument(
     '--dropout',
     help='The probability to drop neurons, helps against overfitting',
