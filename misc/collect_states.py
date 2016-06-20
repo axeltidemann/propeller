@@ -101,31 +101,39 @@ def save_states(source, target, limit, mem_ratio):
     
     for jpg in images:
       image_data = gfile.FastGFile(jpg).read()
-      flipped = tf.image.encode_jpeg(tf.image.flip_left_right(tf.image.decode_jpeg(image_data, channels=3)), format='rgb')
+      hidden_layer = sess.run(next_last_layer,
+                              {'DecodeJpeg/contents:0': image_data})
+      hidden_layer = np.squeeze(hidden_layer)
+      states.append(hidden_layer)
+
+      # Experimental data augmentation below - shitty conversion troubles. Should be an input option, as it will
+      # drastically increase the amount of data.
       
-      for img in [ image_data, flipped ]:
-        hidden_layer = sess.run(next_last_layer,
-                                {'DecodeJpeg/contents:0': img})
-        hidden_layer = np.squeeze(hidden_layer)
-        states.append(hidden_layer)
+      # flipped = tf.image.encode_jpeg(tf.image.flip_left_right(tf.convert_to_tensor(image_data)), format='rgb')
+      
+      # for img in [ image_data, flipped ]:
+      #   hidden_layer = sess.run(next_last_layer,
+      #                           {'DecodeJpeg/contents:0': img})
+      #   hidden_layer = np.squeeze(hidden_layer)
+      #   states.append(hidden_layer)
 
-        # # Brightness
-        # hidden_layer = sess.run(next_last_layer,
-        #                         {'DecodeJpeg/contents:0': tf.image.encode_jpeg(tf.image.random_brightness(tf.image.decode_jpeg(img, channels=3), max_delta=63), format="rgb")})
-        # hidden_layer = np.squeeze(hidden_layer)
-        # states.append(hidden_layer)
+      #   # Brightness
+      #   hidden_layer = sess.run(next_last_layer,
+      #                           {'DecodeJpeg/contents:0': tf.image.encode_jpeg(tf.image.random_brightness(tf.image.decode_jpeg(img, channels=3), max_delta=63), format="rgb")})
+      #   hidden_layer = np.squeeze(hidden_layer)
+      #   states.append(hidden_layer)
 
-        # # Contrast
-        # hidden_layer = sess.run(next_last_layer,
-        #                         {'DecodeJpeg/contents:0': tf.image.random_contrast(img, lower=.2, upper=1.8)})
-        # hidden_layer = np.squeeze(hidden_layer)
-        # states.append(hidden_layer)
+      #   # Contrast
+      #   hidden_layer = sess.run(next_last_layer,
+      #                           {'DecodeJpeg/contents:0': tf.image.random_contrast(img, lower=.2, upper=1.8)})
+      #   hidden_layer = np.squeeze(hidden_layer)
+      #   states.append(hidden_layer)
 
-        # # Saturation
-        # hidden_layer = sess.run(next_last_layer,
-        #                         {'DecodeJpeg/contents:0': tf.image.random_saturation(img, lower=0, upper=1.)})
-        # hidden_layer = np.squeeze(hidden_layer)
-        # states.append(hidden_layer)
+      #   # Saturation
+      #   hidden_layer = sess.run(next_last_layer,
+      #                           {'DecodeJpeg/contents:0': tf.image.random_saturation(img, lower=0, upper=1.)})
+      #   hidden_layer = np.squeeze(hidden_layer)
+      #   states.append(hidden_layer)
 
     df = pd.DataFrame(data={'state': states}, index=images)
     df.index.name='filename'
