@@ -14,6 +14,7 @@ import logging
 import os
 import glob
 from random import shuffle
+import itertools
 
 # pylint: disable=unused-import,g-bad-import-order
 import tensorflow.python.platform
@@ -106,10 +107,13 @@ def save_states(source, target, limit, mem_ratio):
       hidden_layer = np.squeeze(hidden_layer)
       states.append(hidden_layer)
 
-      # Experimental data augmentation below - shitty conversion troubles. Should be an input option, as it will
-      # drastically increase the amount of data.
-      
-      # flipped = tf.image.encode_jpeg(tf.image.flip_left_right(tf.convert_to_tensor(image_data)), format='rgb')
+      flipped = tf.image.encode_jpeg(tf.image.flip_left_right(tf.image.decode_jpeg(image_data, channels=3)), format='rgb')
+      hidden_layer = sess.run(next_last_layer,
+                              {'DecodeJpeg/contents:0': flipped.eval()})
+      hidden_layer = np.squeeze(hidden_layer)
+      states.append(hidden_layer)
+
+      # The other transformations below are up for consideration.
       
       # for img in [ image_data, flipped ]:
       #   hidden_layer = sess.run(next_last_layer,
@@ -135,7 +139,7 @@ def save_states(source, target, limit, mem_ratio):
       #   hidden_layer = np.squeeze(hidden_layer)
       #   states.append(hidden_layer)
 
-    df = pd.DataFrame(data={'state': states}, index=images)
+    df = pd.DataFrame(data={'state': states}, index=itertools.chain(*zip(images, images)))
     df.index.name='filename'
 
     h5name = '{}/{}.h5'.format(target, os.path.basename(source))
