@@ -15,6 +15,7 @@ import os
 import glob
 from random import shuffle
 import itertools
+import sys
 
 # pylint: disable=unused-import,g-bad-import-order
 import tensorflow.python.platform
@@ -100,10 +101,16 @@ def save_states(source, target, limit, mem_ratio):
     shuffle(images)
     images = images[:limit]
     
-    for jpg in images:
+    for jpg in list(images):
       image_data = gfile.FastGFile(jpg).read()
-      hidden_layer = sess.run(next_last_layer,
-                              {'DecodeJpeg/contents:0': image_data})
+      try: 
+        hidden_layer = sess.run(next_last_layer,
+                                {'DecodeJpeg/contents:0': image_data})
+      except Exception as e:
+        print('File {} is rotten, will be discarded.'.format(jpg))
+        images.remove(jpg)
+        continue
+
       hidden_layer = np.squeeze(hidden_layer)
       states.append(hidden_layer)
 
