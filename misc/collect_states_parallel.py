@@ -18,10 +18,10 @@ KILL = 'POISON PILL'
 # The only argument that changes is the source - simplify the code !
 def launch_tensorflow(q, cuda_device, mem_ratio):
     while True:
-        source, target, limit = q.get()
+        source, target, limit, flip = q.get()
         if source == KILL:
             break
-        command = 'CUDA_VISIBLE_DEVICES={} python collect_states.py --source {} --target {} --limit {} --mem_ratio {}'.format(cuda_device, source, target, limit, mem_ratio)
+        command = 'CUDA_VISIBLE_DEVICES={} python collect_states.py --source {} --target {} --limit {} --mem_ratio {} {}'.format(cuda_device, source, target, limit, mem_ratio, '--flip' if flip else '')
         print command
         subprocess.call(command, shell=True)
 
@@ -47,6 +47,10 @@ parser.add_argument(
     help='How many threads to use pr GPU',
     default=2,
     type=int)
+parser.add_argument(
+    '--flip',
+    action='store_true',
+    help='Whether to flip the images during collection of states')
 args = parser.parse_args()
 
 q = mp.Queue()
@@ -56,7 +60,7 @@ for gpu in range(args.gpus):
         mp.Process(target=launch_tensorflow, args=(q, gpu, args.threads)).start()
 
 for folder in glob.glob('{}/*'.format(args.folder)):
-    q.put([folder, args.target, args.limit])
+    q.put([folder, args.target, args.limit, args.flip])
 
 for _ in range(args.gpus*args.threads):
-    q.put([KILL, None, None])
+    q.put([KILL, None, None, None])

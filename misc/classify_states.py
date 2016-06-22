@@ -46,6 +46,9 @@ tf.app.flags.DEFINE_integer('num_top_classes', 5,
                             """Print these top classes.""")
 tf.app.flags.DEFINE_string('target', '',
                             """Where to put the resulting files.""")
+tf.app.flags.DEFINE_boolean('store_aux', False,
+                            """Whether to store .txt and HDF5 files containing the top classes""")
+
 
 # pylint: disable=line-too-long
 DATA_URL = 'http://download.tensorflow.org/models/image/imagenet/inception-2015-12-05.tgz'
@@ -127,7 +130,7 @@ def create_graph():
     _ = tf.import_graph_def(graph_def, name='')
 
 
-def run_inference_on_states(h5_file, top_k, target):
+def run_inference_on_states(h5_file, top_k, target, store_aux):
   create_graph()
 
   with tf.Session() as sess:
@@ -157,21 +160,23 @@ def run_inference_on_states(h5_file, top_k, target):
     labels = ['']*len(categories)
 
     keys = categories.keys()
-    
+
+
     for t in top_index:
       key = keys[t]
       labels[t] = node_lookup.id_to_string(key).split(',')[0]
 
-      with open('{}/{}.{}.txt'.format(target, category_name, key), 'w') as _file:
-        for image in files[key]:
-          print(image, file=_file)
+      if store_aux:
+        with open('{}/{}.{}.txt'.format(target, category_name, key), 'w') as _file:
+          for image in files[key]:
+            print(image, file=_file)
 
-      df = pd.DataFrame(data={'state': states[key]}, index=files[key])
-      df.index.name='filename'
-      
-      h5name = '{}/{}.{}.h5'.format(target, category_name, key)
-      with pd.HDFStore(h5name, 'w') as store:
-        store['data'] = df
+        df = pd.DataFrame(data={'state': states[key]}, index=files[key])
+        df.index.name='filename'
+
+        h5name = '{}/{}.{}.h5'.format(target, category_name, key)
+        with pd.HDFStore(h5name, 'w') as store:
+          store['data'] = df
     
     sns.barplot(range(len(categories)), categories.values())
 
@@ -200,7 +205,7 @@ def maybe_download_and_extract():
 
 def main(_):
   maybe_download_and_extract()
-  run_inference_on_states(FLAGS.states, FLAGS.num_top_classes, FLAGS.target)
+  run_inference_on_states(FLAGS.states, FLAGS.num_top_classes, FLAGS.target, FLAGS.store_aux)
 
 if __name__ == '__main__':
   tf.app.run()

@@ -52,7 +52,7 @@ tf.app.flags.DEFINE_integer('limit', 10000,
                            """Maximum amount of images to process per folder""")
 tf.app.flags.DEFINE_integer('mem_ratio', 1,
                            """1/x ratio of memory to reserve on the GPU instance""")
-
+tf.app.flags.DEFINE_boolean('flip', False, """Whether to flip images""")
 
 # pylint: disable=line-too-long
 DATA_URL = 'http://download.tensorflow.org/models/image/imagenet/inception-2015-12-05.tgz'
@@ -88,7 +88,7 @@ def maybe_download_and_extract():
     print('Succesfully downloaded', filename, statinfo.st_size, 'bytes.')
   tarfile.open(filepath, 'r:gz').extractall(dest_directory)
     
-def save_states(source, target, limit, mem_ratio):
+def save_states(source, target, limit, mem_ratio, flip):
   create_graph()
 
   # 3.95G GPU RAM actually free on AWS, reports as 4G. A little legroom is needed.
@@ -100,7 +100,7 @@ def save_states(source, target, limit, mem_ratio):
     images = glob.glob('{}/*.jpg'.format(source))
     shuffle(images)
     images = images[:limit]
-    
+
     for jpg in list(images):
       image_data = gfile.FastGFile(jpg).read()
       try: 
@@ -114,11 +114,12 @@ def save_states(source, target, limit, mem_ratio):
       hidden_layer = np.squeeze(hidden_layer)
       states.append(hidden_layer)
 
-      flipped = tf.image.encode_jpeg(tf.image.flip_left_right(tf.image.decode_jpeg(image_data, channels=3)), format='rgb')
-      hidden_layer = sess.run(next_last_layer,
-                              {'DecodeJpeg/contents:0': flipped.eval()})
-      hidden_layer = np.squeeze(hidden_layer)
-      states.append(hidden_layer)
+      if flip:
+        flipped = tf.image.encode_jpeg(tf.image.flip_left_right(tf.image.decode_jpeg(image_data, channels=3)), format='rgb')
+        hidden_layer = sess.run(next_last_layer,
+                                {'DecodeJpeg/contents:0': flipped.eval()})
+        hidden_layer = np.squeeze(hidden_layer)
+        states.append(hidden_layer)
 
       # The other transformations below are up for consideration.
       
@@ -146,16 +147,17 @@ def save_states(source, target, limit, mem_ratio):
       #   hidden_layer = np.squeeze(hidden_layer)
       #   states.append(hidden_layer)
 
-    df = pd.DataFrame(data={'state': states}, index=itertools.chain(*zip(images, images)))
+    index = itertools.chain(*zip(images, images)) if flip else images
+    df = pd.DataFrame(data={'state': states}, index=index)
     df.index.name='filename'
-
+    
     h5name = '{}/{}.h5'.format(target, os.path.basename(os.path.normpath(source)))
     with pd.HDFStore(h5name, 'w') as store:
       store['data'] = df
 
 def main(_):
   maybe_download_and_extract()
-  save_states(FLAGS.source, FLAGS.target, FLAGS.limit, FLAGS.mem_ratio)
+  save_states(FLAGS.source, FLAGS.target, FLAGS.limit, FLAGS.mem_ratio, FLAGS.flip)
 
 if __name__ == '__main__':
   tf.app.run()
