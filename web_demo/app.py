@@ -347,7 +347,7 @@ parser.add_argument(
 parser.add_argument(
     '-p', '--port',
     help="which port to serve content on",
-    type=int, default=5000)
+    type=int, default=8080)
 parser.add_argument(
     '-rs', '--redis_server',
     help='the redis server address',
