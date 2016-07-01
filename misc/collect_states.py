@@ -14,8 +14,6 @@ import logging
 import os
 import glob
 from random import shuffle
-import itertools
-import sys
 
 # pylint: disable=unused-import,g-bad-import-order
 import tensorflow.python.platform
@@ -52,7 +50,7 @@ tf.app.flags.DEFINE_integer('limit', 10000,
                            """Maximum amount of images to process per folder""")
 tf.app.flags.DEFINE_integer('mem_ratio', 1,
                            """1/x ratio of memory to reserve on the GPU instance""")
-tf.app.flags.DEFINE_boolean('flip', False, """Whether to flip images""")
+
 
 # pylint: disable=line-too-long
 DATA_URL = 'http://download.tensorflow.org/models/image/imagenet/inception-2015-12-05.tgz'
@@ -88,7 +86,7 @@ def maybe_download_and_extract():
     print('Succesfully downloaded', filename, statinfo.st_size, 'bytes.')
   tarfile.open(filepath, 'r:gz').extractall(dest_directory)
     
-def save_states(source, target, limit, mem_ratio, flip):
+def save_states(source, target, limit, mem_ratio):
   create_graph()
 
   # 3.95G GPU RAM actually free on AWS, reports as 4G. A little legroom is needed.
@@ -100,64 +98,24 @@ def save_states(source, target, limit, mem_ratio, flip):
     images = glob.glob('{}/*.jpg'.format(source))
     shuffle(images)
     images = images[:limit]
-
-    for jpg in list(images):
+    
+    for jpg in images:
       image_data = gfile.FastGFile(jpg).read()
-      try: 
-        hidden_layer = sess.run(next_last_layer,
-                                {'DecodeJpeg/contents:0': image_data})
-      except Exception as e:
-        print('File {} is rotten, will be discarded.'.format(jpg))
-        images.remove(jpg)
-        continue
-
+      hidden_layer = sess.run(next_last_layer,
+                              {'DecodeJpeg/contents:0': image_data})
       hidden_layer = np.squeeze(hidden_layer)
       states.append(hidden_layer)
 
-      if flip:
-        flipped = tf.image.encode_jpeg(tf.image.flip_left_right(tf.image.decode_jpeg(image_data, channels=3)), format='rgb')
-        hidden_layer = sess.run(next_last_layer,
-                                {'DecodeJpeg/contents:0': flipped.eval()})
-        hidden_layer = np.squeeze(hidden_layer)
-        states.append(hidden_layer)
-
-      # The other transformations below are up for consideration.
-      
-      # for img in [ image_data, flipped ]:
-      #   hidden_layer = sess.run(next_last_layer,
-      #                           {'DecodeJpeg/contents:0': img})
-      #   hidden_layer = np.squeeze(hidden_layer)
-      #   states.append(hidden_layer)
-
-      #   # Brightness
-      #   hidden_layer = sess.run(next_last_layer,
-      #                           {'DecodeJpeg/contents:0': tf.image.encode_jpeg(tf.image.random_brightness(tf.image.decode_jpeg(img, channels=3), max_delta=63), format="rgb")})
-      #   hidden_layer = np.squeeze(hidden_layer)
-      #   states.append(hidden_layer)
-
-      #   # Contrast
-      #   hidden_layer = sess.run(next_last_layer,
-      #                           {'DecodeJpeg/contents:0': tf.image.random_contrast(img, lower=.2, upper=1.8)})
-      #   hidden_layer = np.squeeze(hidden_layer)
-      #   states.append(hidden_layer)
-
-      #   # Saturation
-      #   hidden_layer = sess.run(next_last_layer,
-      #                           {'DecodeJpeg/contents:0': tf.image.random_saturation(img, lower=0, upper=1.)})
-      #   hidden_layer = np.squeeze(hidden_layer)
-      #   states.append(hidden_layer)
-
-    index = itertools.chain(*zip(images, images)) if flip else images
-    df = pd.DataFrame(data={'state': states}, index=index)
+    df = pd.DataFrame(data={'state': states}, index=images)
     df.index.name='filename'
-    
-    h5name = '{}/{}.h5'.format(target, os.path.basename(os.path.normpath(source)))
+
+    h5name = '{}/{}.h5'.format(target, os.path.basename(source))
     with pd.HDFStore(h5name, 'w') as store:
       store['data'] = df
 
 def main(_):
   maybe_download_and_extract()
-  save_states(FLAGS.source, FLAGS.target, FLAGS.limit, FLAGS.mem_ratio, FLAGS.flip)
+  save_states(FLAGS.source, FLAGS.target, FLAGS.limit, FLAGS.mem_ratio)
 
 if __name__ == '__main__':
   tf.app.run()

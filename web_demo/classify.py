@@ -1,5 +1,5 @@
 '''
-Pushes images to be classified. Will wait for a single image.
+Client that pushes an image to be processed by the Caffe framework, waits for the result.
 
 Author: Axel.Tidemann@telenor.com
 '''
@@ -20,9 +20,17 @@ parser.add_argument(
     help='the server address',
     default='research.telenor.io')
 parser.add_argument(
+    '-p', '--port',
+    help='the port to use',
+    default=8080)
+parser.add_argument(
     '-g', '--group',
     help='group for the image',
     default='web')
+parser.add_argument(
+    '-r', '--res_q',
+    help='the redis list to receive results on',
+    default='classify.py_out')
 parser.add_argument(
     '-un', '--username',
     help='username for the service')
@@ -43,12 +51,12 @@ if URL:
 else:
     my_file = open(args.img, 'r')   
 
-r = requests.post('http://{}/images/classify'.format(args.server),
-                  data={'group': args.group}, files={'file': my_file},
+r = requests.post('http://{}:{}/images/classify'.format(args.server, args.port),
+                  data={'group': args.group, 'res_q':args.res_q}, files={'file': my_file},
                   auth=(args.username, args.password))
 
 if URL:
-    print requests.get('http://{}/images/archive/{}/{}'.format(args.server, args.group, args.img),
+    print requests.get('http://{}:{}/images/archive/{}/{}'.format(args.server, args.port, args.group, args.img),
                        auth=(args.username, args.password)).text
 else:
     print r.text
