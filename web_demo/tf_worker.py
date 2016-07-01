@@ -83,6 +83,8 @@ tf.app.flags.DEFINE_integer('redis_port', 6379,
                             """Redis server port""")
 tf.app.flags.DEFINE_string('redis_queue', 'classify',
                            """Redis queue to read images from""")
+tf.app.flags.DEFINE_integer('memory_fraction', 5,
+                            """The GPU will allocate 1/x of this memory.""")
 
 Task = namedtuple('Task', 'queue value')
 Specs = namedtuple('Specs', 'group path')
@@ -188,7 +190,7 @@ def classify_images():
   node_lookup = NodeLookup()
   # 4 instances running in parallel on g2.2xlarge seems to be the magic number.
   # If running more instances, memcpy errors will be thrown after some time.
-  gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=1./4) 
+  gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=1./FLAGS.memory_fraction) 
 
   with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
     r_server = redis.StrictRedis(FLAGS.redis_server, FLAGS.redis_port)
