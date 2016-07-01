@@ -84,7 +84,7 @@ tf.app.flags.DEFINE_integer('redis_port', 6379,
 tf.app.flags.DEFINE_string('redis_queue', 'classify',
                            """Redis queue to read images from""")
 tf.app.flags.DEFINE_integer('memory_fraction', 5,
-                            """The GPU will allocate 1/x of this memory.""")
+                            """The process will allocate 1/x of this memory.""")
 
 Task = namedtuple('Task', 'queue value')
 Specs = namedtuple('Specs', 'group path')
