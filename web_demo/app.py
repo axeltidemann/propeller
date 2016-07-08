@@ -292,18 +292,18 @@ def prediction(group, path):
 def images_in_category(group, category):
     return '\n'.join(red.zrevrangebyscore('archive:{}:category:{}'.format(group, category), 1, 0))
 
-@app.route('/images/classify', methods=['POST'])
+@app.route('/images/classify/<path:queue>', methods=['POST'])
 @requires_auth
-def classify():
+def classify(queue):
     my_file = StringIO.StringIO(request.files['file'].read())
 
     i = 0
     for line in my_file:
-        task = {'group': request.form['group'], 'path': line.strip()}
+        task = {'group': request.form['group'], 'path': line.strip(), 'res_q': request.form['res_q']}
         if i == 0: 
-            pipe.rpush(args.queue, pickle.dumps(task))
+            pipe.rpush(queue, pickle.dumps(task))
         else: 
-            pipe.lpush(args.queue, pickle.dumps(task))
+            pipe.lpush(queue, pickle.dumps(task))
 
         i += 1
         if i % 10000 == 0:
@@ -347,7 +347,7 @@ parser.add_argument(
 parser.add_argument(
     '-p', '--port',
     help="which port to serve content on",
-    type=int, default=5000)
+    type=int, default=8080)
 parser.add_argument(
     '-rs', '--redis_server',
     help='the redis server address',
