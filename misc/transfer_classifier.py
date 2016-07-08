@@ -36,7 +36,11 @@ from wand.image import Image
 
 # pylint: enable=unused-import,g-bad-import-order
 
+from ast import literal_eval as make_tuple
 from tensorflow.python.platform import gfile
+
+import blosc
+from aqbc_utils import hash_bottlenecks
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -58,7 +62,7 @@ tf.app.flags.DEFINE_integer('num_top_predictions', 5,
                             """Display this many predictions.""")
 
 # Axel defined input arguments
-tf.app.flags.DEFINE_string('redis_server', 'localhost', 
+tf.app.flags.DEFINE_string('redis_server', 'localhost',
                            """Redis server address""")
 tf.app.flags.DEFINE_integer('redis_port', 6379,
                             """Redis server port""")
@@ -70,10 +74,13 @@ tf.app.flags.DEFINE_string('classifier', '',
 tf.app.flags.DEFINE_string('mapping', 'mapping.txt',
                            """A mapping from node IDs to readable text""")
 
+tf.app.flags.DEFINE_string('hashing', True,
+                           """whether to hash or not in addition to classification""")
+
 
 Task = namedtuple('Task', 'queue value')
-Specs = namedtuple('Specs', 'group path')
-Result = namedtuple('Result', 'OK predictions computation_time')
+Specs = namedtuple('Specs', 'group path res_q')
+Result = namedtuple('Result', 'OK predictions computation_time path')
 
 # pylint: disable=line-too-long
 DATA_URL = 'http://download.tensorflow.org/models/image/imagenet/inception-2015-12-05.tgz'
@@ -90,7 +97,7 @@ def convert_to_jpg(data):
       logging.info('Converting {} to JPEG.'.format(img.format))
       img.format = 'JPEG'
     img.save(tmp)
-    
+
   tmp.close()
   yield tmp.name
   os.remove(tmp.name)
@@ -103,24 +110,36 @@ def load_graph(path):
     graph_def.ParseFromString(f.read())
     _ = tf.import_graph_def(graph_def, name='')
 
-    
+
 def classify_images(mapping):
   gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=1./4)
   with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
     load_graph(os.path.join(FLAGS.model_dir, 'classify_image_graph_def.pb'))
     inception_next_last_layer = sess.graph.get_tensor_by_name('pool_3:0')
-    
+
     load_graph(FLAGS.classifier)
     transfer_predictor = sess.graph.get_tensor_by_name('output:0')
-    
+
     r_server = redis.StrictRedis(FLAGS.redis_server, FLAGS.redis_port)
+
+    if FLAGS.hashing:
+      R_c = r_server.get('hashing:R')
+      if R_c == None:
+        logging.info('Did not find any Rotation matrix in redis at key: <hashing:R>. Continuing without hashing.')
+        FLAGS.hashing = False
+      else:
+        R_u = blosc.decompress(R_c)
+        R = np.fromstring(R_u, dtype=np.float64)
+        bits = R.shape[0]/2048
+        R = R.reshape(2048, bits)
+        R = np.transpose(R)
     
     while True:
       task = Task(*r_server.brpop(FLAGS.redis_queue))
       specs = Specs(**pickle.loads(task.value))
       logging.info(specs)
       result_key = 'archive:{}:{}'.format(specs.group, specs.path)
-      try: 
+      try:
         response = requests.get(specs.path, timeout=10)
         with convert_to_jpg(response.content) as jpg:
           image_data = gfile.FastGFile(jpg).read()
@@ -128,28 +147,75 @@ def classify_images(mapping):
         starttime = time.time()
         hidden_layer = sess.run(inception_next_last_layer,
                                 {'DecodeJpeg/contents:0': image_data})
-        
+
         predictions = sess.run(transfer_predictor, {'input:0': np.atleast_2d(np.squeeze(hidden_layer)) })
         predictions = np.squeeze(predictions)
         top_k = predictions.argsort()[-FLAGS.num_top_predictions:][::-1]
-        
+
         endtime = time.time()
 
-        result = Result(True, 
-                        [ (mapping[str(node_id)], predictions[node_id]) for node_id in top_k ], 
-                        endtime - starttime)
+        result = Result(True,
+                        [ (mapping[str(node_id)], predictions[node_id]) for node_id in top_k ],
+                        endtime - starttime,
+                        specs.path)
+        
+        value = result._asdict()
 
-        r_server.hmset(result_key, result._asdict()) 
-        r_server.zadd('archive:{}:category:{}'.format(specs.group, result.predictions[0][0]),
-                      result.predictions[0][1], specs.path)
-        # The publishing was only added since AWS ElastiCache does not support subscribing to keyspace notifications.
-        r_server.publish('latest', pickle.dumps({'path': specs.path, 'group': specs.group, 
-                                                 'category': result.predictions[0][0], 'value': float(result.predictions[0][1])}))
+        hidden_layer = hidden_layer.reshape(2048,1)
+       
+        if FLAGS.hashing:
+          _, c = hash_bottlenecks(R, hidden_layer)
+          r_server.sadd("hashing:codes:" + c[0].bin, result_key)
+          r_server.hmset(result_key, {'hash': c[0].bin})
+          value['hash'] = c[0].bin
+
+        r_server.hmset(result_key, value)
+
+        # for demo
+        last_key = 'archive:{}:{}'.format(specs.group, 'lastprediction')
+        r_server.hmset(last_key, result._asdict())
+
+        h_s_packed = blosc.compress(hidden_layer.tostring(), typesize=8, cname='zlib')
+
+        r_server.hset('archive:{}:category:{}'.format(specs.group, result.predictions[0][0]),
+                      specs.path, h_s_packed)
+
+        # push result on result queue
+        preds = {}
+        for node_id in top_k:
+          preds[str(mapping[str(node_id)])] = str(predictions[node_id])
+
+        json_blob = {
+          'predictions':preds,
+          'path':specs.path,
+          'hidden_states':h_s_packed
+        }
+
+        if specs.res_q != "":
+          r_server.rpush(specs.res_q, json.dumps(json_blob, ensure_ascii=False, encoding="utf-8"))
+
         logging.info(result)
       except Exception as e:
+        print "exception*****************", e
         logging.error('Something went wrong when classifying the image: {}'.format(e))
         r_server.hmset(result_key, {'OK': False})
-          
+
+def send_kaidee_data(r_server, specs, result):
+
+    # create redis key from image path
+    full_url = specs.path.split('//')
+    url_path = len(full_url)>1 and full_url[1] or full_url[0]
+    kaidee_result_key = url_path.split('/', 1)[1]
+
+    # Set to result to Redis with key from image path
+    r_server.hmset(kaidee_result_key, result._asdict())
+
+    # Publish predictions result to classify channel via Redis PubSub
+    predictions_dict = dict((x, y) for x, y in result.predictions)
+    r_server.publish('classify', pickle.dumps({'path': specs.path, 'group': specs.group,
+                                             'predictions': predictions_dict}))
+
+
 def maybe_download_and_extract():
   """Download and extract model tar file."""
   dest_directory = FLAGS.model_dir
