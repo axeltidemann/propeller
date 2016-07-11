@@ -29,7 +29,7 @@ This is the <A HREF="http://arxiv.org/abs/1512.00567">Inception v3</A> model.
       {% endfor %}
     </ul>
   </div>
-  Other images of <A HREF="/images/categories/{{ result[1][0][0] }}">{{ result[1][0][0] }}</A>:<BR>
+  <h3>Visually similar images</h3>
   {% for image, score in similar %}
   <A HREF="{{ image }}"><IMG SRC="{{ image }}" TITLE="{{ score }}" WIDTH=100></A>
   {% endfor %}
