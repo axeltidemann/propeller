@@ -37,6 +37,11 @@ parser.add_argument(
 parser.add_argument(
     '-pw', '--password',
     help='password for the service')
+parser.add_argument(
+    '-q', '--queue',
+    help='the redis queue to which send pictures to',
+    default='classify')
+
 args = parser.parse_args()
 
 if args.username is None:
@@ -51,7 +56,7 @@ if URL:
 else:
     my_file = open(args.img, 'r')   
 
-r = requests.post('http://{}:{}/images/classify'.format(args.server, args.port),
+r = requests.post('http://{}:{}/images/classify/{}'.format(args.server, args.port, args.queue),
                   data={'group': args.group, 'res_q':args.res_q}, files={'file': my_file},
                   auth=(args.username, args.password))
 
