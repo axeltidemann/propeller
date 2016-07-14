@@ -18,8 +18,10 @@ import random
 from functools import wraps
 import threading
 from collections import defaultdict
+import json
+import base64
 
-from flask import request, Response
+from flask import request, Response, redirect, url_for
 import flask
 import werkzeug
 import redis
@@ -218,7 +220,7 @@ def get_json_bulgaria2(threshold_obs, distance_min, distance_max):
                                                     
 
 ################################### Images ###########################################
-    
+
 @app.route('/images')
 @requires_auth
 def classify_image():
@@ -326,6 +328,29 @@ def classify_url():
         'classify_image.html', has_result=True, result=result, imagesrc=imageurl, 
         similar=similar)
 
+    
+@app.route('/images/clusters', methods=['GET', 'POST'])
+@requires_auth
+def clusters():
+    if request.method == 'POST':
+        filepath = flask.request.form['filepath']
+        with open(filepath, 'r') as _file:
+            return redirect(url_for('clusters_display', clusterfile=base64.urlsafe_b64encode(filepath), index=0), code=302)
+    else:
+        return flask.render_template('clusters.html')
+
+@app.route('/images/clusters/<path:clusterfile>/<int:index>')
+@requires_auth
+def clusters_display(clusterfile, index):
+    clusterfile_decoded = base64.urlsafe_b64decode(clusterfile.encode('ascii'))
+    with open(clusterfile_decoded, 'r') as _file:
+        clusters = json.load(_file)
+        seed = clusters.keys()[index]
+        return flask.render_template('clusters_display.html', clusterfile=clusterfile,
+                                     clusterfile_decoded=clusterfile_decoded,
+                                     seed=seed, index=index, clusters=range(len(clusters.keys())),
+                                     images=clusters[seed])
+        
 def start_tornado(app, port=5000):
     container = tornado.wsgi.WSGIContainer(app)
     server = tornado.web.Application([
