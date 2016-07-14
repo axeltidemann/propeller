@@ -104,19 +104,19 @@ def load_graph(path):
 def classify_images(mapping):
     gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=1./args.memory_fraction)
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
-        load_graph(os.path.join(FLAGS.model_dir, 'classify_image_graph_def.pb'))
+        load_graph(os.path.join(args.model_dir, 'classify_image_graph_def.pb'))
         inception_next_last_layer = sess.graph.get_tensor_by_name('pool_3:0')
 
-        load_graph(FLAGS.classifier)
+        load_graph(args.classifier)
         transfer_predictor = sess.graph.get_tensor_by_name('output:0')
 
-        r_server = redis.StrictRedis(FLAGS.redis_server, FLAGS.redis_port)
+        r_server = redis.StrictRedis(args.redis_server, args.redis_port)
 
-        if FLAGS.hashing:
+        if args.hashing:
             R_c = r_server.get('hashing:R')
             if R_c == None:
                 logging.info('Did not find any Rotation matrix in redis at key: <hashing:R>. Continuing without hashing.')
-                FLAGS.hashing = False
+                args.hashing = False
             else:
                 R_u = blosc.decompress(R_c)
                 R = np.fromstring(R_u, dtype=np.float64)
@@ -125,7 +125,7 @@ def classify_images(mapping):
                 R = np.transpose(R)
 
         while True:
-            task = Task(*r_server.brpop(FLAGS.redis_queue))
+            task = Task(*r_server.brpop(args.redis_queue))
             specs = Specs(**pickle.loads(task.value))
             logging.info(specs)
             result_key = 'archive:{}:{}'.format(specs.group, specs.path)
@@ -140,7 +140,7 @@ def classify_images(mapping):
 
                 predictions = sess.run(transfer_predictor, {'input:0': np.atleast_2d(np.squeeze(hidden_layer)) })
                 predictions = np.squeeze(predictions)
-                top_k = predictions.argsort()[-FLAGS.num_top_predictions:][::-1]
+                top_k = predictions.argsort()[-args.num_top_predictions:][::-1]
 
                 endtime = time.time()
 
@@ -153,7 +153,7 @@ def classify_images(mapping):
 
                 hidden_layer = hidden_layer.reshape(2048,1)
 
-                if FLAGS.hashing:
+                if args.hashing:
                     _, c = hash_bottlenecks(R, hidden_layer)
                     r_server.sadd("hashing:codes:" + c[0].bin, result_key)
                     r_server.hmset(result_key, {'hash': c[0].bin})
@@ -208,7 +208,7 @@ def send_kaidee_data(r_server, specs, result):
 
 def maybe_download_and_extract():
     """Download and extract model tar file."""
-    dest_directory = FLAGS.model_dir
+    dest_directory = args.model_dir
     if not os.path.exists(dest_directory):
         os.makedirs(dest_directory)
     filename = DATA_URL.split('/')[-1]
@@ -227,7 +227,7 @@ def maybe_download_and_extract():
 
 if __name__ == '__main__':
     maybe_download_and_extract()
-    with open(FLAGS.mapping) as f:
+    with open(args.mapping) as f:
         mapping = json.load(f)
 
     classify_images(mapping)
