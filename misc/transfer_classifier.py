@@ -66,7 +66,7 @@ parser.add_argument(
       '--memory_fraction',
       help='The 1/x fraction of memory the worker should use, this influences how many you can run in parallel',
       type=int,
-      default=4)
+      default=5)
 args = parser.parse_args()
 
 Task = namedtuple('Task', 'queue value')
