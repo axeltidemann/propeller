@@ -3,10 +3,10 @@
 {% block header %}{{ category }}{% endblock %}
 
 {% block content %}
-Showing {{ result | length }} examples. Click image to see full size, hover to see prediction value (1 is highest, 0 lowest).
+Showing {{ result | length }} examples. Click image to see full size.
 <br><br>
-{% for image, score in result %}
-<A HREF="{{ image }}"><IMG CLASS="lazy" data-original="{{ image }}" TITLE="{{ score }}" WIDTH=200></A>
+{% for image in result %}
+<A HREF="{{ image }}"><IMG CLASS="lazy" data-original="{{ image }}" WIDTH=200></A>
 {% endfor %}
 
 <script type="text/javascript" charset="utf-8">

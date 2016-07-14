@@ -55,6 +55,9 @@ import requests
 from wand.image import Image
 # pylint: enable=unused-import,g-bad-import-order
 
+from ast import literal_eval as make_tuple
+
+
 from tensorflow.python.platform import gfile
 
 FLAGS = tf.app.flags.FLAGS
@@ -77,7 +80,7 @@ tf.app.flags.DEFINE_string('image_file', '',
 tf.app.flags.DEFINE_integer('num_top_predictions', 5,
                             """Display this many predictions.""")
 
-tf.app.flags.DEFINE_string('redis_server', '', 
+tf.app.flags.DEFINE_string('redis_server', '',
                            """Redis server address""")
 tf.app.flags.DEFINE_integer('redis_port', 6379,
                             """Redis server port""")
@@ -85,8 +88,8 @@ tf.app.flags.DEFINE_string('redis_queue', 'classify',
                            """Redis queue to read images from""")
 
 Task = namedtuple('Task', 'queue value')
-Specs = namedtuple('Specs', 'group path')
-Result = namedtuple('Result', 'OK predictions computation_time')
+Specs = namedtuple('Specs', 'group path ad_id')
+Result = namedtuple('Result', 'OK predictions computation_time ad_id path')
 
 # pylint: disable=line-too-long
 DATA_URL = 'http://download.tensorflow.org/models/image/imagenet/inception-2015-12-05.tgz'
@@ -178,7 +181,7 @@ def convert_to_jpg(data):
       logging.info('Converting {} to JPEG.'.format(img.format))
       img.format = 'JPEG'
     img.save(tmp)
-    
+
   tmp.close()
   yield tmp.name
   os.remove(tmp.name)
@@ -188,7 +191,7 @@ def classify_images():
   node_lookup = NodeLookup()
   # 4 instances running in parallel on g2.2xlarge seems to be the magic number.
   # If running more instances, memcpy errors will be thrown after some time.
-  gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=1./4) 
+  gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=1./4)
 
   with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
     r_server = redis.StrictRedis(FLAGS.redis_server, FLAGS.redis_port)
@@ -199,8 +202,14 @@ def classify_images():
       specs = Specs(**pickle.loads(task.value))
       logging.info(specs)
 
-      try: 
+      try:
         result_key = 'archive:{}:{}'.format(specs.group, specs.path)
+        kaidee_result_key = ''
+
+        full_url = specs.path.split('//')
+        url_path = len(full_url)>1 and full_url[1] or full_url[0]
+        kaidee_result_key = url_path.split('/', 1)[1]
+
         response = requests.get(specs.path, timeout=10)
         with convert_to_jpg(response.content) as jpg:
           image_data = gfile.FastGFile(jpg).read()
@@ -212,21 +221,30 @@ def classify_images():
         predictions = np.squeeze(predictions)
 
         top_k = predictions.argsort()[-FLAGS.num_top_predictions:][::-1]
-        result = Result(True, 
-                        [ (node_lookup.id_to_string(node_id), predictions[node_id]) for node_id in top_k ], 
-                        endtime - starttime)
+        result = Result(True,
+                        [ (node_lookup.id_to_string(node_id), predictions[node_id]) for node_id in top_k ],
+                        endtime - starttime,
+                        specs.ad_id, specs.path)
 
         r_server.hmset(result_key, result._asdict())
+        r_server.hmset(kaidee_result_key, result._asdict())
+
         r_server.zadd('archive:{}:category:{}'.format(specs.group, result.predictions[0][0]),
                       result.predictions[0][1], specs.path)
         # The publishing was only added since AWS ElastiCache does not support subscribing to keyspace notifications.
-        r_server.publish('latest', pickle.dumps({'path': specs.path, 'group': specs.group, 
+        r_server.publish('latest', pickle.dumps({'path': specs.path, 'group': specs.group,
                                                  'category': result.predictions[0][0], 'value': float(result.predictions[0][1])}))
+
+        # Kaidee channel
+        predictions_dict = dict((x, y) for x, y in result.predictions)
+        r_server.publish('classify', pickle.dumps({'path': specs.path, 'group': specs.group,
+                                                 'predictions': predictions_dict, 'ad_id': specs.ad_id}))
+
         logging.info(result)
       except Exception as e:
         logging.error('Something went wrong when classifying the image: {}'.format(e))
         r_server.hmset(result_key, {'OK': False})
-          
+
 def maybe_download_and_extract():
   """Download and extract model tar file."""
   dest_directory = FLAGS.model_dir

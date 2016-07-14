@@ -30,6 +30,11 @@ import tornado.httpserver
 import tornado.web
 import tornado.websocket
 
+from ast import literal_eval as make_tuple
+
+from sklearn.metrics.pairwise import cosine_similarity
+import numpy as np
+import blosc
 
 # For the position of the word webs
 OFFSET = 800
@@ -163,7 +168,7 @@ def get_json(bu, word):
 
 
 ################################### Network Utilization ###########################################
-    
+
 @app.route('/network/telenorbulgaria')
 @requires_auth
 def render_network_usage():
@@ -177,7 +182,7 @@ def get_json_bulgaria(threshold_obs, distance_min, distance_max, traj_min, traj_
     distance_max = float(distance_max.strip().encode("utf-8"))
     traj_min = traj_min.strip().encode("utf-8")
     traj_max = traj_max.strip().encode("utf-8")
-    
+
     union_key = "bulgaria_trajectories:" + traj_min + "-" + traj_max
     if red_db_1.zcard(union_key) == 0:
         keys = []
@@ -190,7 +195,7 @@ def get_json_bulgaria(threshold_obs, distance_min, distance_max, traj_min, traj_
     edges = defaultdict(lambda: 0)
     for e in edges_union:
         edges[e[0]] = e[1]
-        
+
     edges_dist = set(red_db_1.zrangebyscore("bulgaria_network:edges_dist", distance_min, distance_max))
 
     for e in edges.keys():
@@ -200,13 +205,13 @@ def get_json_bulgaria(threshold_obs, distance_min, distance_max, traj_min, traj_
     print "kept", len(edges), "edges"
 
     return flask.jsonify({"edges":edges})
-        
+
 @app.route('/telenor/research/bulgaria2/json/<path:threshold_obs>/<path:distance_min>/<path:distance_max>')
 def get_json_bulgaria2(threshold_obs, distance_min, distance_max):
     threshold_obs = int(threshold_obs.strip().encode("utf-8"))-1
     distance_min = float(distance_min.strip().encode("utf-8"))
     distance_max = float(distance_max.strip().encode("utf-8"))
-    
+
     vertices = red_db_1.zrevrangebyscore("bulgaria_network:vertices", "+inf", threshold_obs, withscores=True)
     print "got", len(vertices), "vertices"
     edges_obs = red_db_1.zrevrangebyscore("bulgaria_network:edges", "+inf", threshold_obs, withscores=True)
@@ -217,7 +222,7 @@ def get_json_bulgaria2(threshold_obs, distance_min, distance_max):
     kept_edges = [x for x in edges_obs if x[0] in edges_dist]
     print "kept", len(kept_edges), "edges"
     return flask.jsonify({"vertices":vertices, "edges":kept_edges})
-                                                    
+
 
 ################################### Images ###########################################
 
@@ -246,9 +251,35 @@ def categories():
 
 
 def get_images_from_category(category, num=-1, group='web'):
-    result = red.zrevrangebyscore('archive:{}:category:{}'.format(group, category),
-                                  1, 0, start=0, num=num, withscores=True)
-    return [ (unicode(url, 'utf-8'), score) for url, score in result ]
+    result = red.hkeys('archive:{}:category:{}'.format(group, category))
+    return [ unicode(url, 'utf-8') for url in result ]
+
+def get_similar_images_from_category(image, category, num=-1, group='web'):
+    result = red.hgetall('archive:{}:category:{}'.format(group, category))
+    
+    if len(result) < 2:
+        return []
+    
+    Y = []
+    X = []
+    name_Y = []
+
+    for k in result:
+        h_s_unpacked = blosc.decompress(result[k])
+        states = np.fromstring(h_s_unpacked, dtype=np.float32).reshape(2048)
+        if k != image :
+            Y.append(states)
+            name_Y.append(k)
+        else:
+            X.append(states)
+
+    Y = np.array(Y)
+    X = np.array(X)
+
+    D = cosine_similarity(X, Y)
+    sort_indices = np.argsort(D[0])[::-1]
+
+    return [ (unicode(name_Y[x], 'utf-8'), D[0][x]) for x in sort_indices[:10]]
     
 
 @app.route('/images/categories/<path:category>/')
@@ -266,15 +297,28 @@ def wait_for_prediction(group, path):
             return {'OK': 'False'}
         time.sleep(.1)
 
+@app.route('/lastprediction')
+@requires_auth
+def last_prediction():
+    prediction = wait_for_prediction('web', 'lastprediction')
+    result = parse_result(prediction)
+    
+    similar = get_similar_images_from_category(prediction['path'], result[1][0][0], 10)
+    return flask.render_template(
+        'classify_image.html', has_result=True, result=result, imagesrc=prediction['path'],
+        similar=similar)
+
+
 def parse_result(result):
     if eval(result['OK']):
         return (eval(result['OK']), eval(result['predictions']), eval(result['computation_time']))
     return (False, 'Something went wrong when classifying the image.')
-    
+
 @app.route('/images/archive/<path:group>/<path:path>')
 @requires_auth
 def prediction(group, path):
     response = wait_for_prediction(group, path)
+
     if 'predictions' in response:
         predictions = eval(response['predictions'])
         json_preds = {}
@@ -289,22 +333,40 @@ def prediction(group, path):
     }
     return flask.jsonify({'error': error})
 
+@app.route('/predictions/<path:path>')
+def get_prediction(path):
+
+    result = red.hgetall(path)
+
+    predictions_tuple = make_tuple(result['predictions'])
+    predictions = dict((x, y) for x, y in predictions_tuple)
+    result['predictions'] = predictions
+
+    return flask.jsonify({'status': 'success','result':predictions})
+
+    error = {
+        'group':group,
+        'path': path,
+        'message': 'You must submit the picture in \'path\' for classification first with the classify.py script.'
+    }
+    return flask.jsonify({'error': error})
+
+
 @app.route('/images/archive/<path:group>/category/<path:category>')
 @requires_auth
 def images_in_category(group, category):
-    return '\n'.join(red.zrevrangebyscore('archive:{}:category:{}'.format(group, category), 1, 0))
+    return '\n'.join(red.hgetall('archive:{}:category:{}'.format(group, category)))
 
 @app.route('/images/classify', methods=['POST'])
 @requires_auth
 def classify():
     my_file = StringIO.StringIO(request.files['file'].read())
-
     i = 0
     for line in my_file:
-        task = {'group': request.form['group'], 'path': line.strip()}
-        if i == 0: 
+        task = {'group': request.form['group'], 'path': line.strip(), 'ad_id': 'ad_id', 'res_q': request.form['res_q']}
+        if i == 0:
             pipe.rpush(args.queue, pickle.dumps(task))
-        else: 
+        else:
             pipe.lpush(args.queue, pickle.dumps(task))
 
         i += 1
@@ -313,20 +375,44 @@ def classify():
             logging.info('Piping 10K items to redis.')
 
     pipe.execute()
-    return '{} images queued for classification.'.format(i)
+    return '{} images queued for classification. Results posted on {}'.format(i, request.form['res_q'])
 
-@app.route('/images/classify_url', methods=['GET'])
+@app.route('/images/classify_url', methods=['GET', 'POST'])
 @requires_auth
 def classify_url():
-    imageurl = flask.request.args.get('imageurl', '')
-    red.rpush(args.queue, pickle.dumps({'group': 'web', 'path': imageurl})) # SPECS COMMON!
+    # Get image list
+    if request.method == 'POST':
 
-    prediction = wait_for_prediction('web', imageurl)
-    result = parse_result(prediction)
-    similar = get_images_from_category(result[1][0][0], 10)
-    return flask.render_template(
-        'classify_image.html', has_result=True, result=result, imagesrc=imageurl, 
-        similar=similar)
+        json_obj = request.get_json()
+        image_list = json_obj['image_list']
+        ad_id = json_obj['ad_id']
+        res_q = ""
+        if 'res_q' in json_obj:
+            res_q = json_obj['res_q']
+
+        for image_url in image_list:
+            red.rpush(args.queue, pickle.dumps({
+                'group': 'web',
+                'path': image_url,
+                'ad_id': ad_id,
+                'res_q': res_q
+            }))
+
+        return "OK"
+
+    # Get single image
+    else:
+        imageurl = flask.request.args.get('imageurl', '')
+        ad_id = flask.request.args.get('ad_id', '')
+        red.rpush(args.queue, pickle.dumps({'group': 'web', 'path': imageurl, 'ad_id': ad_id, 'res_q':""})) # SPECS COMMON!
+
+        prediction = wait_for_prediction('web', imageurl)
+        result = parse_result(prediction)
+
+        similar = get_similar_images_from_category(imageurl, result[1][0][0], 10)
+        return flask.render_template(
+            'classify_image.html', has_result=True, result=result, imagesrc=imageurl,
+            similar=similar)
 
     
 @app.route('/images/clusters', methods=['GET', 'POST'])
@@ -372,7 +458,7 @@ parser.add_argument(
 parser.add_argument(
     '-p', '--port',
     help="which port to serve content on",
-    type=int, default=8080)
+    type=int, default=5000)
 parser.add_argument(
     '-rs', '--redis_server',
     help='the redis server address',
@@ -399,5 +485,3 @@ if args.debug:
     app.run(debug=True, host='0.0.0.0', port=args.port)
 else:
     start_tornado(app, args.port)
-
-
