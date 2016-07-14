@@ -1,4 +1,4 @@
-# Copyright 2016 Telenor ASA, Author: Axel Tidemann
+# Copyright 2016 Telenor ASA, Author: Axel Tidemann, Cyril Banino-Rokkones
 # The software includes elements of example code. Copyright 2015 Google, Inc. Licensed under Apache License, Version 2.0.
 # https://www.tensorflow.org/versions/r0.7/tutorials/image_recognition/index.html
 
@@ -83,14 +83,15 @@ def convert_to_jpg(data):
 
     with Image(file=StringIO.StringIO(data)) as img:
         if img.format != 'JPEG':
-          logging.info('Converting {} to JPEG.'.format(img.format))
-          img.format = 'JPEG'
-          img.save(tmp)
+            logging.info('Converting {} to JPEG.'.format(img.format))
+            img.format = 'JPEG'
+            img.save(tmp)
 
     tmp.close()
     yield tmp.name
     os.remove(tmp.name)
 
+    
 def load_graph(path):
     """"Creates a graph from saved GraphDef file and returns a saver."""
     # Creates graph from saved graph_def.pb.
@@ -98,12 +99,12 @@ def load_graph(path):
         graph_def = tf.GraphDef()
         graph_def.ParseFromString(f.read())
         _ = tf.import_graph_def(graph_def, name='')
-    
 
+        
 def classify_images(mapping):
     gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=1./args.memory_fraction)
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
-      load_graph(os.path.join(FLAGS.model_dir, 'classify_image_graph_def.pb'))
+        load_graph(os.path.join(FLAGS.model_dir, 'classify_image_graph_def.pb'))
         inception_next_last_layer = sess.graph.get_tensor_by_name('pool_3:0')
 
         load_graph(FLAGS.classifier)
@@ -224,7 +225,7 @@ def maybe_download_and_extract():
         print('Succesfully downloaded', filename, statinfo.st_size, 'bytes.')
     tarfile.open(filepath, 'r:gz').extractall(dest_directory)
 
-def main(_):
+if __name__ == '__main__':
     maybe_download_and_extract()
     with open(FLAGS.mapping) as f:
         mapping = json.load(f)
