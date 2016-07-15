@@ -14,6 +14,7 @@ import logging
 import os
 import glob
 from random import shuffle
+import time
 
 # pylint: disable=unused-import,g-bad-import-order
 import tensorflow.python.platform
@@ -50,7 +51,9 @@ tf.app.flags.DEFINE_integer('limit', 10000,
                            """Maximum amount of images to process per folder""")
 tf.app.flags.DEFINE_integer('mem_ratio', 1,
                            """1/x ratio of memory to reserve on the GPU instance""")
-
+tf.app.flags.DEFINE_integer('loop', 1,
+                           """How many times to loop the collection of states. This is for comparison purposes,"""
+                           """to avoid the overhead of starting up tensorflow""")
 
 # pylint: disable=line-too-long
 DATA_URL = 'http://download.tensorflow.org/models/image/imagenet/inception-2015-12-05.tgz'
@@ -93,18 +96,23 @@ def save_states(source, target, limit, mem_ratio):
   gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=1./(mem_ratio + .5)) 
   with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
     next_last_layer = sess.graph.get_tensor_by_name('pool_3:0')
-    states = []
 
     images = glob.glob('{}/*.jpg'.format(source))
     shuffle(images)
     images = images[:limit]
-    
+  
+    states = []
+
+    t0 = time.time()
+
     for jpg in images:
       image_data = gfile.FastGFile(jpg).read()
       hidden_layer = sess.run(next_last_layer,
                               {'DecodeJpeg/contents:0': image_data})
       hidden_layer = np.squeeze(hidden_layer)
       states.append(hidden_layer)
+
+    print('Time spent collecting states: {}'.format(time.time() - t0))
 
     df = pd.DataFrame(data={'state': states}, index=images)
     df.index.name='filename'

@@ -1,14 +1,5 @@
 # Copyright 2016 Telenor ASA, Author: Axel Tidemann
 
-'''
-Starts the collection of states in parallel. The easiest way to launch TensorFlow
-with limited GPU/memory resources is to use CUDA_VISIBLE_DEVICES=X on the command line,
-and wait for this to complete. Given that this uses a queue for the workers to read from,
-this automatically balances the load between the GPU processes.
-
-Author: Axel.Tidemann@telenor.com
-'''
-
 import argparse
 import multiprocessing as mp
 import glob
@@ -25,7 +16,12 @@ def launch_tensorflow(q, cuda_device, mem_ratio):
         print command
         subprocess.call(command, shell=True)
 
-parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser = argparse.ArgumentParser(description='''
+Starts the collection of states in parallel. The easiest way to launch TensorFlow
+with limited GPU/memory resources is to use CUDA_VISIBLE_DEVICES=X on the command line,
+and wait for this to complete. Given that this uses a queue for the workers to read from,
+this automatically balances the load between the GPU processes.''', 
+formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument(
     'folder',
     help='Folder with image folders')
