@@ -51,9 +51,6 @@ tf.app.flags.DEFINE_integer('limit', 10000,
                            """Maximum amount of images to process per folder""")
 tf.app.flags.DEFINE_integer('mem_ratio', 1,
                            """1/x ratio of memory to reserve on the GPU instance""")
-tf.app.flags.DEFINE_integer('loop', 1,
-                           """How many times to loop the collection of states. This is for comparison purposes,"""
-                           """to avoid the overhead of starting up tensorflow""")
 
 # pylint: disable=line-too-long
 DATA_URL = 'http://download.tensorflow.org/models/image/imagenet/inception-2015-12-05.tgz'
