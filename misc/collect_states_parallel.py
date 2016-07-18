@@ -6,10 +6,9 @@ import glob
 import subprocess
 
 KILL = 'POISON PILL'
-# The only argument that changes is the source - simplify the code !
-def launch_tensorflow(q, cuda_device, mem_ratio):
+def launch_tensorflow(q, cuda_device, mem_ratio, target, limit):
     while True:
-        source, target, limit = q.get()
+        source = q.get()
         if source == KILL:
             break
         command = 'CUDA_VISIBLE_DEVICES={} python collect_states.py --source {} --target {} --limit {} --mem_ratio {}'.format(cuda_device, source, target, limit, mem_ratio)
@@ -43,16 +42,22 @@ parser.add_argument(
     help='How many threads to use pr GPU',
     default=2,
     type=int)
+parser.add_argument(
+    '--loop',
+    help='How many times to loop the computation of a folder, typically used for testing performance.',
+    default=1,
+    type=int)
 args = parser.parse_args()
 
 q = mp.Queue()
 
 for gpu in range(args.gpus):
     for _ in range(args.threads):
-        mp.Process(target=launch_tensorflow, args=(q, gpu, args.threads)).start()
+        mp.Process(target=launch_tensorflow, args=(q, gpu, args.threads, args.target, args.limit)).start()
 
 for folder in glob.glob('{}/*'.format(args.folder)):
-    q.put([folder, args.target, args.limit])
+    for _ in range(args.loop):
+        q.put(folder)
 
 for _ in range(args.gpus*args.threads):
-    q.put([KILL, None, None])
+    q.put(KILL)

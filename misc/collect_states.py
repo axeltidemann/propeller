@@ -29,6 +29,8 @@ from tensorflow.python.platform import gfile
 
 FLAGS = tf.app.flags.FLAGS
 
+print('TensorFlow version {}'.format(tf.__version__))
+
 # classify_image_graph_def.pb:
 #   Binary representation of the GraphDef protocol buffer.
 # imagenet_synset_to_human_label_map.txt:
