@@ -31,6 +31,7 @@ from tensorflow.python.platform import gfile
 import blosc
 
 from aqbc_utils import hash_bottlenecks
+from utils import load_graph, maybe_download_and_extract
 
 parser = argparse.ArgumentParser(description='''Listens to a redis list, downloads
 the image and feeds it to the Inception model. Uses the next-to-last layer output as input
@@ -63,17 +64,15 @@ parser.add_argument(
       help='Redis queue to read images from',
       default='classify')
 parser.add_argument(
-      '--memory_fraction',
-      help='The 1/x fraction of memory the worker should use, this influences how many you can run in parallel',
-      type=int,
-      default=5)
+    '--mem_ratio',
+    help='Ratio of memory to reserve on the GPU instance',
+    type=float,
+    default=.95)
 args = parser.parse_args()
 
 Task = namedtuple('Task', 'queue value')
 Specs = namedtuple('Specs', 'group path res_q')
 Result = namedtuple('Result', 'OK predictions computation_time path')
-
-DATA_URL = 'http://download.tensorflow.org/models/image/imagenet/inception-2015-12-05.tgz'
 
 logging.getLogger().setLevel(logging.INFO)
 
@@ -91,18 +90,9 @@ def convert_to_jpg(data):
     yield tmp.name
     os.remove(tmp.name)
 
-    
-def load_graph(path):
-    """"Creates a graph from saved GraphDef file and returns a saver."""
-    # Creates graph from saved graph_def.pb.
-    with gfile.FastGFile(path, 'r') as f:
-        graph_def = tf.GraphDef()
-        graph_def.ParseFromString(f.read())
-        _ = tf.import_graph_def(graph_def, name='')
-
         
 def classify_images(mapping):
-    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=1./args.memory_fraction)
+    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=args.mem_ratio)
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
         load_graph(os.path.join(args.model_dir, 'classify_image_graph_def.pb'))
         inception_next_last_layer = sess.graph.get_tensor_by_name('pool_3:0')
@@ -206,27 +196,8 @@ def send_kaidee_data(r_server, specs, result):
                                              'predictions': predictions_dict}))
 
 
-def maybe_download_and_extract():
-    """Download and extract model tar file."""
-    dest_directory = args.model_dir
-    if not os.path.exists(dest_directory):
-        os.makedirs(dest_directory)
-    filename = DATA_URL.split('/')[-1]
-    filepath = os.path.join(dest_directory, filename)
-    if not os.path.exists(filepath):
-        def _progress(count, block_size, total_size):
-            sys.stdout.write('\r>> Downloading %s %.1f%%' % (
-                filename, float(count * block_size) / float(total_size) * 100.0))
-            sys.stdout.flush()
-        filepath, _ = urllib.request.urlretrieve(DATA_URL, filepath,
-                                                 reporthook=_progress)
-        print()
-        statinfo = os.stat(filepath)
-        print('Succesfully downloaded', filename, statinfo.st_size, 'bytes.')
-    tarfile.open(filepath, 'r:gz').extractall(dest_directory)
-
 if __name__ == '__main__':
-    maybe_download_and_extract()
+    maybe_download_and_extract(args.model_dir)
     with open(args.mapping) as f:
         mapping = json.load(f)
 

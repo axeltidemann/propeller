@@ -1,12 +1,19 @@
 import datetime
 import subprocess
+import os
+import tarfile
+import sys
 
 import pandas as pd
+import tensorflow as tf
+from tensorflow.python.platform import gfile
+
+DATA_URL = 'http://download.tensorflow.org/models/image/imagenet/inception-2015-12-05.tgz'
 
 def save_df(name, df):
     df.to_hdf('{}_{}.h5'.format(name, datetime.datetime.now().isoformat()),
               key='result', mode='w', format='table', complib='blosc', complevel=9)
-        
+
 
 def chunks(chunkable, n):
     """ Yield successive n-sized chunks from l. """
@@ -31,3 +38,32 @@ def file_len(fname):
 
 def pretty_float(f):
     return '{0:.2f}'.format(f)
+
+
+def load_graph(path):
+    """"Creates a graph from saved GraphDef file and returns a saver."""
+    # Creates graph from saved graph_def.pb.
+    with gfile.FastGFile(path, 'r') as f:
+        graph_def = tf.GraphDef()
+        graph_def.ParseFromString(f.read())
+        _ = tf.import_graph_def(graph_def, name='')
+
+
+def maybe_download_and_extract(model_dir):
+    """Download and extract model tar file."""
+    dest_directory = model_dir
+    if not os.path.exists(dest_directory):
+        os.makedirs(dest_directory)
+    filename = DATA_URL.split('/')[-1]
+    filepath = os.path.join(dest_directory, filename)
+    if not os.path.exists(filepath):
+        def _progress(count, block_size, total_size):
+            sys.stdout.write('\r>> Downloading %s %.1f%%' % (
+                filename, float(count * block_size) / float(total_size) * 100.0))
+            sys.stdout.flush()
+        filepath, _ = urllib.request.urlretrieve(DATA_URL, filepath,
+                                                 reporthook=_progress)
+        print()
+        statinfo = os.stat(filepath)
+        print('Succesfully downloaded', filename, statinfo.st_size, 'bytes.')
+    tarfile.open(filepath, 'r:gz').extractall(dest_directory)

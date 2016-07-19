@@ -2,11 +2,6 @@
 # The software includes elements of example code. Copyright 2015 Google, Inc. Licensed under Apache License, Version 2.0.
 # https://github.com/tensorflow/tensorflow/tree/master/tensorflow/examples/tutorials/mnist
 
-'''
-Trains the final layer of the Inception model. You must have
-collected the next to last layer states beforehand.
-'''
-
 from __future__ import print_function
 import argparse
 import time
@@ -19,7 +14,10 @@ from tensorflow.python.platform import gfile
 
 from training_data import read_data
 
-parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser = argparse.ArgumentParser(description='''
+Trains the final layer of the Inception model. You must have
+collected the next to last layer states beforehand.
+''', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument(
     'data_folder',
     help='Folder with Inception states for training')
