@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+
+{% block header %}{{ clusterfile_decoded }}{% endblock %}
+
+{% block content %}
+
+{% for cluster in clusters %}
+{% if loop.index0 == index %}
+{{ cluster }}
+{% else %}
+<a href="{{ url_for('clusters_display', clusterfile=clusterfile, index=cluster) }}">{{ cluster }}</A>
+{% endif %}
+{% if not loop.last %}|{% endif %}
+{% endfor %}
+
+<img src="/static{{ seed }}" width="100%">
+
+{% for image in images %}
+<img class="lazy" data-original="/static{{ image }}" width=100>
+{% endfor %}
+
+<script type="text/javascript" charset="utf-8">
+$(function() {
+    $("img.lazy").lazyload(); 
+});
+</script>
+
+
+{% endblock %}

@@ -17,9 +17,9 @@ import pandas as pd
 import tensorflow as tf
 from tensorflow.python.platform import gfile
 import numpy as np
-import ipdb
 
 from training_data import states
+from utils import load_graph
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument(
@@ -49,14 +49,6 @@ parser.add_argument(
     type=int,
     default=3)
 args = parser.parse_args()
-
-def load_graph(path):
-    """"Creates a graph from saved GraphDef file and returns a saver."""
-    # Creates graph from saved graph_def.pb.
-    with gfile.FastGFile(path, 'r') as f:
-        graph_def = tf.GraphDef()
-        graph_def.ParseFromString(f.read())
-        _ = tf.import_graph_def(graph_def, name='')
 
 with tf.Session() as sess:
     _,_,test = states(args.data_folder, args.train_ratio, args.validation_ratio, args.test_ratio)

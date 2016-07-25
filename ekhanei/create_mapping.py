@@ -4,7 +4,8 @@ import argparse
 import glob
 import os
 import json
-import csv
+
+import pandas as pd
 
 parser = argparse.ArgumentParser(description='''
 Reads the provided file, maps it into the output of the
@@ -27,19 +28,14 @@ parser.add_argument(
     action='store_true')
 args = parser.parse_args()
 
-with open(args.categories_file, 'r') as csv_file:
-    reader = csv.reader(csv_file, delimiter='=')
-    categories = dict(reader)
+data = pd.read_csv(args.categories_file, sep='|', index_col=0, usecols=[0,1], header=1, names=['category', 'description'])
+categories = dict(zip(data.index, [ x[0].strip() for x in data.values]))
 
 mapping = {}
 
 for i, h5_file in enumerate(sorted(glob.glob('{}/*.h5'.format(args.data_folder)))):
-    
     category = os.path.basename(h5_file[:h5_file.find('.')])
-    try:
-        mapping[str(i)] = categories[category] if args.human else category
-    except Exception as e:
-        print e
+    mapping[str(i)] = categories[int(category)] if args.human else category
 
 with open(args.mapping_filename, 'w') as _file:
     json.dump(mapping, _file, sort_keys=True, indent=4)

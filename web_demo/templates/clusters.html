@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+
+{% block header %}Clusters of images{% endblock %}
+
+{% block content %}
+Specify path of JSON file with image clusters:
+
+<form role="form" action="/images/clusters" method="post">
+  <input type="text" class="form-control" name="filepath" id="filepath" placeholder="File path">
+</form>
+
+{% endblock %}

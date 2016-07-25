@@ -2,6 +2,11 @@
 # The software includes elements of example code. Copyright 2015 Google, Inc. Licensed under Apache License, Version 2.0.
 # https://github.com/tensorflow/tensorflow/tree/master/tensorflow/examples/tutorials/mnist
 
+'''
+Trains the final layer of the Inception model. You must have
+collected the next to last layer states beforehand.
+'''
+
 from __future__ import print_function
 import argparse
 import time
@@ -14,10 +19,7 @@ from tensorflow.python.platform import gfile
 
 from training_data import read_data
 
-parser = argparse.ArgumentParser(description='''
-Trains the final layer of the Inception model. You must have
-collected the next to last layer states beforehand.
-''', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument(
     'data_folder',
     help='Folder with Inception states for training')
@@ -61,10 +63,15 @@ parser.add_argument(
     type=int,
     default=1024)
 parser.add_argument(
+    '--dropout',
+    help='The probability to drop neurons, helps against overfitting',
+    type=float,
+    default=0.5)
+parser.add_argument(
     '--epochs',
     help='Maximum number of epochs before ending the training',
     type=int,
-    default=1000)
+    default=500)
 parser.add_argument(
     '--print_every',
     help='Print training and validation accuracy every X steps',
@@ -83,6 +90,12 @@ data = read_data(args.data_folder, args.train_ratio, args.validation_ratio, args
 if not os.path.exists(args.checkpoint_dir):
     os.makedirs(args.checkpoint_dir)
 
+model_name = ('''transfer_classifier_epochs_{}_batch_{}_ratios_{}_{}_{}_'''
+              '''learning_rate_{}_dropout_{}_hidden_size_{}.pb'''.format(args.epochs, args.batch_size,
+                                                              args.train_ratio, args.validation_ratio,
+                                                              args.test_ratio, args.learning_rate,
+                                                            args.dropout, args.hidden_size))
+    
 def weight_variable(shape, name):
     initial = tf.truncated_normal(shape, stddev=0.1)
     return tf.Variable(initial,name=name)
@@ -91,6 +104,7 @@ def bias_variable(shape, name):
     initial = tf.constant(0.1, shape=shape)
     return tf.Variable(initial,name=name)
 
+    
 with tf.Session() as sess:
     x = tf.placeholder('float', shape=[None, data.train.X_features], name='input')
     y_ = tf.placeholder('float', shape=[None, data.train.Y_features], name='target')
@@ -100,10 +114,13 @@ with tf.Session() as sess:
 
     hidden = tf.nn.relu(tf.matmul(x,W_in) + b_in)
 
+    keep_prob = tf.placeholder_with_default([1.], shape=None)
+    hidden_dropout = tf.nn.dropout(hidden, keep_prob)
+
     W_out = weight_variable([args.hidden_size,data.train.Y_features], name='weights_out')
     b_out = bias_variable([data.train.Y_features], name='bias_out')
 
-    logits = tf.matmul(hidden,W_out) + b_out
+    logits = tf.matmul(hidden_dropout,W_out) + b_out
     
     y = tf.nn.softmax(logits, name='output')
 
@@ -119,43 +136,45 @@ with tf.Session() as sess:
 
     last_i = 0
 
-    while data.train.epoch < args.epochs:
+    t_epoch = time.time()
+    while data.train.epoch <= args.epochs:
         i = data.train.epoch
         batch_x, batch_y = data.train.next_batch(args.batch_size)
         
         t_start = time.time()
-        train_step.run(feed_dict={x: batch_x, y_: batch_y})
+        train_step.run(feed_dict={x: batch_x,
+                                  y_: batch_y,
+                                  keep_prob: args.dropout})
         t_end = time.time() - t_start
         
-        if (i + 1) % args.save_every == 0:
+        if i % args.save_every == 0 and last_i != i:
+            output_graph_def = graph_util.convert_variables_to_constants(
+                sess, sess.graph.as_graph_def(), ['input', 'output'])
+
+            with gfile.FastGFile(os.path.join(args.model_dir, model_name), 'w') as f:
+                f.write(output_graph_def.SerializeToString())
+
             saver.save(sess, args.checkpoint_dir + 'model.ckpt',
                        global_step=i+1)
-
+        
         if i % args.print_every == 0 and last_i != i:
             train_accuracy = accuracy.eval(feed_dict={
-                x: batch_x, y_: batch_y})
+                x: batch_x,
+                y_: batch_y })
 
             validation_accuracy = accuracy.eval(feed_dict={
-                x: data.validation.X, y_: data.validation.Y})
+                x: data.validation.X,
+                y_: data.validation.Y })
             
             print('''Epoch {} train accuracy: {}, validation accuracy: {}. '''
-                  '''{} states/sec.'''.format(i, train_accuracy, validation_accuracy, args.batch_size/t_end))
-            
+                  '''{} states/sec, {} secs/epoch.'''.format(i, train_accuracy,
+                                                             validation_accuracy, args.batch_size/t_end,
+                                                             time.time() - t_epoch))
+            t_epoch = time.time()
             last_i = i
-
-    output_graph_def = graph_util.convert_variables_to_constants(
-        sess, sess.graph.as_graph_def(), ['input', 'output'])
-
-    model_name = ('''transfer_classifier_epochs_{}_batch_{}_ratios_{}_{}_{}_'''
-                  '''learning_rate_{}_hidden_size_{}.pb'''.format(args.epochs, args.batch_size,
-                                                                  args.train_ratio, args.validation_ratio,
-                                                                  args.test_ratio, args.learning_rate, args.hidden_size))
-    
-    with gfile.FastGFile(os.path.join(args.model_dir, model_name), 'w') as f:
-        f.write(output_graph_def.SerializeToString())
 
     print('Trained model saved to {}'.format(os.path.join(args.model_dir, model_name)))
 
     if args.test_ratio > 0:
-        test_accuracy = accuracy.eval(feed_dict={x: data.test.X, y_: data.test.Y})
+        test_accuracy = accuracy.eval(feed_dict={x: data.test.X, y_: data.test.Y })
         print('Evaluation on testing data: {}'.format(test_accuracy))
