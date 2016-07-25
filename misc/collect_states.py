@@ -38,19 +38,23 @@ def save_states(source, target, limit, mem_ratio, model_dir):
 
         t0 = time.time()
 
-        for jpg in images:
-            image_data = gfile.FastGFile(jpg).read()
-            hidden_layer = sess.run(next_last_layer,
-                                    {'DecodeJpeg/contents:0': image_data})
-            hidden_layer = np.squeeze(hidden_layer)
-            states.append(hidden_layer)
+        for jpg in list(images):
+            try:
+                image_data = gfile.FastGFile(jpg).read()
+                hidden_layer = sess.run(next_last_layer,
+                                        {'DecodeJpeg/contents:0': image_data})
+                hidden_layer = np.squeeze(hidden_layer)
+                states.append(hidden_layer)
+            except Exception as e:
+                images.remove(jpg)
+                print 'Something went wrong when processing {}: \n {}'.format(jpg, e) 
 
         print('Time spent collecting states: {}'.format(time.time() - t0))
 
         df = pd.DataFrame(data={'state': states}, index=images)
         df.index.name='filename'
 
-        h5name = '{}/{}.h5'.format(target, os.path.basename(source))
+        h5name = os.path.join(target, '{}.h5'.format(os.path.basename(source)))
         with pd.HDFStore(h5name, 'w') as store:
             store['data'] = df
           

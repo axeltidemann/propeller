@@ -25,7 +25,7 @@ parser.add_argument(
     '--learning_rate',
     help='Learning rate',
     type=float,
-    default=.0001)
+    default=.001)
 parser.add_argument(
     '--train_ratio',
     help='Train ratio',

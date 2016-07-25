@@ -4,6 +4,7 @@ import os
 import tarfile
 import sys
 
+from six.moves import urllib
 import pandas as pd
 import tensorflow as tf
 from tensorflow.python.platform import gfile

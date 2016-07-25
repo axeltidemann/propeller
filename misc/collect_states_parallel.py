@@ -6,6 +6,7 @@ import glob
 import subprocess
 import os
 
+from utils import maybe_download_and_extract
 from collect_states import save_states
 
 KILL = 'POISON PILL'
@@ -55,6 +56,8 @@ parser.add_argument(
     default=1,
     type=int)
 args = parser.parse_args()
+
+maybe_download_and_extract(args.model_dir)
 
 q = mp.Queue()
 

@@ -20,7 +20,6 @@ import time
 import math
 
 import tensorflow.python.platform
-from six.moves import urllib
 import numpy as np
 import tensorflow as tf
 import redis
