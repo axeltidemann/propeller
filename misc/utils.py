@@ -6,8 +6,6 @@ import sys
 
 from six.moves import urllib
 import pandas as pd
-import tensorflow as tf
-from tensorflow.python.platform import gfile
 
 DATA_URL = 'http://download.tensorflow.org/models/image/imagenet/inception-2015-12-05.tgz'
 
@@ -21,7 +19,15 @@ def chunks(chunkable, n):
     for i in xrange(0, len(chunkable), n):
         yield chunkable[i:i+n]
 
-
+def flatten(lst):
+    result = []
+    for element in lst:
+        if hasattr(element, '__iter__'):
+            result.extend(flatten(element))
+        else:
+            result.append(element)
+    return result
+        
 def safe_filename(filename):
     import base64 # With multiprocessing, this needs to be imported here.
     """ Base64 encodes the string, so you can safely use is as a filename. """
@@ -42,6 +48,9 @@ def pretty_float(f):
 
 
 def load_graph(path):
+    from tensorflow.python.platform import gfile
+    import tensorflow as tf
+    
     """"Creates a graph from saved GraphDef file and returns a saver."""
     # Creates graph from saved graph_def.pb.
     with gfile.FastGFile(path, 'r') as f:

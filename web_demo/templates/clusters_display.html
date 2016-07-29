@@ -5,18 +5,33 @@
 {% block content %}
 
 {% for cluster in clusters %}
-{% if loop.index0 == index %}
-{{ cluster }}
-{% else %}
-<a href="{{ url_for('clusters_display', clusterfile=clusterfile, index=cluster) }}">{{ cluster }}</A>
-{% endif %}
-{% if not loop.last %}|{% endif %}
+    {% if loop.index0 == index|int(-1) %}
+       {{ cluster }} 
+    {% else %}
+       <a href="{{ url_for('clusters_display', clusterfile=clusterfile, index=cluster) }}">{{ cluster }}</A>
+    {% endif %}
+       |
 {% endfor %}
 
-<img src="/static{{ seed }}" width="100%">
+{% if index == 'rejected' %}
+    rejected
+{% else %}
+    <a href="{{ url_for('clusters_display', clusterfile=clusterfile, index='rejected') }}">rejected</A> 
+{% endif %}
 
+<br>
+
+{% images|length %} images.
+
+<br>
+
+{% if index != 'rejected' %}
+    <img src="/static{{ seed }}" width="100%">
+{% endif %}
+
+    
 {% for image in images %}
-<img class="lazy" data-original="/static{{ image }}" width=100>
+    <img class="lazy" data-original="/static{{ image }}" width=100>
 {% endfor %}
 
 <script type="text/javascript" charset="utf-8">

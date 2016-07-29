@@ -14,6 +14,7 @@ from tensorflow.python.platform import gfile
 from tensorflow.contrib.layers.python.layers import batch_norm as batch_norm
 
 from training_data import read_data
+from utils import load_graph, chunks
     
 def weight_variable(shape, name):
     initial = tf.truncated_normal(shape, stddev=0.1)
@@ -22,17 +23,18 @@ def weight_variable(shape, name):
 def bias_variable(shape, name):
     initial = tf.constant(0.1, shape=shape)
     return tf.Variable(initial,name=name)
+        
+def flow(sess, models, x):
+    return np.hstack([ sess.run(model, {'{}input:0'.format(h5): x}) for h5, model in models.iteritems() ])
 
-
-def learn(data_folder, expert=False, learning_rate=.001, train_ratio=.8, validation_ratio=.1, test_ratio=.1, save_every=10, batch_size=2048, hidden_size=1024, dropout=.5, epochs=500, print_every=1, model_dir='.', perceptron=False, mem_ratio=.95):
+def learn(data_folder, experts, learning_rate=.001, train_ratio=.8, validation_ratio=.1, test_ratio=.1, save_every=10, batch_size=2048, hidden_size=1024, dropout=.5, epochs=500, print_every=1, model_dir='.', perceptron=False, mem_ratio=.95):
     
     assert train_ratio + validation_ratio + test_ratio == 1, 'Train/validation/test ratios must sum up to 1'
 
-    data = read_data(data_folder, train_ratio, validation_ratio, test_ratio, expert)
+    data = read_data(data_folder, train_ratio, validation_ratio, test_ratio)
 
-    model_name = ('''transfer_classifier_{}epochs_{}_batch_{}_ratios_{}_{}_{}_'''
+    model_name = ('''transfer_classifier_moe_epochs_{}_batch_{}_ratios_{}_{}_{}_'''
                   '''learning_rate_{}'''.format(
-                      '{}_'.format(expert) if expert else '',
                       epochs, batch_size,
                       train_ratio, validation_ratio,
                       test_ratio, learning_rate))
@@ -41,21 +43,31 @@ def learn(data_folder, expert=False, learning_rate=.001, train_ratio=.8, validat
     else:
         model_name = '{}_dropout_{}_hidden_size_{}.pb'.format(model_name, dropout, hidden_size)
 
-    input_name = '{}input'.format(expert if expert else '')
-    output_name = '{}output'.format(expert if expert else '')
-        
     gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=mem_ratio)
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
-        x = tf.placeholder('float', shape=[None, data.train.X_features], name=input_name)
-        y_ = tf.placeholder('float', shape=[None, data.train.Y_features], name='target')
+        local_experts = {}
+        
+        for model in os.listdir(experts):
+            print('Loading {}'.format(model))
+            load_graph(os.path.join(args.experts, model))
+            stripped = model[20:]
+            h5 = stripped[:stripped.find('_')]# MESSY.
+            local_experts[h5] = sess.graph.get_tensor_by_name('{}output:0'.format(h5))
 
+        data.train._X = np.vstack([ flow(sess, local_experts, x) for x in chunks(data.train.X, batch_size) ])
+        data.validation._X = flow(sess, local_experts, data.validation.X)
+        data.test._X = flow(sess, local_experts, data.test.X)
+            
+        x = tf.placeholder('float', shape=[None, len(local_experts)*2], name='input')
+        y_ = tf.placeholder('float', shape=[None, data.train.Y_features], name='target')
+            
         if perceptron:
-            W = weight_variable([data.train.X_features, data.train.Y_features], name='weights')
+            W = weight_variable([len(local_experts)*2, data.train.Y_features], name='weights')
             b = bias_variable([data.train.Y_features], name='bias')
 
             logits = tf.matmul(x,W) + b
         else:
-            W_in = weight_variable([data.train.X_features, hidden_size], name='weights_in')
+            W_in = weight_variable([len(local_experts)*2, hidden_size], name='weights_in')
             b_in = bias_variable([hidden_size], name='bias_in')
 
             hidden = tf.matmul(x,W_in) + b_in
@@ -74,7 +86,7 @@ def learn(data_folder, expert=False, learning_rate=.001, train_ratio=.8, validat
             logits = tf.matmul(relu,W_out) + b_out
             # logits = batch_norm(tf.matmul(relu,W_out) + b_out, is_training=is_training, updates_collections=None)
 
-        y = tf.nn.softmax(logits, name=output_name)
+        y = tf.nn.softmax(logits, name='output')
 
         cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits, y_)
         
@@ -90,7 +102,7 @@ def learn(data_folder, expert=False, learning_rate=.001, train_ratio=.8, validat
         while data.train.epoch <= epochs:
             epoch = data.train.epoch
             batch_x, batch_y = data.train.next_batch(batch_size)
-
+            
             t_start = time.time()
             feed_dict = {x: batch_x, y_: batch_y } if perceptron else {x: batch_x, y_: batch_y, keep_prob: dropout}
             # feed_dict = {x: batch_x, y_: batch_y } if perceptron else {x: batch_x, y_: batch_y, is_training: True }
@@ -114,7 +126,7 @@ def learn(data_folder, expert=False, learning_rate=.001, train_ratio=.8, validat
                                                                      time.time() - t_epoch))
                 if epoch % save_every == 0 or epoch == epochs:
                     output_graph_def = graph_util.convert_variables_to_constants(
-                        sess, sess.graph.as_graph_def(), [input_name, output_name])
+                        sess, sess.graph.as_graph_def(), ['input', 'output'])
 
                     with gfile.FastGFile(os.path.join(model_dir, model_name), 'w') as f:
                         f.write(output_graph_def.SerializeToString())
@@ -140,9 +152,8 @@ if __name__ == '__main__':
         'data_folder',
         help='Folder with Inception states for training')
     parser.add_argument(
-        '--expert',
-        help='What states file it will be expert on. This will train the classifier in a 1-against-all scenario',
-        default=False)
+        'experts',
+        help='Folder with trained experts')
     parser.add_argument(
         '--learning_rate',
         help='Learning rate',
@@ -207,7 +218,7 @@ if __name__ == '__main__':
         default=.95)
     args = parser.parse_args()
 
-    learn(args.data_folder, args.expert, args.learning_rate, args.train_ratio,
+    learn(args.data_folder, args.experts, args.learning_rate, args.train_ratio,
           args.validation_ratio, args.test_ratio, args.save_every, args.batch_size,
           args.hidden_size, args.dropout, args.epochs, args.print_every, args.model_dir,
           args.perceptron, args.mem_ratio)

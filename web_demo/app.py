@@ -426,16 +426,18 @@ def clusters():
     else:
         return flask.render_template('clusters.html')
 
-@app.route('/images/clusters/<path:clusterfile>/<int:index>')
+@app.route('/images/clusters/<path:clusterfile>/<path:index>')
 @requires_auth
 def clusters_display(clusterfile, index):
     clusterfile_decoded = base64.urlsafe_b64decode(clusterfile.encode('ascii'))
     with open(clusterfile_decoded, 'r') as _file:
         clusters = json.load(_file)
-        seed = clusters.keys()[index]
+        keys = clusters.keys()
+        keys.remove('rejected')
+        seed = 'rejected' if index == 'rejected' else keys[int(index)] 
         return flask.render_template('clusters_display.html', clusterfile=clusterfile,
                                      clusterfile_decoded=clusterfile_decoded,
-                                     seed=seed, index=index, clusters=range(len(clusters.keys())),
+                                     seed=seed, index=index, clusters=range(len(keys)),
                                      images=clusters[seed])
         
 def start_tornado(app, port=5000):
