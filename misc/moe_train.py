@@ -54,29 +54,25 @@ def learn(data_folder, experts, learning_rate=.001, train_ratio=.8, validation_r
             h5 = stripped[:stripped.find('_')]# MESSY.
             local_experts[h5] = sess.graph.get_tensor_by_name('{}output:0'.format(h5))
 
-        data.train._X = np.vstack([ flow(sess, local_experts, x) for x in chunks(data.train.X, batch_size) ])
-        data.validation._X = flow(sess, local_experts, data.validation.X)
-        data.test._X = flow(sess, local_experts, data.test.X)
-            
-        x = tf.placeholder('float', shape=[None, len(local_experts)*2], name='input')
+        data.train._X = np.hstack([ data.train.X,  np.vstack([ flow(sess, local_experts, x) for x in chunks(data.train.X, batch_size) ]) ])
+        data.validation._X = np.hstack([ data.validation.X,  flow(sess, local_experts, data.validation.X) ])
+        data.test._X = np.hstack([ data.test.X, flow(sess, local_experts, data.test.X) ])
+
+        x = tf.placeholder('float', shape=[None, data.train.X_features], name='input')
         y_ = tf.placeholder('float', shape=[None, data.train.Y_features], name='target')
             
         if perceptron:
-            W = weight_variable([len(local_experts)*2, data.train.Y_features], name='weights')
+            W = weight_variable([data.train.X_features, data.train.Y_features], name='weights')
             b = bias_variable([data.train.Y_features], name='bias')
 
             logits = tf.matmul(x,W) + b
         else:
-            W_in = weight_variable([len(local_experts)*2, hidden_size], name='weights_in')
+            W_in = weight_variable([data.train.X_features, hidden_size], name='weights_in')
             b_in = bias_variable([hidden_size], name='bias_in')
 
             hidden = tf.matmul(x,W_in) + b_in
             relu = tf.nn.relu(hidden)
             
-            # is_training = tf.placeholder_with_default(False, shape=None)
-            # bn = batch_norm(hidden, is_training=is_training, updates_collections=None)
-            # relu = tf.nn.relu(bn)
-
             keep_prob = tf.placeholder_with_default([1.], shape=None)
             hidden_dropout = tf.nn.dropout(relu, keep_prob)
 
@@ -84,7 +80,6 @@ def learn(data_folder, experts, learning_rate=.001, train_ratio=.8, validation_r
             b_out = bias_variable([data.train.Y_features], name='bias_out')
 
             logits = tf.matmul(relu,W_out) + b_out
-            # logits = batch_norm(tf.matmul(relu,W_out) + b_out, is_training=is_training, updates_collections=None)
 
         y = tf.nn.softmax(logits, name='output')
 
@@ -105,7 +100,6 @@ def learn(data_folder, experts, learning_rate=.001, train_ratio=.8, validation_r
             
             t_start = time.time()
             feed_dict = {x: batch_x, y_: batch_y } if perceptron else {x: batch_x, y_: batch_y, keep_prob: dropout}
-            # feed_dict = {x: batch_x, y_: batch_y } if perceptron else {x: batch_x, y_: batch_y, is_training: True }
             train_step.run(feed_dict=feed_dict)
             t_end = time.time() - t_start
 

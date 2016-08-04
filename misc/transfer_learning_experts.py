@@ -18,7 +18,7 @@ def launch_tensorflow(q, cuda_device, states, mem_ratio):
         if expert == KILL:
             break
         print 'Training {} expert'.format(expert)
-        learn(states, expert=expert, epochs=10, mem_ratio=mem_ratio, hidden_size=256, learning_rate=.0001)
+        learn(states, expert=expert, epochs=20, mem_ratio=mem_ratio, hidden_size=1024, learning_rate=.0001)
 
 parser = argparse.ArgumentParser(description='''
 Trains a collection of experts.''', 

@@ -74,12 +74,17 @@ def learn(data_folder, expert=False, learning_rate=.001, train_ratio=.8, validat
             logits = tf.matmul(relu,W_out) + b_out
             # logits = batch_norm(tf.matmul(relu,W_out) + b_out, is_training=is_training, updates_collections=None)
 
-        y = tf.nn.softmax(logits, name=output_name)
 
-        cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits, y_)
-        
+        if expert:
+            y = tf.nn.sigmoid(logits, name=output_name)
+            cross_entropy = tf.nn.sigmoid_cross_entropy_with_logits(logits, y_)
+            correct_prediction = 1 - tf.square(y - y_)
+        else:
+            y = tf.nn.softmax(logits, name=output_name)
+            cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits, y_)
+            correct_prediction = tf.equal(tf.argmax(y,1), tf.argmax(y_,1))
+
         train_step = tf.train.AdamOptimizer(learning_rate).minimize(cross_entropy)
-        correct_prediction = tf.equal(tf.argmax(y,1), tf.argmax(y_,1))
         accuracy = tf.reduce_mean(tf.cast(correct_prediction, 'float'))
 
         sess.run(tf.initialize_all_variables())

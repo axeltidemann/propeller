@@ -35,18 +35,17 @@ def states(folder, train_ratio, validation_ratio, test_ratio, expert=False):
         x = np.vstack(pd.read_hdf(h5, 'data').state)
         
         if expert:
-            y = np.zeros((x.shape[0], 2))
             if os.path.basename(h5) == expert:
-                y[:,0] = 1
+                y = np.ones((x.shape[0], 1))
             else:
-                y[:,1] = 1
+                y = np.zeros((x.shape[0], 1))
         else:
             y = np.zeros((x.shape[0], len(h5_files)))
             y[:,i] = 1
         
         train_length = int(x.shape[0]*train_ratio)
         validation_length = int(x.shape[0]*(train_ratio+validation_ratio))
-        
+
         train[category] = Data(x[:train_length],y[:train_length])
         validation[category] = Data(x[train_length:validation_length], y[train_length:validation_length])
         test[category] = Data(x[validation_length:],y[validation_length:])

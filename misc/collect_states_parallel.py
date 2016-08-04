@@ -17,6 +17,7 @@ def launch_tensorflow(q, cuda_device, mem_ratio, target, limit, model_dir):
         source = q.get()
         if source == KILL:
             break
+        print 'Processing folder {}'.format(source)
         save_states(source, target, limit, mem_ratio, model_dir)
 
 parser = argparse.ArgumentParser(description='''
@@ -44,7 +45,7 @@ parser.add_argument(
 parser.add_argument(
     '--threads',
     help='How many threads to use pr GPU',
-    default=2,
+    default=3,
     type=int)
 parser.add_argument(
     '--model_dir',
