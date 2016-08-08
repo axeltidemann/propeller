@@ -17,7 +17,7 @@ from sets import Set
 from bitstring import Bits, BitArray
 import blosc
 
-from aqbc_utils import nearest_binary_landmark, get_similarity_binary_landmarks
+from aqbc_utils import nearest_binary_landmark, hamming_search
 
 def optimize(c, X):
     print "Optimizing Q(B,R) for", c, "bits..."
@@ -55,37 +55,48 @@ def index_Q_X_similarity(similars, D):
             
 
 def compute_precision_recall(X, queries, similar, codes, inv_codes):
-    print "Computing precision-recall for", len(queries),"sample points"
+    print "Computing precision/recall/hits statistics..."
     n = X.shape[0]
-    precision = []
-    recall = []
+    precision = defaultdict(list)
+    recall = defaultdict(list)
+    hits = defaultdict(list)
+
     pbar = ProgressBar()
     for q in pbar(range(len(queries))):
         relevant = similar[q]
         if len(relevant) == 0:
             continue
         c = inv_codes[queries[q]]
-        similar_codes = get_similarity_binary_landmarks(c, codes)
 
+        H = defaultdict(list)
+        hamming_search(BitArray(c), -1, 3, 0, H)
+        H[0].append(c)
         retrieved = set()
-        for s in sorted(similar_codes.keys(), reverse=True):
-            done=False
-            for c1 in similar_codes[s]:
-                retrieved = retrieved.union(set(codes[c1]))
-                tp = relevant.intersection(retrieved)
-                fp = retrieved.difference(relevant)
-                fn = relevant.difference(retrieved)
-                p = len(tp)/float(len(tp)+len(fp))
-                r = len(tp)/float(len(tp)+len(fn))
-                precision.append(p)
-                recall.append(r)
-                if len(tp) == len(relevant):
-                    done = True
-                    break
-            if done:
-                break
-    return np.mean(precision), np.mean(recall)
+        for radius in H:
+            for h in H[radius]:
+                c1 = Bits(bin=h.bin) 
+                if c1 in codes:
+                    retrieved = retrieved.union(set(codes[c1]))
 
+            tp = relevant.intersection(retrieved)
+            fp = retrieved.difference(relevant)
+            fn = relevant.difference(retrieved)
+            p = len(tp)/float(len(tp)+len(fp))
+            r = len(tp)/float(len(tp)+len(fn))
+            #print "radius", radius, p, r, len(retrieved), "\n"
+            precision[radius].append(p)
+            recall[radius].append(r)
+            hits[radius].append(len(retrieved))
+
+    for i in precision:
+        precision[i] = np.mean(precision[i])
+    for i in recall:
+        recall[i] = np.mean(recall[i])
+    for i in hits:
+        hits[i] = np.mean(hits[i])
+
+
+    return precision, recall, hits
 
 def generate_binary_codes_indices(B, n):
     codes = defaultdict(list)
@@ -112,27 +123,24 @@ def benchmark(X):
     for q in queries: 
         Q.append(X[q])
     Q = np.array(Q)
-
+    
     D = cosine_similarity(Q,X)
     D_0_9 = np.where( D > 0.9)
     similar = index_Q_X_similarity(D_0_9, D)
-
-    precision = []
-    recall = []
-    numbits = int(args.bits)
-
-    f = open('precision_recall.txt','w', 0)
     
-    for b in range(2, numbits+1):
+    numbits = int(args.bits)
+    
+    f = open(args.out,'w', 0)
+    
+    for b in range(2, numbits, 1):
         print "\n--------------------", b, " BITS -----------------------"
         R, B = optimize(b, X)
         codes, inv_codes = generate_binary_codes_indices(B, n)
-        p, r = compute_precision_recall(X, queries, similar, codes, inv_codes)
-        precision.append(p)
-        recall.append(r)
-        text = "{} {} {}\n".format(b,p,r)
-        print "precision", p, "recall:", r
-        f.write(text)
+        p, r, h = compute_precision_recall(X, queries, similar, codes, inv_codes)
+        for i in range(len(p)):
+            text = "{} {} {} {} {}\n".format(b,i,p[i],r[i], h[i])
+            print text
+            f.write(text)
 
     #plt.plot(range(2,numbits+1), precision, label="precision")
     #plt.plot(range(2,numbits+1), recall, label="recall")
@@ -151,7 +159,7 @@ def run():
         data = pd.read_hdf(h5_file, 'data')
         array = np.vstack(data.state)
         X.append(array)
-
+    
     X = np.vstack(X)
 
     if args.bench != False:
@@ -196,6 +204,11 @@ parser.add_argument(
     '--port',
     help="redis server port",
     default=6379
+    )
+parser.add_argument(
+    '--out',
+    help="output file of benchmark",
+    default="precision_recall.txt"
     )
 
 args = parser.parse_args()

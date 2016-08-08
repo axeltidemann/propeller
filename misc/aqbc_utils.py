@@ -2,7 +2,7 @@ import numpy as np
 import math
 from collections import defaultdict
 from sklearn.preprocessing import normalize
-from bitstring import Bits
+from bitstring import Bits, BitArray
 
 #########################################################################################################
 # Helpers for implementation of aqbc paper
@@ -10,7 +10,7 @@ from bitstring import Bits
 
 # cache a few square roots for speed
 sqrts = {}
-for i in range(1,1000):
+for i in range(1,10000):
     sqrts[i] = math.sqrt(i)
 
 def nearest_binary_landmark(R, X):
@@ -24,6 +24,7 @@ def nearest_binary_landmark(R, X):
     idx = np.argsort(y, axis=1)
     bs = []
     ms = []
+
     for i in range(n):
         b = np.zeros(c)
         s = 0
@@ -56,6 +57,16 @@ def get_similarity_binary_landmarks(b_i, B):
         cos_sim = binary_landmark_similarity(b_i, b)
         res[cos_sim].append(b)
     return res
+
+def hamming_search(b, bit, radius, current_radius, H):
+    if current_radius == radius:
+        return
+    for i in range(bit+1, b.length):
+        b2 = BitArray(b.copy())
+        b2.invert(i)
+        H[current_radius+1].append(b2.copy())
+        hamming_search(b2, i, radius, current_radius+1, H)
+    
 
 def generate_binary_codes_indices(B):
     n = B.shape[0]
