@@ -141,11 +141,11 @@ def classify_images(mapping):
                 value = result._asdict()
 
                 hidden_layer = hidden_layer.reshape(2048,1)
-
+                h_s_packed = blosc.compress(hidden_layer.tostring(), typesize=8, cname='zlib')
+                
                 if args.hashing:
                     _, c = hash_bottlenecks(R, hidden_layer)
-                    r_server.sadd("hashing:codes:" + c[0].bin, result_key)
-                    r_server.hmset(result_key, {'hash': c[0].bin})
+                    r_server.hmset("hashing:codes:" + c[0].bin, {result_key: h_s_packed} )
                     value['hash'] = c[0].bin
 
                 r_server.hmset(result_key, value)
@@ -153,8 +153,6 @@ def classify_images(mapping):
                 # for demo
                 last_key = 'archive:{}:{}'.format(specs.group, 'lastprediction')
                 r_server.hmset(last_key, result._asdict())
-
-                h_s_packed = blosc.compress(hidden_layer.tostring(), typesize=8, cname='zlib')
 
                 r_server.hset('archive:{}:category:{}'.format(specs.group, result.predictions[0][0]),
                               specs.path, h_s_packed)
