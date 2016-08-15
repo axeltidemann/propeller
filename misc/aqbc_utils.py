@@ -59,6 +59,9 @@ def get_similarity_binary_landmarks(b_i, B):
     return res
 
 def hamming_search(b, bit, radius, current_radius, H):
+    if current_radius == 0:
+        H[current_radius].append(b.copy())
+
     if current_radius == radius:
         return
     for i in range(bit+1, b.length):
