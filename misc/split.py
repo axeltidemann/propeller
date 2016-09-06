@@ -26,16 +26,16 @@ if __name__ == '__main__':
         help='''HDF5 file(s) for categories.''',
         nargs='+')
     parser.add_argument(
-        'ratio',
-        help='Train/test split ratio',
-        default=.8,
-        type=float)
-    parser.add_argument(
         'train_target',
         help='Where to put the train HDF5 files.')
     parser.add_argument(
         'test_target',
         help='Where to put the test HDF5 files.')
+    parser.add_argument(
+        '--ratio',
+        help='Train/test split ratio',
+        default=.8,
+        type=float)
     parser.add_argument(
         '--table',
         help='Name of HDF5 table',
