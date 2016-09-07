@@ -38,6 +38,10 @@ if __name__ == '__main__':
         help='Minimum relative cluster size, these will be put in their own cateogory',
         default=.05,
         type=float)
+    parser.add_argument(
+        '--include_rejected',
+        action='store_true',
+        help='Whether to include the rejected images')
     args = parser.parse_args()
 
     for h5 in args.data:
@@ -47,6 +51,9 @@ if __name__ == '__main__':
         clusters = find(X, args.lower_bound, args.upper_bound, args.min_cluster_size)
 
         for i, (node, edges) in enumerate(clusters.iteritems()):
+            if not args.include_rejected and node == 'rejected':
+                continue
+            
             if node is not 'rejected':
                 edges.append(node) # To include the seed
                 
