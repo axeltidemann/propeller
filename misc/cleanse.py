@@ -47,7 +47,7 @@ if __name__ == '__main__':
         clusters = find(X, args.lower_bound, args.upper_bound, args.min_cluster_size)
 
         for i, (node, edges) in enumerate(clusters.iteritems()):
-            if key is not 'rejected':
+            if node is not 'rejected':
                 edges.append(node) # To include the seed
                 
             filename = os.path.join(args.target, '{}_{}'.format(os.path.basename(h5), i))

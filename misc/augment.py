@@ -147,6 +147,8 @@ if __name__ == '__main__':
         default='/tmp/imagenet')
     args = parser.parse_args()
 
+    maybe_download_and_extract(args.model_dir)
+
     q = mp.Queue()
     
     processes = 0

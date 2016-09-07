@@ -39,20 +39,24 @@ def states(folder):
 
     sep = '_'
 
-    pure = sorted(set(map(lambda x: os.path.basename(x[:x.rfind(sep)])
+    h5_stripped = map(lambda x: os.path.basename(x[:x.rfind(sep)])
                           if os.path.basename(x).rfind(sep) > -1
                           else os.path.basename(x),
-                          h5_files)))
+                          h5_files)
+    
+    pure = sorted(set(h5_stripped))
 
-    filtr = np.eye(len(pure))
+    filtr = np.zeros((1, len(h5_files), 1, len(pure)))
 
     if len(pure) < len(h5_files):
         print 'These HDF5 files are part of a clustering operation, creating output filter.'
-        filtr = np.zeros((1, len(h5_files), 1, len(pure)))
-        for i, curated in enumerate(h5_files):
-            for j, original in enumerate(pure):
-                if original in curated:
-                    filtr[0,i,0,j] = 1
+        
+    for i, curated in enumerate(h5_stripped):
+        for j, original in enumerate(pure):
+            if original == curated:
+                filtr[0,i,0,j] = 1
+
+    assert all([ sum(row) == 1 for row in filtr[0,:,0,:] ]), 'The filter is wrong, there is more than one high value per row'
 
     filtr.astype('float')
 

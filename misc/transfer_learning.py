@@ -80,7 +80,7 @@ def learn(train_states, test_states, learning_rate=.0001, save_every=10, batch_s
         conv_in = tf.expand_dims(conv_in,-1)
         conv_out = tf.nn.conv2d(conv_in, _filter, stride, 'VALID')
         back = tf.squeeze(conv_out, squeeze_dims=[0,2], name='output')
-        
+
         test_correct_prediction = tf.equal(tf.argmax(back, 1), tf.argmax(y_real,1))
         test_accuracy = tf.reduce_mean(tf.cast(test_correct_prediction, 'float'))
 
@@ -95,7 +95,6 @@ def learn(train_states, test_states, learning_rate=.0001, save_every=10, batch_s
 
             t_start = time.time()
             feed_dict = {x: batch_x, y_: batch_y } if perceptron else {x: batch_x, y_: batch_y, keep_prob: dropout}
-            
             train_step.run(feed_dict=feed_dict)
             t_end = time.time() - t_start
 
