@@ -32,8 +32,9 @@ parser.add_argument(
     default=10000)
 args = parser.parse_args()
 
-def save_to_jpg(data, folder_name):
-    filename = '{}/{}.jpg'.format(folder_name, uuid.uuid4())
+def save_to_jpg(url, data, folder_name):
+    #filename = '{}/{}.jpg'.format(folder_name, uuid.uuid4())
+    filename = '{}/{}.jpg'.format(folder_name, url.split("/")[-1])
     with Image(file=StringIO.StringIO(data)) as img:
         if img.format != 'JPEG':
             logging.info('Converting {} to JPEG.'.format(img.format))
@@ -62,7 +63,7 @@ def get(target_folder, limit, source_filename):
             if line_counter >= already_stored:
                 try:
                     response = requests.get(line.rstrip(), timeout=10)
-                    save_to_jpg(response.content, category_folder)
+                    save_to_jpg(line.rstrip(), response.content, category_folder)
                     
                     download_counter += 1
 
@@ -70,6 +71,7 @@ def get(target_folder, limit, source_filename):
                         break
 
                 except Exception as e:
+                    print e
                     pass
                     
             line_counter += 1
