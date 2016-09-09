@@ -4,63 +4,68 @@
 
 '''
 Holds the data from the Inception states, and returns a random batch
-for stochastic gradient descent. This should be modified to allow
-for humongous datasets, i.e. offline data access, using TensorFlow.FixedLengthRecordReader.
-Currently, it reads all HDF5 files into memory. 
+for stochastic gradient descent.
 
 Author: Axel.Tidemann@telenor.com
 '''
 
+from __future__ import division
 import glob
 import os
 from collections import namedtuple
 
 import numpy as np
 import pandas as pd
+import tensorflow as tf
 
 from clusters import find
 from utils import flatten
 
 Data = namedtuple('Data', 'x y')
 
-def states(folder, train_ratio, validation_ratio, test_ratio, expert=False):
-    h5_files = sorted(glob.glob('{}/*.h5'.format(folder)))
+def states(folder):
+    h5_files = sorted(glob.glob('{}/*'.format(folder)))
 
-    train = {}
-    validation = {}
-    test = {}
+    data = {}
     for i, h5 in enumerate(h5_files):
 
         category = os.path.basename(h5) 
         x = np.vstack(pd.read_hdf(h5, 'data').state)
-        
-        if expert:
-            if os.path.basename(h5) == expert:
-                y = np.ones((x.shape[0], 1))
-            else:
-                y = np.zeros((x.shape[0], 1))
-        else:
-            y = np.zeros((x.shape[0], len(h5_files)))
-            y[:,i] = 1
-        
-        train_length = int(x.shape[0]*train_ratio)
-        validation_length = int(x.shape[0]*(train_ratio+validation_ratio))
 
-        train[category] = Data(x[:train_length],y[:train_length])
-        validation[category] = Data(x[train_length:validation_length], y[train_length:validation_length])
-        test[category] = Data(x[validation_length:],y[validation_length:])
+        y = np.zeros((x.shape[0], len(h5_files)))
+        y[:,i] = 1
+        
+        data[category] = Data(x, y)
 
-    return train, validation, test
+    sep = '_'
+
+    h5_stripped = map(lambda x: os.path.basename(x[:x.rfind(sep)])
+                          if os.path.basename(x).rfind(sep) > -1
+                          else os.path.basename(x),
+                          h5_files)
+    
+    pure = sorted(set(h5_stripped))
+
+    filtr = np.zeros((1, len(h5_files), 1, len(pure)))
+
+    if len(pure) < len(h5_files):
+        print 'These HDF5 files are part of a clustering operation, creating output filter.'
+        
+    for i, curated in enumerate(h5_stripped):
+        for j, original in enumerate(pure):
+            if original == curated:
+                filtr[0,i,0,j] = 1
+
+    assert all([ sum(row) == 1 for row in filtr[0,:,0,:] ]), 'The filter is wrong, there is more than one high value per row'
+
+    filtr.astype('float')
+
+    return data, filtr
 
 class DataSet:
-    def __init__(self, data, expert=False):
+    def __init__(self, data):
         self._X = np.vstack([ data[key].x for key in data.keys() ])
         self._Y = np.vstack([ data[key].y for key in data.keys() ])
-
-        self._expert = expert
-        if expert:
-            self._expert_x = data[expert].x
-            self._expert_y = data[expert].y
         
         self._num_examples = self._X.shape[0]
         self._epochs_completed = 0
@@ -89,12 +94,7 @@ class DataSet:
             
         end = self._index_in_epoch
 
-        if self._expert:
-            np.random.shuffle(self._expert_x)
-            return np.vstack([ self._X[start:end], self._expert_x[:batch_size] ]), \
-                np.vstack([ self._Y[start:end], self._expert_y[:batch_size] ])
-        else:
-            return self._X[start:end], self._Y[start:end]
+        return self._X[start:end], self._Y[start:end]
         
     @property
     def epoch(self):
@@ -102,17 +102,11 @@ class DataSet:
     
     @property
     def X(self):
-        if self._expert:
-            return np.vstack([ self._expert_x, self._X[:self._expert_x.shape[0]] ])
-        else:
-            return self._X
+        return self._X
 
     @property
     def Y(self):
-        if self._expert:
-            return np.vstack([ self._expert_y, self._Y[:self._expert_y.shape[0]] ])
-        else:
-            return self._Y
+        return self._Y
 
     @property
     def X_features(self):
@@ -123,22 +117,25 @@ class DataSet:
         return self._Y.shape[1]
 
         
-def read_data(data_folder, train_ratio, validation_ratio, test_ratio, expert=False):
+def read_data(train_folder, test_folder):
 
     class DataSets:
         pass
 
-    train, validation, test = states(data_folder, train_ratio, validation_ratio, test_ratio, expert)
+    train, output_filter = states(train_folder)
+    test, _ = states(test_folder)
 
     data_sets = DataSets()
+
+    data_sets.output_filter = output_filter
     
-    data_sets.train = DataSet(train, expert)
+    data_sets.train = DataSet(train)
     print 'Training data: {} examples, {} features, {} categories.'.format(data_sets.train.X.shape[0],
-                                                                          data_sets.train.X.shape[1],
-                                                                          data_sets.train.Y.shape[1])
-    data_sets.validation = DataSet(validation, expert)
-    print 'Validation data: {} examples.'.format(data_sets.validation.X.shape[0])
-    data_sets.test = DataSet(test, expert)
-    print 'Testing data: {} examples.'.format(data_sets.test.X.shape[0])
-        
+                                                                           data_sets.train.X.shape[1],
+                                                                           data_sets.train.Y.shape[1])
+    
+    data_sets.test = DataSet(test)
+    print 'Testing data: {} examples, {} features, {} categories.'.format(data_sets.test.X.shape[0],
+                                                                          data_sets.test.X.shape[1],
+                                                                          data_sets.test.Y.shape[1])
     return data_sets

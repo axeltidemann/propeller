@@ -13,10 +13,11 @@ import networkx as nx
 
 from utils import flatten
 
-def find(X, lower_bound, upper_bound, min_cluster_size, return_rejected=False):
+def find(X, lower_bound, upper_bound, min_cluster_size):
     
     similarity = cosine_similarity(X)
     similarity = np.tril(similarity, -1)
+
     similarity[ similarity < lower_bound ] = 0
     similarity[ similarity > upper_bound ] = 0
 
@@ -30,14 +31,11 @@ def find(X, lower_bound, upper_bound, min_cluster_size, return_rejected=False):
         graph.remove_nodes_from(edges)
 
     included = [ (node, edges) for node, edges in results if len(edges) > similarity.shape[0]*min_cluster_size ]
-    rejected = [ (node, edges) for node, edges in results if len(edges) <= similarity.shape[0]*min_cluster_size ]
 
-    #clusters = { data.index[node]: [ data.index[e] for e in edges ] for node, edges in included }
     clusters = { node: edges for node, edges in included }
-    
-    if return_rejected:
-        clusters['rejected'] = list(set(flatten(rejected))) #[ data.index[node] for node in set(flatten(rejected)) ]
 
+    clusters['rejected'] = list(set(range(X.shape[0])).difference(flatten(included)))
+    
     return clusters
 
 
@@ -72,12 +70,16 @@ if __name__ == '__main__':
         '--filename',
         help='Filename for the cluster JSON file.',
         default='clusters.json')
+    parser.add_argument(
+        '--include_rejected',
+        action='store_true',
+        help='Whether to include the rejected images')
     args = parser.parse_args()
 
     data = pd.read_hdf(args.h5, args.table)
     X = np.vstack(data.state)
 
-    clusters = find(X, args.lower_bound, args.upper_bound, args.min_cluster_size, True)
+    clusters = find(X, args.lower_bound, args.upper_bound, args.min_cluster_size)
     keys = clusters.keys()
     keys.remove('rejected')
     
@@ -89,9 +91,11 @@ if __name__ == '__main__':
     print 'Total nodes in clusters: {}, {}% of total nodes.'.format(total_nodes, 100.*total_nodes/X.shape[0])
 
     clusters_with_filenames = { data.index[node]: [ data.index[edge] for edge in clusters[node] ] for node in keys }
-    clusters_with_filenames['rejected'] = [ data.index[edge] for edge in clusters['rejected'] ]
+
+    if args.include_rejected:
+        clusters_with_filenames['rejected'] = [ data.index[edge] for edge in clusters['rejected'] ]
     
     with open(args.filename, 'w') as _file:
-        json.dump(clusters, _file)
+        json.dump(clusters_with_filenames, _file)
 
     print 'Clusters saved to {}'.format(args.filename)

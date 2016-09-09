@@ -2,16 +2,14 @@
 # The software includes elements of example code. Copyright 2015 Google, Inc. Licensed under Apache License, Version 2.0.
 # https://github.com/tensorflow/tensorflow/tree/master/tensorflow/examples/tutorials/mnist
 
-import os.path
-import logging
 import os
-import glob
-from random import shuffle
+import random
 import time
 import argparse
+import multiprocessing as mp
+import glob
 
 import tensorflow.python.platform
-from six.moves import urllib
 import numpy as np
 import tensorflow as tf
 import pandas as pd
@@ -21,42 +19,54 @@ from utils import load_graph, maybe_download_and_extract
 
 print('TensorFlow version {}'.format(tf.__version__))
 
-logging.getLogger().setLevel(logging.INFO)
-    
-def save_states(source, target, limit, mem_ratio, model_dir):
-    load_graph(os.path.join(model_dir, 'classify_image_graph_def.pb'))
+KILL = 'POISON PILL'
+
+def save_states(q, gpu, target, limit, mem_ratio, model_dir, seed=0):
+    os.environ['CUDA_VISIBLE_DEVICES'] = str(gpu)
+    print 'GPU {}'.format(gpu)
 
     gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=mem_ratio)
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
+        
+        load_graph(os.path.join(model_dir, 'classify_image_graph_def.pb'))
         next_last_layer = sess.graph.get_tensor_by_name('pool_3:0')
+        
+        while True:
+            source = q.get()
+            if source == KILL:
+                break
 
-        images = glob.glob('{}/*.jpg'.format(source))
-        shuffle(images)
-        images = images[:limit]
+            images = glob.glob('{}/*'.format(source))
+            random.seed(seed)
+            random.shuffle(images)
+            
+            states = []
+            t0 = time.time()
 
-        states = []
+            for jpg in list(images):
+                try:
+                    raw_data = gfile.FastGFile(jpg).read()
+                    hidden_layer = sess.run(next_last_layer,
+                                            {'DecodeJpeg/contents:0': raw_data})
+                    hidden_layer = np.squeeze(hidden_layer)
+                    states.append(hidden_layer)
 
-        t0 = time.time()
+                    if len(states) == limit:
+                        break
+                    
+                except Exception as e:
+                    images.remove(jpg)
+                    print 'Something went wrong when processing {}: \n {}'.format(jpg, e) 
 
-        for jpg in list(images):
-            try:
-                image_data = gfile.FastGFile(jpg).read()
-                hidden_layer = sess.run(next_last_layer,
-                                        {'DecodeJpeg/contents:0': image_data})
-                hidden_layer = np.squeeze(hidden_layer)
-                states.append(hidden_layer)
-            except Exception as e:
-                images.remove(jpg)
-                print 'Something went wrong when processing {}: \n {}'.format(jpg, e) 
+            print('Time spent collecting states: {}'.format(time.time() - t0))
 
-        print('Time spent collecting states: {}'.format(time.time() - t0))
+            df = pd.DataFrame(data={'state': states}, index=images[:len(states)])
+            df.index.name='filename'
+            
+            h5name = os.path.join(target, '{}.h5'.format(os.path.basename(os.path.normpath(source))))
 
-        df = pd.DataFrame(data={'state': states}, index=images)
-        df.index.name='filename'
-
-        h5name = os.path.join(target, '{}.h5'.format(os.path.basename(source)))
-        with pd.HDFStore(h5name, 'w') as store:
-            store['data'] = df
+            with pd.HDFStore(h5name, 'w') as store:
+                store['data'] = df
           
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='''
@@ -64,7 +74,8 @@ if __name__ == '__main__':
     ''', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument(
         'source',
-        help='Folder with images.')
+        help='Folder(s) with images.',
+        nargs='+')
     parser.add_argument(
         'target',
         help='Where to put the states file, will have same name as images folder.')
@@ -78,11 +89,35 @@ if __name__ == '__main__':
         type=int,
         default=10000)
     parser.add_argument(
-        '--mem_ratio',
-        help='Ratio of memory to reserve on the GPU instance',
-        type=float,
-        default=.95)
+        '--gpus',
+        help='How many GPUs to use',
+        default=4,
+        type=int)
+    parser.add_argument(
+        '--threads',
+        help='How many threads to use pr GPU',
+        default=2,
+        type=int)
+
     args = parser.parse_args()
 
     maybe_download_and_extract(args.model_dir)
-    save_states(args.source, args.target, args.limit, args.mem_ratio, args.model_dir)
+
+    q = mp.Queue()
+
+    processes = 0
+    for gpu in range(args.gpus):
+        for _ in range(args.threads):
+            if processes == len(args.source):
+                break
+            mp.Process(target=save_states, args=(q, gpu, args.target, args.limit,
+                                                 .9/args.threads, args.model_dir)).start()
+            processes += 1
+                
+    for folder in args.source:
+        q.put(folder)
+
+    for _ in range(args.gpus*args.threads):
+        q.put(KILL)
+
+    
