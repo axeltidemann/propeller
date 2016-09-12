@@ -106,7 +106,7 @@ if __name__ == '__main__':
     q = mp.Queue()
 
     processes = 0
-    for gpu in range(args.gpus):
+    for gpu in os.environ['CUDA_VISIBLE_DEVICES'].split(","):
         for _ in range(args.threads):
             if processes == len(args.source):
                 break
