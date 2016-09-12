@@ -30,6 +30,11 @@ parser.add_argument(
     help='Limit the number of files to download',
     type=int,
     default=10000)
+parser.add_argument(
+    '--timeout',
+    help='Number of seconds to wait for the server',
+    type=int,
+    default=10000)
 args = parser.parse_args()
 
 def save_to_jpg(url, data, folder_name):
@@ -41,7 +46,7 @@ def save_to_jpg(url, data, folder_name):
             img.format = 'JPEG'
         img.save(filename=filename)
             
-def get(target_folder, limit, source_filename):
+def get(target_folder, limit, timeout, source_filename):
     
     print 'Downloading from {}'.format(source_filename)
     category_name = os.path.basename(source_filename).replace('.txt', '')
@@ -62,7 +67,7 @@ def get(target_folder, limit, source_filename):
         for line in _file:
             if line_counter >= already_stored:
                 try:
-                    response = requests.get(line.rstrip(), timeout=10)
+                    response = requests.get(line.rstrip(), timeout=timeout)
                     save_to_jpg(line.rstrip(), response.content, category_folder)
                     
                     download_counter += 1
@@ -79,6 +84,6 @@ def get(target_folder, limit, source_filename):
     print 'Category {} done, {} files downloaded, {} in total.'.format(category_name, download_counter - already_stored, download_counter)
 
 pool = mp.Pool()
-par_get = partial(get, args.target, args.limit)
+par_get = partial(get, args.target, args.limit, args.timeout)
 filenames = glob.glob('{}/*.txt'.format(args.source))
 pool.map(par_get, filenames)
