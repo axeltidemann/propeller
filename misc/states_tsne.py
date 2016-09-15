@@ -73,7 +73,7 @@ if args.all:
     else:
         X = np.vstack(data)
         
-    tsne = np.array([ y for y in bh_tsne(X) ])
+    tsne = np.array([ y for y in bh_tsne(X) ]) #fix to say false to PCA to bh_tsne
 
     plt.scatter(tsne[:,0], tsne[:,1], c=labels)
     plt.savefig('{}/global_{}_components.png'.format(args.png_folder, args.components), dpi=300)

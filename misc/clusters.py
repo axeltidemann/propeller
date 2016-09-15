@@ -14,7 +14,7 @@ import networkx as nx
 from utils import flatten
 
 def find(X, lower_bound, upper_bound, min_cluster_size):
-    
+
     similarity = cosine_similarity(X)
     similarity = np.tril(similarity, -1)
 
@@ -46,11 +46,8 @@ if __name__ == '__main__':
 
     parser.add_argument(
         'h5',
-        help='Path to HDF5 file with states')
-    parser.add_argument(
-        '--table',
-        help='HDF5',
-        default='data')
+        help='HDF5 file(s) with states',
+        nargs='+')
     parser.add_argument(
         '--lower_bound',
         help='Lower level of cosine similarity',
@@ -68,34 +65,51 @@ if __name__ == '__main__':
         type=float)
     parser.add_argument(
         '--filename',
-        help='Filename for the cluster JSON file.',
-        default='clusters.json')
+        default=False,
+        help='Filename for the cluster JSON file. If unspecified, will be h5 filename + .json')
     parser.add_argument(
         '--include_rejected',
         action='store_true',
         help='Whether to include the rejected images')
     args = parser.parse_args()
 
-    data = pd.read_hdf(args.h5, args.table)
-    X = np.vstack(data.state)
+    for h5 in args.h5:
 
-    clusters = find(X, args.lower_bound, args.upper_bound, args.min_cluster_size)
-    keys = clusters.keys()
-    keys.remove('rejected')
-    
-    print 'Cluster sizes: ', [ len(clusters[node]) for node in keys ]
-    print '{} clusters of size > {}, cosine similarity in range ({},{}).'.format(len(keys),
-                                                                                 int(args.min_cluster_size*X.shape[0]),
-                                                                                 args.lower_bound, args.upper_bound)
-    total_nodes = sum([ len(clusters[node]) for node in keys ])
-    print 'Total nodes in clusters: {}, {}% of total nodes.'.format(total_nodes, 100.*total_nodes/X.shape[0])
+        X = []
+        index = []
+        with pd.HDFStore(h5) as store:
+            for key in store.keys():
+                data = store[key]
+                if len(X):
+                    X = np.vstack([X, np.vstack(data.state)])
+                    index.extend(data.index)
+                else:
+                    X = np.vstack(data.state)
+                    index = list(data.index)
 
-    clusters_with_filenames = { data.index[node]: [ data.index[edge] for edge in clusters[node] ] for node in keys }
+        print 'Done gathering data, X.shape = {}'.format(X.shape)
 
-    if args.include_rejected:
-        clusters_with_filenames['rejected'] = [ data.index[edge] for edge in clusters['rejected'] ]
-    
-    with open(args.filename, 'w') as _file:
-        json.dump(clusters_with_filenames, _file)
+        clusters = find(X, args.lower_bound, args.upper_bound, args.min_cluster_size)
+        keys = clusters.keys()
+        keys.remove('rejected')
 
-    print 'Clusters saved to {}'.format(args.filename)
+        print 'Cluster sizes: ', [ len(clusters[node]) for node in keys ]
+        print '{} clusters of size > {}, cosine similarity in range ({},{}).'.format(len(keys),
+                                                                                     int(args.min_cluster_size*X.shape[0]),
+                                                                                     args.lower_bound, args.upper_bound)
+        total_nodes = sum([ len(clusters[node]) for node in keys ])
+        print 'Total nodes in clusters: {}, {}% of total nodes.'.format(total_nodes, 100.*total_nodes/X.shape[0])
+
+        clusters_with_filenames = { index[node]: [ index[edge] for edge in clusters[node] ] for node in keys }
+
+        if args.include_rejected:
+            clusters_with_filenames['rejected'] = [ index[edge] for edge in clusters['rejected'] ]
+
+        args.filename = args.filename if args.filename else '{}.json'.format(h5)
+            
+        with open(args.filename, 'w') as _file:
+            json.dump(clusters_with_filenames, _file)
+
+        print 'Clusters saved to {}'.format(args.filename)
+
+        args.filename = False

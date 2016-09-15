@@ -35,7 +35,7 @@ if __name__ == '__main__':
         type=float)
     parser.add_argument(
         '--min_cluster_size',
-        help='Minimum relative cluster size, these will be put in their own cateogory',
+        help='Minimum relative cluster size, these will be put in their own category',
         default=.05,
         type=float)
     parser.add_argument(

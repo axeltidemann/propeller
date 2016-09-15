@@ -72,8 +72,6 @@ def augment_images(q, gpu, target, limit, mem_ratio, model_dir):
             if h5 == KILL:
                 break
 
-            print 'Processing {}'.format(h5)
-
             data = pd.read_hdf(h5, 'data')
             images = data.index
 

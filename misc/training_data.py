@@ -23,7 +23,7 @@ from utils import flatten
 
 Data = namedtuple('Data', 'x y')
 
-def states(folder):
+def states(folder, separator='_'):
     h5_files = sorted(glob.glob('{}/*'.format(folder)))
 
     data = {}
@@ -37,10 +37,8 @@ def states(folder):
         
         data[category] = Data(x, y)
 
-    sep = '_'
-
-    h5_stripped = map(lambda x: os.path.basename(x[:x.rfind(sep)])
-                          if os.path.basename(x).rfind(sep) > -1
+    h5_stripped = map(lambda x: os.path.basename(x[:x.rfind(separator)])
+                          if os.path.basename(x).rfind(separator) > -1
                           else os.path.basename(x),
                           h5_files)
     
@@ -49,13 +47,13 @@ def states(folder):
     filtr = np.zeros((1, len(h5_files), 1, len(pure)))
 
     if len(pure) < len(h5_files):
-        print 'These HDF5 files are part of a clustering operation, creating output filter.'
+        print 'These HDF5 files are a result of a data hygiene operation, creating output filter.'
         
     for i, curated in enumerate(h5_stripped):
         for j, original in enumerate(pure):
             if original == curated:
                 filtr[0,i,0,j] = 1
-
+                
     assert all([ sum(row) == 1 for row in filtr[0,:,0,:] ]), 'The filter is wrong, there is more than one high value per row'
 
     filtr.astype('float')
