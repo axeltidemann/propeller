@@ -18,9 +18,6 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 
-from clusters import find
-from utils import flatten
-
 Data = namedtuple('Data', 'x y')
 
 def states(folder, separator='_'):

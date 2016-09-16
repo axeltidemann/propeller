@@ -6,7 +6,8 @@ from __future__ import print_function
 import argparse
 import glob
 import os
-import uuid
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),'../misc')))
 
 import pandas as pd
 import tensorflow as tf

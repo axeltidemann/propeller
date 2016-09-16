@@ -8,6 +8,8 @@ import time
 import argparse
 import multiprocessing as mp
 import glob
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),'../misc')))
 
 import tensorflow.python.platform
 import numpy as np
