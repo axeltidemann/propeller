@@ -1,10 +1,10 @@
 # Copyright 2016 Telenor ASA, Author: Axel Tidemann
 
 import argparse
-from collections import defaultdict
 import json
 import time
 import random
+import sys
 
 import pandas as pd
 import numpy as np
@@ -16,20 +16,40 @@ from utils import flatten
 def find(X, lower_bound, upper_bound, min_cluster_size):
 
     similarity = cosine_similarity(X)
-    similarity = np.tril(similarity, -1)
+    similarity = np.tril(similarity, -1) # halves graph build time
 
     similarity[ similarity < lower_bound ] = 0
     similarity[ similarity > upper_bound ] = 0
 
+    argsorted = np.argsort(similarity, axis=None)
+    index_tuples = zip(*np.unravel_index(argsorted, similarity.shape))
+
+    t0 = time.time()
     graph = nx.from_numpy_matrix(similarity)
-
+    print 'Graph built: {} nodes in {} seconds.'.format(len(graph.nodes()), time.time()-t0)
+    
     results = []
+    print 'Nodes left:',
+    sys.stdout.flush()
+    
     while graph.number_of_nodes():
-        node = random.choice(graph.nodes())
-        edges = list(nx.bfs_tree(graph, node))
-        results.append((node, edges))
-        graph.remove_nodes_from(edges)
 
+        seed = random.choice(index_tuples.pop())
+        edges = []
+
+        try:
+            edges = [ edge for edge in nx.bfs_tree(graph, seed) if similarity[seed, edge] or similarity[edge, seed] ]
+        except:
+            continue # Node was not in graph
+        
+        results.append((seed, edges))
+        graph.remove_nodes_from(edges + [seed])
+        
+        print len(graph.nodes()),
+        sys.stdout.flush()
+
+    print 'done'
+    
     included = [ (node, edges) for node, edges in results if len(edges) > similarity.shape[0]*min_cluster_size ]
 
     clusters = { node: edges for node, edges in included }
@@ -73,6 +93,8 @@ if __name__ == '__main__':
         help='Whether to include the rejected images')
     args = parser.parse_args()
 
+    assert not (args.filename and len(args.h5) > 1), 'Specifying --filename with multiple input files makes no sense.'
+    
     for h5 in args.h5:
 
         X = []
@@ -86,8 +108,6 @@ if __name__ == '__main__':
                 else:
                     X = np.vstack(data.state)
                     index = list(data.index)
-
-        print 'Done gathering data, X.shape = {}'.format(X.shape)
 
         clusters = find(X, args.lower_bound, args.upper_bound, args.min_cluster_size)
         keys = clusters.keys()

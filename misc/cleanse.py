@@ -36,7 +36,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--min_cluster_size',
         help='Minimum relative cluster size, these will be put in their own category',
-        default=.05,
+        default=.01,
         type=float)
     parser.add_argument(
         '--include_rejected',
@@ -49,7 +49,7 @@ if __name__ == '__main__':
         X = np.vstack(data.state)
         
         clusters = find(X, args.lower_bound, args.upper_bound, args.min_cluster_size)
-
+        
         for i, (node, edges) in enumerate(clusters.iteritems()):
             if not args.include_rejected and node == 'rejected':
                 continue
