@@ -30,6 +30,6 @@ if __name__ == '__main__':
             df = pd.read_hdf(h5)
 
             if args.shuffle:
-                df.reindex(np.random.permutation(df.index))
+                df = df.reindex(np.random.permutation(df.index))
 
             store.append(os.path.basename(h5), df)
