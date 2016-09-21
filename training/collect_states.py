@@ -17,13 +17,13 @@ import tensorflow as tf
 import pandas as pd
 from tensorflow.python.platform import gfile
 
-from utils import load_graph, maybe_download_and_extract
+from utils import load_graph, maybe_download_and_extract, chunks
 
 print('TensorFlow version {}'.format(tf.__version__))
 
 KILL = 'POISON PILL'
 
-def save_states(q, gpu, target, limit, mem_ratio, model_dir, seed=0):
+def save_states(q, gpu, target, limit, mem_ratio, model_dir, seed=0, chunksize=1000):
     os.environ['CUDA_VISIBLE_DEVICES'] = str(gpu)
     print 'GPU {}'.format(gpu)
 
@@ -41,34 +41,36 @@ def save_states(q, gpu, target, limit, mem_ratio, model_dir, seed=0):
             images = glob.glob('{}/*'.format(source))
             random.seed(seed)
             random.shuffle(images)
-            
-            states = []
+            if limit > 0:
+                images = images[:limit]
+
             t0 = time.time()
-
-            for jpg in list(images):
-                try:
-                    raw_data = gfile.FastGFile(jpg).read()
-                    hidden_layer = sess.run(next_last_layer,
-                                            {'DecodeJpeg/contents:0': raw_data})
-                    hidden_layer = np.squeeze(hidden_layer)
-                    states.append(hidden_layer)
-
-                    if len(states) == limit:
-                        break
-                    
-                except Exception as e:
-                    images.remove(jpg)
-                    print 'Something went wrong when processing {}: \n {}'.format(jpg, e) 
-
-            print('Time spent collecting states: {}'.format(time.time() - t0))
-
-            df = pd.DataFrame(data={'state': states}, index=images[:len(states)])
-            df.index.name='filename'
-            
             h5name = os.path.join(target, '{}.h5'.format(os.path.basename(os.path.normpath(source))))
 
-            with pd.HDFStore(h5name, 'w') as store:
-                store['data'] = df
+            with pd.HDFStore(h5name, mode='w', complevel=9, complib='blosc') as store:
+                for chunk in chunks(images, chunksize):
+
+                    states = []
+                    for jpg in list(chunk): # Creates a copy over which it is safe to iterate
+                        try:
+                            raw_data = gfile.FastGFile(jpg).read()
+                            hidden_layer = sess.run(next_last_layer,
+                                                    {'DecodeJpeg/contents:0': raw_data})
+                            hidden_layer = np.squeeze(hidden_layer)
+                            states.append(hidden_layer)
+
+                        except Exception as e:
+                            chunk.remove(jpg)
+                            print 'Something went wrong when processing {}'.format(jpg)
+
+                    X = np.vstack(states)
+                    columns = [ 'f{}'.format(i) for i in range(X.shape[1]) ]
+                    
+                    df = pd.DataFrame(data=X, index=chunk, columns=columns)
+                    df.index.name='filename'
+                    store.append('data', df)
+
+            print('Time spent collecting {} states: {}'.format(len(images), time.time() - t0))
           
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='''
@@ -87,7 +89,7 @@ if __name__ == '__main__':
         default='/tmp/imagenet')
     parser.add_argument(
         '--limit',
-        help='Maximum amount of images to process',
+        help='Maximum amount of images to process. 0 means no limit.',
         type=int,
         default=10000)
     parser.add_argument(
@@ -121,5 +123,3 @@ if __name__ == '__main__':
 
     for _ in range(args.gpus*args.threads):
         q.put(KILL)
-
-    

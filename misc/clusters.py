@@ -5,6 +5,7 @@ import json
 import time
 import random
 import sys
+import os
 
 import pandas as pd
 import numpy as np
@@ -27,13 +28,10 @@ def find(X, lower_bound, upper_bound, min_cluster_size):
     t0 = time.time()
     graph = nx.from_numpy_matrix(similarity)
     print 'Graph built: {} nodes in {} seconds.'.format(len(graph.nodes()), time.time()-t0)
-    
+
     results = []
-    print 'Nodes left:',
-    sys.stdout.flush()
     
     while graph.number_of_nodes():
-
         seed = random.choice(index_tuples.pop())
         edges = []
 
@@ -44,11 +42,6 @@ def find(X, lower_bound, upper_bound, min_cluster_size):
         
         results.append((seed, edges))
         graph.remove_nodes_from(edges + [seed])
-        
-        print len(graph.nodes()),
-        sys.stdout.flush()
-
-    print 'done'
     
     included = [ (node, edges) for node, edges in results if len(edges) > similarity.shape[0]*min_cluster_size ]
 
@@ -96,36 +89,26 @@ if __name__ == '__main__':
     assert not (args.filename and len(args.h5) > 1), 'Specifying --filename with multiple input files makes no sense.'
     
     for h5 in args.h5:
+        data = pd.read_hdf(h5)
+        index = data.index
 
-        X = []
-        index = []
-        with pd.HDFStore(h5) as store:
-            for key in store.keys():
-                data = store[key]
-                if len(X):
-                    X = np.vstack([X, np.vstack(data.state)])
-                    index.extend(data.index)
-                else:
-                    X = np.vstack(data.state)
-                    index = list(data.index)
-
-        clusters = find(X, args.lower_bound, args.upper_bound, args.min_cluster_size)
+        clusters = find(data, args.lower_bound, args.upper_bound, args.min_cluster_size)
         keys = clusters.keys()
         keys.remove('rejected')
 
         print 'Cluster sizes: ', [ len(clusters[node]) for node in keys ]
         print '{} clusters of size > {}, cosine similarity in range ({},{}).'.format(len(keys),
-                                                                                     int(args.min_cluster_size*X.shape[0]),
+                                                                                     int(args.min_cluster_size*len(data)),
                                                                                      args.lower_bound, args.upper_bound)
         total_nodes = sum([ len(clusters[node]) for node in keys ])
-        print 'Total nodes in clusters: {}, {}% of total nodes.'.format(total_nodes, 100.*total_nodes/X.shape[0])
+        print 'Total nodes in clusters: {}, {}% of total nodes.'.format(total_nodes, 100.*total_nodes/len(data))
 
         clusters_with_filenames = { index[node]: [ index[edge] for edge in clusters[node] ] for node in keys }
 
         if args.include_rejected:
             clusters_with_filenames['rejected'] = [ index[edge] for edge in clusters['rejected'] ]
 
-        args.filename = args.filename if args.filename else '{}.json'.format(h5)
+        args.filename = args.filename if args.filename else '{}.json'.format(os.path.basename(h5))
             
         with open(args.filename, 'w') as _file:
             json.dump(clusters_with_filenames, _file)

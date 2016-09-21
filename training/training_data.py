@@ -27,7 +27,7 @@ def states(folder, separator='_'):
     for i, h5 in enumerate(h5_files):
 
         category = os.path.basename(h5) 
-        x = np.vstack(pd.read_hdf(h5, 'data').state)
+        x = pd.read_hdf(h5).values
 
         y = np.zeros((x.shape[0], len(h5_files)))
         y[:,i] = 1

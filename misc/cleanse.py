@@ -20,10 +20,6 @@ if __name__ == '__main__':
         'target',
         help='Folder to put the cleansed HDF5 file(s), will have same name as original HDF5 file, with suffix number.')
     parser.add_argument(
-        '--table',
-        help='HDF5',
-        default='data')
-    parser.add_argument(
         '--lower_bound',
         help='Lower level of cosine similarity',
         default=.8,
@@ -45,10 +41,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     for h5 in args.data:
-        data = pd.read_hdf(h5, args.table)
-        X = np.vstack(data.state)
+        data = pd.read_hdf(h5)
         
-        clusters = find(X, args.lower_bound, args.upper_bound, args.min_cluster_size)
+        clusters = find(data, args.lower_bound, args.upper_bound, args.min_cluster_size)
         
         for i, (node, edges) in enumerate(clusters.iteritems()):
             if not args.include_rejected and node == 'rejected':
@@ -57,9 +52,9 @@ if __name__ == '__main__':
             if node is not 'rejected':
                 edges.append(node) # To include the seed
                 
-            filename = os.path.join(args.target, '{}_{}'.format(os.path.basename(h5), i))
-            with pd.HDFStore(filename, 'w') as store:
-                store['data'] = data.iloc[edges]
+            h5name = os.path.join(args.target, '{}_{}'.format(os.path.basename(h5), i))
+            with pd.HDFStore(h5name, mode='w', complevel=9, complib='blosc') as store:
+                store.append('data', data.iloc[edges])
                 
-            print '{}: storing cluster {} as {} with {} ({}%) samples'.format(h5, i, filename,
-                                                                              len(edges), 100.*len(edges)/X.shape[0])
+            print '{}: storing cluster {} as {} with {} ({}%) samples'.format(h5, i, h5name,
+                                                                              len(edges), 100.*len(edges)/len(data))
