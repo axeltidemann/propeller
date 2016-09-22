@@ -20,21 +20,28 @@ import tensorflow as tf
 
 Data = namedtuple('Data', 'x y')
 
-# Yes
-
 def states(folder, separator='_'):
     h5_files = sorted(glob.glob('{}/*'.format(folder)))
 
-    data = {}
-    for i, h5 in enumerate(h5_files):
-
-        category = os.path.basename(h5) 
-        x = pd.read_hdf(h5).values
-
-        y = np.zeros((x.shape[0], len(h5_files)))
-        y[:,i] = 1
+    length = 0
+    for h5 in h5_files:
+        storer = pd.HDFStore(h5).get_storer('data')
+        length += storer.nrows
+        width = storer.ncols
         
-        data[category] = Data(x, y)
+    X = np.zeros((length, width))
+    Y = np.zeros((length, len(h5_files)))
+
+    start_index = 0
+    
+    for i, h5 in enumerate(h5_files):
+        x = pd.read_hdf(h5)
+        end_index = start_index + len(x)
+        
+        X[start_index:end_index] = x
+        Y[start_index:end_index,i] = 1
+
+        start_index += len(x)
 
     h5_stripped = map(lambda x: os.path.basename(x[:x.rfind(separator)])
                           if os.path.basename(x).rfind(separator) > -1
@@ -57,12 +64,11 @@ def states(folder, separator='_'):
 
     filtr.astype('float')
 
-    return data, filtr
+    return (X,Y), filtr
 
 class DataSet:
     def __init__(self, data):
-        self._X = np.vstack([ data[key].x for key in data.keys() ])
-        self._Y = np.vstack([ data[key].y for key in data.keys() ])
+        self._X, self._Y = data
         
         self._num_examples = self._X.shape[0]
         self._epochs_completed = 0
