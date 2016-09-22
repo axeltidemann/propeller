@@ -20,6 +20,8 @@ import tensorflow as tf
 
 Data = namedtuple('Data', 'x y')
 
+# Yes
+
 def states(folder, separator='_'):
     h5_files = sorted(glob.glob('{}/*'.format(folder)))
 
