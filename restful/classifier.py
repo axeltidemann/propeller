@@ -25,7 +25,7 @@ def classify_images(cuda_device, mapping, sqs_queue, mem_ratio, model_dir, class
     sqs = boto3.resource('sqs')
     queue = sqs.get_queue_by_name(QueueName=sqs_queue)
     r_server = redis.StrictRedis(redis_server, redis_port)
-
+    os.environ['CUDA_VISIBLE_DEVICES'] = str(gpu)
     print('Using CUDA device {}'.format(cuda_device))
     gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=mem_ratio)
 
