@@ -79,7 +79,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--filename',
         default=False,
-        help='Filename for the cluster JSON file. If unspecified, will be h5 filename + .json')
+        help='Filename for the cluster JSON file. If unspecified, will be h5 filename + .json + interval')
     parser.add_argument(
         '--include_rejected',
         action='store_true',
@@ -108,7 +108,7 @@ if __name__ == '__main__':
         if args.include_rejected:
             clusters_with_filenames['rejected'] = [ index[edge] for edge in clusters['rejected'] ]
 
-        args.filename = args.filename if args.filename else '{}.json'.format(os.path.basename(h5))
+        args.filename = args.filename if args.filename else '{}.json_{}-{}'.format(os.path.basename(h5), args.lower_bound, args.upper_bound)
             
         with open(args.filename, 'w') as _file:
             json.dump(clusters_with_filenames, _file)

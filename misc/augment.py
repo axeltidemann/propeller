@@ -106,9 +106,14 @@ def augment_images(q, gpu, target, limit, mem_ratio, model_dir):
 
             print 'Time spent augmenting images in {}: {}'.format(h5, time.time() - t0)
 
+            X = np.vstack(states)
+            columns = [ 'f{}'.format(i) for i in range(X.shape[1]) ]
+
+            df = pd.DataFrame(data=X, columns=columns)
+            
             h5name = os.path.join(target, os.path.basename(h5))
-            with pd.HDFStore(h5name, 'w') as store:
-                store['data'] = pd.DataFrame(data={'state': states + list(data.state)})
+            with pd.HDFStore(h5name, mode='w', complevel=9, complib='blosc') as store:
+                store.append('data', df)
 
           
 if __name__ == '__main__':
@@ -131,9 +136,8 @@ if __name__ == '__main__':
         default=8000)
     parser.add_argument(
         '--gpus',
-        help='How many GPUs to use',
-        default=4,
-        type=int)
+        help='Which GPUs to use',
+        default='0,1,2,3')
     parser.add_argument(
         '--threads',
         help='How many threads to use pr GPU',
@@ -150,7 +154,8 @@ if __name__ == '__main__':
     q = mp.Queue()
     
     processes = 0
-    for gpu in range(args.gpus):
+    gpus = args.gpus.split(',')
+    for gpu in gpus:
         for _ in range(args.threads):
             if processes == len(args.source):
                 break
@@ -161,5 +166,5 @@ if __name__ == '__main__':
     for h5 in args.source:
         q.put(h5)
 
-    for _ in range(args.gpus*args.threads):
+    for _ in range(len(gpus)*args.threads):
         q.put(KILL)

@@ -13,6 +13,7 @@ from __future__ import division
 import glob
 import os
 from collections import namedtuple
+import gc
 
 import numpy as np
 import pandas as pd
@@ -20,9 +21,8 @@ import tensorflow as tf
 
 Data = namedtuple('Data', 'x y')
 
-def states(folder, separator='_'):
-    h5_files = sorted(glob.glob('{}/*'.format(folder)))
-
+def states(h5_files, separator='_'):
+    
     length = 0
     for h5 in h5_files:
         storer = pd.HDFStore(h5).get_storer('data')
@@ -42,6 +42,8 @@ def states(folder, separator='_'):
         Y[start_index:end_index,i] = 1
 
         start_index += len(x)
+
+        gc.collect()
 
     h5_stripped = map(lambda x: os.path.basename(x[:x.rfind(separator)])
                           if os.path.basename(x).rfind(separator) > -1
@@ -125,8 +127,8 @@ def read_data(train_folder, test_folder):
     class DataSets:
         pass
 
-    train, output_filter = states(train_folder)
-    test, _ = states(test_folder)
+    train, output_filter = states(sorted(glob.glob('{}/*'.format(train_folder))))
+    test, _ = states(sorted(glob.glob('{}/*'.format(test_folder))))
 
     data_sets = DataSets()
 

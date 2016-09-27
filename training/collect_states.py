@@ -24,7 +24,7 @@ print('TensorFlow version {}'.format(tf.__version__))
 KILL = 'POISON PILL'
 
 def save_states(q, gpu, target, limit, mem_ratio, model_dir, seed=0, chunksize=1000):
-    os.environ['CUDA_VISIBLE_DEVICES'] = str(gpu)
+    os.environ['CUDA_VISIBLE_DEVICES'] = gpu
     print 'GPU {}'.format(gpu)
 
     gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=mem_ratio)
@@ -94,9 +94,8 @@ if __name__ == '__main__':
         default=10000)
     parser.add_argument(
         '--gpus',
-        help='How many GPUs to use',
-        default=4,
-        type=int)
+        help='Which GPUs to use',
+        default='0,1,2,3')
     parser.add_argument(
         '--threads',
         help='How many threads to use pr GPU',
@@ -110,7 +109,8 @@ if __name__ == '__main__':
     q = mp.Queue()
 
     processes = 0
-    for gpu in os.environ['CUDA_VISIBLE_DEVICES'].split(","):
+    gpus = args.gpus.split(',')
+    for gpu in gpus: 
         for _ in range(args.threads):
             if processes == len(args.source):
                 break
@@ -121,5 +121,5 @@ if __name__ == '__main__':
     for folder in args.source:
         q.put(folder)
 
-    for _ in range(args.gpus*args.threads):
+    for _ in range(len(gpus)*args.threads):
         q.put(KILL)

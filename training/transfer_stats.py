@@ -35,8 +35,6 @@ parser.add_argument(
     default=3)
 args = parser.parse_args()
 
-test, _ = states(args.test_folder)
-
 for model in args.models:
     with tf.Session() as sess:
         print('Evaluating {}'.format(model))
@@ -48,14 +46,23 @@ for model in args.models:
         avg_accuracy = []
         avg_top_k_accuracy = []
 
-        for category, data in test.iteritems():
+        h5_files = sorted(glob.glob('{}/*'.format(args.test_folder)))
 
-            predictions = sess.run(transfer_predictor, { 'input:0': data.x })
+        for i, h5 in enumerate(h5_files):
 
-            correct = np.argmax(predictions, axis=1) == np.argmax(data.y, axis=1)
+            data, _ = states([ h5 ])
+
+            X,_ = data
+
+            Y = np.zeros((len(X), len(h5_files)))
+            Y[:,i] = 1
+
+            predictions = sess.run(transfer_predictor, { 'input:0': X })
+
+            correct = np.argmax(predictions, axis=1) == np.argmax(Y, axis=1)
             accuracy = np.mean(correct)
 
-            top_k = [ np.argmax(target) in np.argsort(prediction)[-args.top_k:] for target, prediction in zip(data.y, predictions) ]
+            top_k = [ np.argmax(target) in np.argsort(prediction)[-args.top_k:] for target, prediction in zip(Y, predictions) ]
             top_k_accuracy = np.mean(top_k)
 
             correct_confidence = np.mean(np.max(predictions[np.where(correct)], axis=1))
@@ -63,7 +70,7 @@ for model in args.models:
 
             print('Category {}, {} images: accuracy: {}, top_{} accuracy: {}, '
                   'correct confidence: {}, wrong confidence: {}'
-                  ''.format(category, data.x.shape[0], accuracy, args.top_k,
+                  ''.format(os.path.basename(h5), len(X), accuracy, args.top_k,
                             top_k_accuracy, correct_confidence, wrong_confidence))
 
             avg_accuracy.append(accuracy)
