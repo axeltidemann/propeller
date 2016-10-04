@@ -18,8 +18,7 @@ import gc
 import numpy as np
 import pandas as pd
 import tensorflow as tf
-
-Data = namedtuple('Data', 'x y')
+import ipdb
 
 def states(h5_files, separator='_'):
     
@@ -127,8 +126,12 @@ def read_data(train_folder, test_folder):
     class DataSets:
         pass
 
-    train, output_filter = states(sorted(glob.glob('{}/*'.format(train_folder))))
-    test, _ = states(sorted(glob.glob('{}/*'.format(test_folder))))
+    h5_train = sorted(glob.glob('{}/*'.format(train_folder)))
+    assert len(h5_train), 'The HDF5 folder is empty.'
+    train, output_filter = states(h5_train)
+
+    h5_test = sorted(glob.glob('{}/*'.format(test_folder)))
+    test, _ = states(h5_test)
 
     data_sets = DataSets()
 

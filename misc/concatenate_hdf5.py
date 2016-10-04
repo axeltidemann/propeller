@@ -28,8 +28,12 @@ if __name__ == '__main__':
         for h5 in args.source:
             print 'Reading {}'.format(h5)
             df = pd.read_hdf(h5)
+            store.append('data', df, min_itemsize={'index': 103})
 
-            if args.shuffle:
-                df = df.reindex(np.random.permutation(df.index))
+        if args.shuffle:
+            print 'Shuffling data'
+            df = store['data']
+            del store['data']
+            shuffled = df.reindex(np.random.permutation(df.index))
 
-            store.append(os.path.basename(h5), df)
+            store.append('data', shuffled)

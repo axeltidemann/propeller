@@ -16,10 +16,10 @@ from tensorflow.python.framework import ops
 import numpy as np
 
 from training_data import states
-from utils import load_graph
+from utils import load_graph, pretty_float
 
 parser = argparse.ArgumentParser(description='''
-Performs statistics on a trained model.
+Performs statistics on a trained model. Does not run on GPU.
 ''', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument(
     'test_folder',
@@ -35,16 +35,20 @@ parser.add_argument(
     default=3)
 args = parser.parse_args()
 
+os.environ['CUDA_VISIBLE_DEVICES'] = ''
+
 for model in args.models:
     with tf.Session() as sess:
         print('Evaluating {}'.format(model))
 
+        print('NOTE: ALL NUMBER PAIRS ARE ON THE FORM (mean, median, standard deviation)')
+        
         load_graph(model)
 
         transfer_predictor = sess.graph.get_tensor_by_name('output:0')
 
-        avg_accuracy = []
-        avg_top_k_accuracy = []
+        all_accuracies = []
+        all_top_k_accuracy = []
 
         h5_files = sorted(glob.glob('{}/*'.format(args.test_folder)))
 
@@ -66,17 +70,27 @@ for model in args.models:
             top_k_accuracy = np.mean(top_k)
 
             correct_confidence = np.mean(np.max(predictions[np.where(correct)], axis=1))
+            correct_confidence_median = np.median(np.max(predictions[np.where(correct)], axis=1))
+            correct_confidence_std = np.std(np.max(predictions[np.where(correct)], axis=1))
             wrong_confidence = np.mean(np.max(predictions[np.where(~correct)], axis=1))
+            wrong_confidence_median = np.median(np.max(predictions[np.where(~correct)], axis=1))
+            wrong_confidence_std = np.std(np.max(predictions[np.where(~correct)], axis=1))
 
-            print('Category {}, {} images: accuracy: {}, top_{} accuracy: {}, '
-                  'correct confidence: {}, wrong confidence: {}'
-                  ''.format(os.path.basename(h5), len(X), accuracy, args.top_k,
-                            top_k_accuracy, correct_confidence, wrong_confidence))
+            print('Category {}, {} images. \t accuracy: {} top_{} accuracy: {} '
+                  'correct confidence: {}, {}, {} wrong confidence: {}, {}, {}'
+                  ''.format(os.path.basename(h5), len(X), pretty_float(accuracy), args.top_k,
+                            pretty_float(top_k_accuracy),
+                            pretty_float(correct_confidence),
+                            pretty_float(correct_confidence_median),
+                            pretty_float(correct_confidence_std),
+                            pretty_float(wrong_confidence),
+                            pretty_float(wrong_confidence_median),
+                            pretty_float(wrong_confidence_std)))
 
-            avg_accuracy.append(accuracy)
-            avg_top_k_accuracy.append(top_k_accuracy)
+            all_accuracies.append(accuracy)
+            all_top_k_accuracy.append(top_k_accuracy)
 
-        print('Average accuracy across categories: {}'.format(np.mean(avg_accuracy)))
-        print('Average top_{} accuracy across categories: {}'.format(args.top_k, np.mean(avg_top_k_accuracy)))
+        print('Average accuracy across categories: {}'.format(pretty_float(np.mean(all_accuracies))))
+        print('Average top_{} accuracy across categories: {}'.format(args.top_k, pretty_float(np.mean(all_top_k_accuracy))))
 
     tf.reset_default_graph()

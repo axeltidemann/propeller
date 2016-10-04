@@ -45,12 +45,7 @@ app = flask.Flask(__name__)
 
 def resize_encode(data):
     with Image(file=StringIO.StringIO(data)) as img:
-        if img.format != 'JPEG':
-            logging.info('Converting {} to JPEG.'.format(img.format))
-            img.format = 'JPEG'
-            img.save(tmp)
         img.resize(299,299) # Tensorflow defaults. Speed gains here.
-
         encoded = base64.b64encode(img.make_blob())
 
     return encoded
