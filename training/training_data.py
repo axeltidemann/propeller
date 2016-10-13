@@ -138,12 +138,12 @@ def read_data(train_folder, test_folder):
     data_sets.output_filter = output_filter
     
     data_sets.train = DataSet(train)
-    print 'Training data: {} examples, {} features, {} categories.'.format(data_sets.train.X.shape[0],
+    print 'Training data: \t{} examples, {} features, {} categories.'.format(data_sets.train.X.shape[0],
                                                                            data_sets.train.X.shape[1],
                                                                            data_sets.train.Y.shape[1])
     
     data_sets.test = DataSet(test)
-    print 'Testing data: {} examples, {} features, {} categories.'.format(data_sets.test.X.shape[0],
+    print 'Testing data: \t{} examples, {} features, {} categories.'.format(data_sets.test.X.shape[0],
                                                                           data_sets.test.X.shape[1],
                                                                           data_sets.test.Y.shape[1])
     return data_sets

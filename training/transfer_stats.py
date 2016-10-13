@@ -41,7 +41,7 @@ for model in args.models:
     with tf.Session() as sess:
         print('Evaluating {}'.format(model))
 
-        print('NOTE: ALL NUMBER PAIRS ARE ON THE FORM (mean, median, standard deviation)')
+        print('NOTE: ALL NUMBER TRIPLES ARE ON THE FORM (mean, median, standard deviation)')
         
         load_graph(model)
 

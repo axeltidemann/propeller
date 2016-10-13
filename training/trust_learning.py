@@ -6,6 +6,8 @@ from __future__ import print_function
 import argparse
 import time
 import os
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),'../misc')))
 
 import numpy as np
 import tensorflow as tf
@@ -14,7 +16,8 @@ from tensorflow.python.platform import gfile
 from tensorflow.contrib.layers.python.layers import batch_norm as batch_norm
 
 from training_data import read_data
-    
+from utils import load_graph, chunks
+
 def weight_variable(shape, name):
     initial = tf.truncated_normal(shape, stddev=0.1)
     return tf.Variable(initial,name=name)
@@ -23,13 +26,12 @@ def bias_variable(shape, name):
     initial = tf.constant(0.1, shape=shape)
     return tf.Variable(initial,name=name)
 
-
-def learn(train_states, test_states, learning_rate=.0001, save_every=10, batch_size=2048, hidden_size=2048, dropout=.5,
+def learn(train_states, test_states, model, learning_rate=.0001, save_every=10, batch_size=2048, hidden_size=2048, dropout=.5,
           epochs=500, print_every=1, model_dir='.', perceptron=False, mem_ratio=.95):
 
     data = read_data(train_states, test_states)
 
-    model_name = ('''transfer_classifier_epochs_{}_batch_{}_learning_rate_{}'''.format(
+    model_name = ('''trust_classifier_epochs_{}_batch_{}_learning_rate_{}'''.format(
         epochs, batch_size, learning_rate))
     
     if perceptron:
@@ -39,9 +41,20 @@ def learn(train_states, test_states, learning_rate=.0001, save_every=10, batch_s
 
     gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=mem_ratio)
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
-        x = tf.placeholder('float', shape=[None, data.train.X_features], name='input')
+        load_graph(model)
+        transfer_predictor = sess.graph.get_tensor_by_name('output:0')
+
+        # Evaluate the model on the training and test data, for training and testing.
+        data.train._X = np.vstack([ sess.run(transfer_predictor, {'input:0': chunk }) for chunk in chunks(data.train.X, 10) ])
+        answer = tf.equal(tf.argmax(data.train.X, 1), tf.argmax(data.train.Y,1))
+        data.train._Y = tf.one_hot(tf.to_int32(answer), depth=2).eval()
+
+        data.test._X = sess.run(transfer_predictor, {'input:0': data.test.X })
+        answer = tf.equal(tf.argmax(data.test.X, 1), tf.argmax(data.test.Y,1))
+        data.test._Y = tf.one_hot(tf.to_int32(answer), depth=2).eval()
+
+        x = tf.placeholder('float', shape=[None, data.train.X_features], name='input_b')
         y_ = tf.placeholder('float', shape=[None, data.train.Y_features], name='target')
-        y_real = tf.placeholder('float', shape=[None, data.test.Y_features])
 
         if perceptron:
             W = weight_variable([data.train.X_features, data.train.Y_features], name='weights')
@@ -63,27 +76,14 @@ def learn(train_states, test_states, learning_rate=.0001, save_every=10, batch_s
 
             logits = tf.matmul(relu,W_out) + b_out
 
-
         # Loss & train
         cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits, y_)
         train_step = tf.train.AdamOptimizer(learning_rate).minimize(cross_entropy)
 
         # Evaluation
-        y = tf.nn.softmax(logits) #, name='output') # Exchange with sigmoid for multiclass labels (same below)
-        train_correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_,1))
-        train_accuracy = tf.reduce_mean(tf.cast(train_correct_prediction, 'float'))
-
-        # Applying convolutional filter to put subcategories into original categories for testing
-        stride = [1,1,1,1]
-        _filter = tf.constant(data.output_filter, dtype='float', shape=data.output_filter.shape)
-        
-        conv_in = tf.expand_dims(y,0)
-        conv_in = tf.expand_dims(conv_in,-1)
-        conv_out = tf.nn.conv2d(conv_in, _filter, stride, 'VALID')
-        back = tf.squeeze(conv_out, squeeze_dims=[0,2], name='output')
-
-        test_correct_prediction = tf.equal(tf.argmax(back, 1), tf.argmax(y_real,1))
-        test_accuracy = tf.reduce_mean(tf.cast(test_correct_prediction, 'float'))
+        y = tf.nn.softmax(logits, name='output_b')
+        correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_,1))
+        accuracy = tf.reduce_mean(tf.cast(correct_prediction, 'float'))
         
         sess.run(tf.initialize_all_variables())
 
@@ -102,13 +102,13 @@ def learn(train_states, test_states, learning_rate=.0001, save_every=10, batch_s
             if epoch > last_epoch:
 
                 if epoch % print_every == 0:
-                    train_accuracy_mean = train_accuracy.eval(feed_dict={
+                    train_accuracy_mean = accuracy.eval(feed_dict={
                         x: batch_x,
                         y_: batch_y })
 
-                    validation_accuracy_mean = test_accuracy.eval(feed_dict={
+                    validation_accuracy_mean = accuracy.eval(feed_dict={
                         x: data.test.X,
-                        y_real: data.test.Y })
+                        y_: data.test.Y })
 
                     print('''Epoch {} train accuracy: {}, test accuracy: {}. '''
                           '''{} states/sec, {} secs/epoch.'''.format(epoch, train_accuracy_mean,
@@ -116,7 +116,7 @@ def learn(train_states, test_states, learning_rate=.0001, save_every=10, batch_s
                                                                      time.time() - t_epoch))
                 if epoch % save_every == 0 or epoch == epochs:
                     output_graph_def = graph_util.convert_variables_to_constants(
-                        sess, sess.graph.as_graph_def(), ['input', 'output'])
+                        sess, sess.graph.as_graph_def(), ['input_b', 'output_b'])
 
                     with gfile.FastGFile(os.path.join(model_dir, model_name), 'w') as f:
                         f.write(output_graph_def.SerializeToString())
@@ -140,6 +140,9 @@ if __name__ == '__main__':
     parser.add_argument(
         'test_states',
         help='Folder with Inception states for testing')
+    parser.add_argument(
+        'model',
+        help='The trained model')
     parser.add_argument(
         '--learning_rate',
         help='Learning rate',
@@ -190,6 +193,6 @@ if __name__ == '__main__':
         default=.95)
     args = parser.parse_args()
 
-    learn(args.train_states, args.test_states, args.learning_rate,
+    learn(args.train_states, args.test_states, args.model, args.learning_rate,
           args.save_every, args.batch_size, args.hidden_size, args.dropout,
           args.epochs, args.print_every, args.model_dir, args.perceptron, args.mem_ratio)
