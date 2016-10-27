@@ -160,7 +160,7 @@ class DataSet:
         end = self._index_in_epoch
 
         if USE_DASK:
-            return np.vstack([ values for index, values in self._X[self._indices[start:end]]]), \
+            return np.vstack([ values for index, values in self._X[self._indices[start:end]].compute() ]), \
                 np.vstack([ values for index, values in self._Y[self._indices[start:end]]])
         else:
             return self._X[start:end], self._Y[start:end]
@@ -181,17 +181,18 @@ class DataSet:
     @property
     def X_features(self):
         if USE_DASK:
-            ipdb.set_trace()
+            return self._X.dtype[1].shape[0]
             return self._X[0].compute().shape[1]
         else:
             return self._X.shape[1]
 
     @property
     def Y_features(self):
-        if USE_DASK:
-            return self._Y[0].shape[1]
-        else:
-            return self._Y.shape[1]
+        # if USE_DASK:
+        #     return self._Y.dtype[1].shape[0]
+        #     return self._Y[0].shape[1]
+        # else:
+        return self._Y.shape[1]
 
         
 def read_data(train_folder, test_folder):
