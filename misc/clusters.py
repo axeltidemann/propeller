@@ -42,13 +42,16 @@ def find(X, lower_bound, upper_bound, min_cluster_size):
         
         results.append((seed, edges))
         graph.remove_nodes_from(edges + [seed])
-    
+
     included = [ (node, edges) for node, edges in results if len(edges) > similarity.shape[0]*min_cluster_size ]
 
     clusters = { node: edges for node, edges in included }
 
     clusters['rejected'] = list(set(range(X.shape[0])).difference(flatten(included)))
-    
+
+    del similarity
+    del graph
+        
     return clusters
 
 
@@ -108,7 +111,8 @@ if __name__ == '__main__':
         if args.include_rejected:
             clusters_with_filenames['rejected'] = [ index[edge] for edge in clusters['rejected'] ]
 
-        args.filename = args.filename if args.filename else '{}.json_{}-{}'.format(os.path.basename(h5), args.lower_bound, args.upper_bound)
+        args.filename = args.filename if args.filename else \
+                        '{}.json_{}-{}'.format(os.path.basename(h5), args.lower_bound, args.upper_bound)
             
         with open(args.filename, 'w') as _file:
             json.dump(clusters_with_filenames, _file)

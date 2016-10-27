@@ -25,7 +25,7 @@ def bias_variable(shape, name):
 
 
 def learn(train_states, test_states, learning_rate=.0001, save_every=10, batch_size=2048, hidden_size=2048, dropout=.5,
-          epochs=500, print_every=1, model_dir='.', perceptron=False, mem_ratio=.95):
+          epochs=100, print_every=1, model_dir='.', perceptron=False, mem_ratio=.95):
 
     data = read_data(train_states, test_states)
 
@@ -169,7 +169,7 @@ if __name__ == '__main__':
         '--epochs',
         help='Maximum number of epochs before ending the training',
         type=int,
-        default=500)
+        default=100)
     parser.add_argument(
         '--print_every',
         help='Print training and validation accuracy every X steps',

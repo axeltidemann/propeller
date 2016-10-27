@@ -18,7 +18,7 @@ def chunks(chunkable, n):
     """ Yield successive n-sized chunks from l. """
     for i in xrange(0, len(chunkable), n):
         yield chunkable[i:i+n]
-
+        
 def flatten(lst):
     result = []
     for element in lst:

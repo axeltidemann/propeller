@@ -20,6 +20,7 @@ import threading
 from collections import defaultdict
 import json
 import base64
+import glob
 
 from flask import request, Response, redirect, url_for
 import flask
@@ -29,12 +30,11 @@ import tornado.wsgi
 import tornado.httpserver
 import tornado.web
 import tornado.websocket
-
-from ast import literal_eval as make_tuple
-
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 import blosc
+
+from ast import literal_eval as make_tuple
 
 # For the position of the word webs
 OFFSET = 800
@@ -426,20 +426,29 @@ def clusters():
     else:
         return flask.render_template('clusters.html')
 
-@app.route('/images/clusters/<path:clusterfile>/<path:index>')
+@app.route('/images/clusters/list/<path:clusterfolder>')
+@requires_auth
+def clusters_folder(clusterfolder):
+    names = sorted(os.listdir(os.path.join(app.static_folder, clusterfolder)))
+    paths = [ url_for('clusters_display', clusterfile='{}/{}'.format(clusterfolder, name), index=0)
+              for name in names ]
+
+    return flask.render_template('clusters.html', clusterfiles=zip(names, paths))
+        
+@app.route('/images/clusters/display/<path:clusterfile>/<string:index>')
 @requires_auth
 def clusters_display(clusterfile, index):
-    clusterfile_decoded = base64.urlsafe_b64decode(clusterfile.encode('ascii'))
-    with open(clusterfile_decoded, 'r') as _file:
+    with open(os.path.join('/', clusterfile), 'r') as _file:
         clusters = json.load(_file)
         keys = clusters.keys()
         keys.remove('rejected')
+        keys = sorted(keys, key=lambda x: len(clusters[x]), reverse=True)
         seed = 'rejected' if index == 'rejected' else keys[int(index)] 
         return flask.render_template('clusters_display.html', clusterfile=clusterfile,
-                                     clusterfile_decoded=clusterfile_decoded,
+                                     clusterfolder=os.path.dirname(clusterfile),
                                      seed=seed, index=index, clusters=range(len(keys)),
                                      images=clusters[seed])
-        
+
 def start_tornado(app, port=5000):
     container = tornado.wsgi.WSGIContainer(app)
     server = tornado.web.Application([
@@ -457,7 +466,7 @@ parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFo
 parser.add_argument(
     '-d', '--debug',
     help="enable debug mode",
-    action="store_true", default=False)
+    action="store_true")
 parser.add_argument(
     '-p', '--port',
     help="which port to serve content on",
@@ -482,7 +491,9 @@ red_db_1 = redis.StrictRedis(args.redis_server, args.redis_port, db=1)
 pubsub = red.pubsub(ignore_subscribe_messages=True)
 pipe = red.pipeline()
 
-threading.Thread(target=redis_listener, args=(args.redis_server, args.redis_port)).start()
+redis_thread = threading.Thread(target=redis_listener, args=(args.redis_server, args.redis_port))
+redis_thread.daemon = True
+redis_thread.start()
 
 if args.debug:
     app.run(debug=True, host='0.0.0.0', port=args.port)

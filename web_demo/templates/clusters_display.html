@@ -1,8 +1,11 @@
 {% extends "layout.html" %}
 
-{% block header %}{{ clusterfile_decoded }}{% endblock %}
+{% block header %}{{ clusterfile }}{% endblock %}
 
 {% block content %}
+
+Return to <A HREF="{{ url_for('clusters_folder', clusterfolder=clusterfolder) }}">list of clusters</A>. Clusters are
+sorted based on length in descending order.<BR/><BR/>
 
 {% for cluster in clusters %}
     {% if loop.index0 == index|int(-1) %}
@@ -19,15 +22,17 @@
     <a href="{{ url_for('clusters_display', clusterfile=clusterfile, index='rejected') }}">rejected</A> 
 {% endif %}
 
-<br>
+<br><br>
+Number of images in cluster: {{ images|length }}
+
+<br><br>
 
 {% if index != 'rejected' %}
     <img src="/static{{ seed }}" width="100%">
 {% endif %}
-
     
 {% for image in images %}
-   <A HREF="/static{{ image }}"> <img class="lazy" data-original="/static{{ image }}" width=100></A>
+    <A HREF="/static{{ image }}"> <img class="lazy" data-original="/static{{ image }}" width=100></A>
 {% endfor %}
 
 <script type="text/javascript" charset="utf-8">
