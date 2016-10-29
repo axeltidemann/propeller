@@ -12,7 +12,7 @@ Author: Axel.Tidemann@telenor.com
 from __future__ import division
 import glob
 import os
-from collections import namedtuple
+from collections import namedtuple, defaultdict
 import gc
 
 import numpy as np
@@ -26,44 +26,6 @@ USE_DASK = True
 
 print 'USE_DASK:', USE_DASK
 
-class my_dataset(h5py.Dataset):
-
-    def __init__(self, identifier, dtype):
-        super(my_dataset, self).__init__(identifier)
-        self._dtype = dtype
-
-    @property
-    def dtype(self):
-        return self._dtype
-
-# class my_hdf5_layer(h5py.Dataset):
-#     '''PyTables and h5py does not play nice. PyTables adds indices to the data,
-#     this is circumvened here.'''
-    
-#     def __init__(self, name, path='/data/table'):
-#         _file = h5py.File(name, 'r')
-#         dataset = _file[path]
-#         super(my_hdf5_layer, self).__init__(dataset.id)
-#         print self
-
-#     def __getitem__(self, given):
-#         if isinstance(given, slice):
-#             result = self[given.start:given.stop:given.step]
-#             return np.vstack([ values for index, values in result ])
-#         else:
-#             return self[given][1]
-
-    # @property
-    # def shape(self):
-    #     return (self.shape[0], 2048)
-
-    # @property
-    # def dtype(self):
-    #     return np.dtype('float')
-
-    # def close(self):
-    #     self._dataset.close()
-
 def states(h5_files, separator='_'):
     
     length = 0
@@ -75,8 +37,9 @@ def states(h5_files, separator='_'):
 
     if USE_DASK:
         datasets = [ h5py.File(fn)['/data/table'] for fn in h5_files ]
-        datasets = [ my_dataset(d.id, [('index', 'S52'), ('values_block_0', '<f4', (2048,))]) for d in datasets ]
-        arrays = [ da.from_array(data, chunks=1000) for data in datasets ]
+
+        dtype = [('index', 'S52'), ('values_block_0', '<f4', (2048,))]
+        arrays = [ da.from_array(data, chunks=1000).astype(dtype) for data in datasets ]
 
         X = da.concatenate(arrays, axis=0)
         print X
@@ -160,8 +123,10 @@ class DataSet:
         end = self._index_in_epoch
 
         if USE_DASK:
+            
             return np.vstack([ values for index, values in self._X[self._indices[start:end]].compute() ]), \
-                np.vstack([ values for index, values in self._Y[self._indices[start:end]]])
+                self._Y[self._indices[start:end]]
+            #    np.vstack([ values for index, values in self._Y[self._indices[start:end]]])
         else:
             return self._X[start:end], self._Y[start:end]
 
@@ -172,7 +137,10 @@ class DataSet:
     
     @property
     def X(self):
-        return self._X
+        if USE_DASK:
+            return np.vstack([ values for index, values in self._X.compute() ])
+        else:
+            return self._X
 
     @property
     def Y(self):
