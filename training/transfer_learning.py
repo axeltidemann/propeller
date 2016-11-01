@@ -6,6 +6,7 @@ from __future__ import print_function
 import argparse
 import time
 import os
+import threading
 
 import numpy as np
 import tensorflow as tf
@@ -15,19 +16,18 @@ from tensorflow.contrib.layers.python.layers import batch_norm as batch_norm
 
 from training_data import read_data
     
-def weight_variable(shape, name):
+def weight_variable(shape, name=None):
     initial = tf.truncated_normal(shape, stddev=0.1)
     return tf.Variable(initial,name=name)
 
-def bias_variable(shape, name):
+def bias_variable(shape, name=None):
     initial = tf.constant(0.1, shape=shape)
     return tf.Variable(initial,name=name)
 
-
 def learn(train_states, test_states, learning_rate=.0001, save_every=10, batch_size=2048, hidden_size=2048, dropout=.5,
-          epochs=100, print_every=1, model_dir='.', perceptron=False, mem_ratio=.95):
+          epochs=100, print_every=1, model_dir='.', perceptron=False, mem_ratio=.95, q_size=100, use_dask=False):
 
-    data = read_data(train_states, test_states)
+    data = read_data(train_states, test_states, use_dask)
 
     model_name = ('''transfer_classifier_epochs_{}_batch_{}_learning_rate_{}'''.format(
         epochs, batch_size, learning_rate))
@@ -39,69 +39,102 @@ def learn(train_states, test_states, learning_rate=.0001, save_every=10, batch_s
 
     gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=mem_ratio)
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
-        x = tf.placeholder('float', shape=[None, data.train.X_features], name='input')
-        y_ = tf.placeholder('float', shape=[None, data.train.Y_features], name='target')
-        y_real = tf.placeholder('float', shape=[None, data.test.Y_features])
+        
+        q_x_in = tf.placeholder(tf.float32, shape=[batch_size, data.train.X_features])
+        q_y_in = tf.placeholder(tf.int32, shape=[batch_size])
+        y_real = tf.placeholder(tf.int32, shape=[None])
+        keep_prob = tf.placeholder_with_default([1.], shape=None)
+        
+        q = tf.FIFOQueue(q_size, [tf.float32, tf.int32],
+                         shapes=[ q_x_in.get_shape(), q_y_in.get_shape()])
+
+        # q = tf.RandomShuffleQueue(q_size, int(q_size*.1), [tf.float32, tf.int32],
+        #                  shapes=[ q_x_in.get_shape(), q_y_in.get_shape()])
+
+        enqueue_op = q.enqueue([q_x_in, q_y_in])
+        q_x_out, q_y_out = q.dequeue()
+
+        x = tf.placeholder_with_default(q_x_out, shape=[None, data.train.X_features], name='input')
+        y_ = tf.placeholder_with_default(q_y_out, shape=[None])
 
         if perceptron:
-            W = weight_variable([data.train.X_features, data.train.Y_features], name='weights')
-            b = bias_variable([data.train.Y_features], name='bias')
+            W = weight_variable([data.train.X_features, data.train.Y_features])
+            b = bias_variable([data.train.Y_features])
 
-            logits = tf.matmul(x,W) + b
+            logits = tf.matmul(x, W) + b
         else:
-            W_in = weight_variable([data.train.X_features, hidden_size], name='weights_in')
-            b_in = bias_variable([hidden_size], name='bias_in')
+            W_in = weight_variable([data.train.X_features, hidden_size])
+            b_in = bias_variable([hidden_size])
 
-            hidden = tf.matmul(x,W_in) + b_in
+            hidden = tf.matmul(x, W_in) + b_in
             relu = tf.nn.relu(hidden)
 
-            keep_prob = tf.placeholder_with_default([1.], shape=None)
             hidden_dropout = tf.nn.dropout(relu, keep_prob)
 
-            W_out = weight_variable([hidden_size,data.train.Y_features], name='weights_out')
-            b_out = bias_variable([data.train.Y_features], name='bias_out')
+            W_out = weight_variable([hidden_size,data.train.Y_features])
+            b_out = bias_variable([data.train.Y_features])
 
-            logits = tf.matmul(relu,W_out) + b_out
-
+            logits = tf.matmul(relu, W_out) + b_out
 
         # Loss & train
-        cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits, y_)
+        cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(logits, y_)
         train_step = tf.train.AdamOptimizer(learning_rate).minimize(cross_entropy)
 
         # Evaluation
-        y = tf.nn.softmax(logits) #, name='output') # Exchange with sigmoid for multiclass labels (same below)
-        train_correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_,1))
-        train_accuracy = tf.reduce_mean(tf.cast(train_correct_prediction, 'float'))
+        y = tf.nn.softmax(logits) 
+        train_correct_prediction = tf.equal(tf.to_int32(tf.argmax(y, 1)), y_,)
+        train_accuracy = tf.reduce_mean(tf.cast(train_correct_prediction, tf.float32))
 
         # Applying convolutional filter to put subcategories into original categories for testing
         stride = [1,1,1,1]
-        _filter = tf.constant(data.output_filter, dtype='float', shape=data.output_filter.shape)
-        
-        conv_in = tf.expand_dims(y,0)
+        _filter = tf.constant(data.output_filter, dtype=tf.float32, shape=data.output_filter.shape)
+
+        conv_in = tf.expand_dims(y, 0)
         conv_in = tf.expand_dims(conv_in,-1)
         conv_out = tf.nn.conv2d(conv_in, _filter, stride, 'VALID')
         back = tf.squeeze(conv_out, squeeze_dims=[0,2], name='output')
 
-        test_correct_prediction = tf.equal(tf.argmax(back, 1), tf.argmax(y_real,1))
-        test_accuracy = tf.reduce_mean(tf.cast(test_correct_prediction, 'float'))
+        test_correct_prediction = tf.equal(tf.to_int32(tf.argmax(back, 1)), y_real)
+        test_accuracy = tf.reduce_mean(tf.cast(test_correct_prediction, tf.float32))
         
         sess.run(tf.initialize_all_variables())
 
-        last_epoch = 0
+        coord = tf.train.Coordinator()
 
+        def put():
+            next_x, next_y = data.train.next_batch(batch_size)
+            sess.run(enqueue_op, feed_dict={q_x_in: next_x, q_y_in: next_y})
+        
+        def putting():
+            while not coord.should_stop():
+                put()
+
+        t0 = time.time()
+        for _ in range(q_size): put()
+        print('Pre-filling the queue with {} batches took {} seconds.'.format(q_size, time.time()-t0))
+            
+        data_thread = threading.Thread(target=putting)
+        data_thread.start()
+
+        last_epoch = 0
+        epoch = 0
+        
         t_epoch = time.time()
-        while data.train.epoch <= epochs:
-            epoch = data.train.epoch
-            batch_x, batch_y = data.train.next_batch(batch_size)
+        i = 0 
+        while epoch <= epochs:
+            if batch_size*i > data.train.X_len:
+                epoch += 1
+                i = 0
 
             t_start = time.time()
-            feed_dict = {x: batch_x, y_: batch_y } if perceptron else {x: batch_x, y_: batch_y, keep_prob: dropout}
-            train_step.run(feed_dict=feed_dict)
+            sess.run(train_step, feed_dict={keep_prob: dropout})
             t_end = time.time() - t_start
 
             if epoch > last_epoch:
 
                 if epoch % print_every == 0:
+                    batch_x, batch_y = data.train.next_batch(batch_size)
+                    
                     train_accuracy_mean = train_accuracy.eval(feed_dict={
                         x: batch_x,
                         y_: batch_y })
@@ -123,6 +156,11 @@ def learn(train_states, test_states, learning_rate=.0001, save_every=10, batch_s
 
                 t_epoch = time.time()
                 last_epoch = epoch
+
+            i += 1
+            
+        coord.request_stop()
+        coord.join([data_thread])
 
         print('Trained model saved to {}'.format(os.path.join(model_dir, model_name)))
 
@@ -188,8 +226,20 @@ if __name__ == '__main__':
         help='Ratio of memory to reserve on the GPU instance',
         type=float,
         default=.95)
+    parser.add_argument(
+        '--q_size',
+        help='Capacity of FIFOQueue for loading training data.',
+        type=int,
+        default=100)
+    parser.add_argument(
+        '--use_dask',
+        action='store_true',
+        help='Read data from disk. Use if you cannot store everything in memory.')
+
+
     args = parser.parse_args()
 
     learn(args.train_states, args.test_states, args.learning_rate,
           args.save_every, args.batch_size, args.hidden_size, args.dropout,
-          args.epochs, args.print_every, args.model_dir, args.perceptron, args.mem_ratio)
+          args.epochs, args.print_every, args.model_dir, args.perceptron, args.mem_ratio,
+          args.q_size, args.use_dask)
