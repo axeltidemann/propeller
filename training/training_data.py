@@ -12,7 +12,10 @@ Author: Axel.Tidemann@telenor.com
 from __future__ import division
 import glob
 import os
-from collections import Counter
+import time
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),'../misc')))
+
 
 import numpy as np
 import pandas as pd
@@ -22,8 +25,9 @@ import h5py
 import ipdb
 from sklearn.utils import shuffle
 
+from utils import pretty_float as pf
 
-def states(h5_files, use_dask, separator='_'):
+def states(h5_files, use_dask, dask_chunksize, separator='_'):
     
     h5_lengths = {}
     for h5 in h5_files:
@@ -37,33 +41,22 @@ def states(h5_files, use_dask, separator='_'):
     
     if use_dask:
         datasets = [ h5py.File(fn)['/data/table'] for fn in h5_files ]
-        dtype_counter = Counter([ data.dtype for data in datasets ])
-
-        if len(dtype_counter) > 1:
-            print 'Different dtypes for this dataset:'
-            for dtype in dtype_counter.most_common():
-                print dtype
-            print 'Coercing to the most common dtype, should be OK if the difference is in index only.'
-              
-        dtype = dtype_counter.most_common(1)[0][0]
-        arrays = [ da.from_array(data, chunks=4096).astype(dtype) for data in datasets ]
-
-        X = da.concatenate(arrays, axis=0)
-        print X
+        X = [ da.from_array(data, chunks=dask_chunksize) for data in datasets ]
+        Y = []
     else:
         X = np.zeros((length, width))
-
-    Y = np.zeros((length,))
+        Y = np.zeros((length,))
 
     start_index = 0
-    
     for i, h5 in enumerate(h5_files):
         end_index = start_index + h5_lengths[h5]
 
-        if not use_dask:
+        if use_dask:
+            Y.append(np.ones((h5_lengths[h5],))*i)
+        else:
             X[start_index:end_index] = pd.read_hdf(h5)
-            
-        Y[start_index:end_index] = i
+            Y[start_index:end_index] = i            
+
         start_index = end_index
 
     h5_stripped = map(lambda x: os.path.basename(x[:x.rfind(separator)])
@@ -90,24 +83,62 @@ def states(h5_files, use_dask, separator='_'):
     return (X,Y), filtr
 
 class DataSet:
-    def __init__(self, data, use_dask):
+    def __init__(self, data, use_dask, in_memory):
         self._X, self._Y = data
-
         self._use_dask = use_dask
-        self._num_examples = self._X.shape[0]
+        
+        if self._use_dask:
+            self._dask_X = self._X
+            self._dask_Y = self._Y
+
+            self._pr_category = int(in_memory/len(self._X))
+
+            print '{} categories, {} vectors pr category will be loaded from disk.'.format(len(self._X), self._pr_category)
+
+            self._indices = [ [] for _ in range(len(self._dask_X)) ]
+            self.Y_features = len(self._Y)
+        else:
+            self.Y_features = len(np.unique(self._Y))
+            self._num_examples = self._X.shape[0]
+
         self._epochs_completed = 0
         self._index_in_epoch = 0
-        
-        self.Y_features = len(np.unique(self._Y))
-        self._indices = np.arange(self._num_examples)
 
         self.shuffle()
 
+        
+    def load(self):
+        X = []
+        Y = []
+
+        t0 = time.time()
+        for i, (x, y) in enumerate(zip(self._dask_X, self._dask_Y)):
+            if len(self._indices[i]) == 0:
+                if x.shape[0] > self._pr_category:
+                    start_index = 0 if np.random.choice([True, False]) else x.shape[0] % self._pr_category
+                    indices = range(start_index, x.shape[0], self._pr_category)
+                    np.random.shuffle(indices)
+                    self._indices[i] = indices
+                else:
+                    self._indices[i] = [0]
+            
+            j = self._indices[i].pop()
+            X.extend([ values for index, values in x[j:j+self._pr_category].compute() ])
+            Y.extend(y[j:j+self._pr_category])
+
+        X = np.vstack(X)
+        Y = np.squeeze(np.vstack(Y))
+        
+        print '\t{} vectors read from disk in {} seconds.'.format(X.shape[0], pf(time.time()-t0))
+
+        return X, Y
+        
     def shuffle(self):
         if self._use_dask:
-            np.random.shuffle(self._indices)
-        else:
-            self._X, self._Y = shuffle(self._X, self._Y)
+            self._X, self._Y = self.load()
+            self._num_examples = self._X.shape[0]
+
+        self._X, self._Y = shuffle(self._X, self._Y)
         
     def next_batch(self, batch_size):
         start = self._index_in_epoch
@@ -123,64 +154,56 @@ class DataSet:
             assert batch_size <= self._num_examples
             
         end = self._index_in_epoch
+        
+        return self._X[start:end], self._Y[start:end]
 
-        if self._use_dask:
-            return np.vstack([ values for index, values in self._X[start:end].compute() ]), \
-                self._Y[start:end]
-        else:
-            return self._X[start:end], self._Y[start:end]
-
-    
-            
+                
     @property
     def epoch(self):
         return self._epochs_completed
     
     @property
     def X(self):
-        if self._use_dask:
-            return np.vstack([ values for index, values in self._X.compute() ])
-        else:
-            return self._X
+        return self._X
 
     @property
     def X_len(self):
-        return self._X.shape[0]
+        if self._use_dask:
+            return sum([ x.shape[0] for x in self._dask_X ])
+        else:
+            return self._X.shape[0]
 
     @property
     def X_features(self):
-        if self._use_dask:
-            return self._X.dtype[1].shape[0]
-        else:
-            return self._X.shape[1]
+        return self._X.shape[1]
             
     @property
     def Y(self):
         return self._Y
 
         
-def read_data(train_folder, test_folder, use_dask):
+def read_data(train_folder, test_folder, use_dask, in_memory, dask_chunksize):
 
     class DataSets:
         pass
 
     h5_train = sorted(glob.glob('{}/*'.format(train_folder)))
     assert len(h5_train), 'The HDF5 folder is empty.'
-    train, output_filter = states(h5_train, use_dask)
+    train, output_filter = states(h5_train, use_dask, dask_chunksize)
 
     h5_test = sorted(glob.glob('{}/*'.format(test_folder)))
-    test, _ = states(h5_test, use_dask)
+    test, _ = states(h5_test, False, dask_chunksize) # We assume testing data can fit in memory.
 
     data_sets = DataSets()
 
     data_sets.output_filter = output_filter
     
-    data_sets.train = DataSet(train, use_dask)
+    data_sets.train = DataSet(train, use_dask, in_memory)
     print 'Training data: \t{} examples, {} features, {} categories.'.format(data_sets.train.X_len,
                                                                            data_sets.train.X_features,
                                                                            data_sets.train.Y_features)
     
-    data_sets.test = DataSet(test, use_dask)
+    data_sets.test = DataSet(test, False, in_memory) 
     print 'Testing data: \t{} examples, {} features, {} categories.'.format(data_sets.test.X_len,
                                                                           data_sets.test.X_features, 
                                                                           data_sets.test.Y_features)

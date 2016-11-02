@@ -7,6 +7,8 @@ import argparse
 import time
 import os
 import threading
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),'../misc')))
 
 import numpy as np
 import tensorflow as tf
@@ -15,7 +17,8 @@ from tensorflow.python.platform import gfile
 from tensorflow.contrib.layers.python.layers import batch_norm as batch_norm
 
 from training_data import read_data
-    
+from utils import pretty_float as pf
+
 def weight_variable(shape, name=None):
     initial = tf.truncated_normal(shape, stddev=0.1)
     return tf.Variable(initial,name=name)
@@ -24,10 +27,10 @@ def bias_variable(shape, name=None):
     initial = tf.constant(0.1, shape=shape)
     return tf.Variable(initial,name=name)
 
-def learn(train_states, test_states, learning_rate=.0001, save_every=10, batch_size=2048, hidden_size=2048, dropout=.5,
-          epochs=100, print_every=1, model_dir='.', perceptron=False, mem_ratio=.95, q_size=100, use_dask=False):
+def learn(train_states, test_states, learning_rate, save_every, batch_size, hidden_size, dropout, epochs,
+          print_every, model_dir, perceptron, mem_ratio, q_size, use_dask, in_memory, dask_chunksize):
 
-    data = read_data(train_states, test_states, use_dask)
+    data = read_data(train_states, test_states, use_dask, in_memory, dask_chunksize)
 
     model_name = ('''transfer_classifier_epochs_{}_batch_{}_learning_rate_{}'''.format(
         epochs, batch_size, learning_rate))
@@ -47,9 +50,6 @@ def learn(train_states, test_states, learning_rate=.0001, save_every=10, batch_s
         
         q = tf.FIFOQueue(q_size, [tf.float32, tf.int32],
                          shapes=[ q_x_in.get_shape(), q_y_in.get_shape()])
-
-        # q = tf.RandomShuffleQueue(q_size, int(q_size*.1), [tf.float32, tf.int32],
-        #                  shapes=[ q_x_in.get_shape(), q_y_in.get_shape()])
 
         enqueue_op = q.enqueue([q_x_in, q_y_in])
         q_x_out, q_y_out = q.dequeue()
@@ -111,7 +111,7 @@ def learn(train_states, test_states, learning_rate=.0001, save_every=10, batch_s
 
         t0 = time.time()
         for _ in range(q_size): put()
-        print('Pre-filling the queue with {} batches took {} seconds.'.format(q_size, time.time()-t0))
+        print('Filling the queue with {} batches took {} seconds.'.format(q_size, pf(time.time()-t0)))
             
         data_thread = threading.Thread(target=putting)
         data_thread.start()
@@ -120,6 +120,7 @@ def learn(train_states, test_states, learning_rate=.0001, save_every=10, batch_s
         epoch = 0
         
         t_epoch = time.time()
+        t_end = []
         i = 0 
         while epoch <= epochs:
             if batch_size*i > data.train.X_len:
@@ -128,7 +129,7 @@ def learn(train_states, test_states, learning_rate=.0001, save_every=10, batch_s
 
             t_start = time.time()
             sess.run(train_step, feed_dict={keep_prob: dropout})
-            t_end = time.time() - t_start
+            t_end.append(time.time() - t_start)
 
             if epoch > last_epoch:
 
@@ -144,9 +145,10 @@ def learn(train_states, test_states, learning_rate=.0001, save_every=10, batch_s
                         y_real: data.test.Y })
 
                     print('''Epoch {} train accuracy: {}, test accuracy: {}. '''
-                          '''{} states/sec, {} secs/epoch.'''.format(epoch, train_accuracy_mean,
-                                                                     validation_accuracy_mean, batch_size/t_end,
-                                                                     time.time() - t_epoch))
+                          '''{} states/sec on average, {} secs/epoch.'''.format(epoch, pf(train_accuracy_mean),
+                                                                                pf(validation_accuracy_mean),
+                                                                                pf(batch_size/np.mean(t_end)),
+                                                                                pf(time.time() - t_epoch)))
                 if epoch % save_every == 0 or epoch == epochs:
                     output_graph_def = graph_util.convert_variables_to_constants(
                         sess, sess.graph.as_graph_def(), ['input', 'output'])
@@ -155,6 +157,7 @@ def learn(train_states, test_states, learning_rate=.0001, save_every=10, batch_s
                         f.write(output_graph_def.SerializeToString())
 
                 t_epoch = time.time()
+                t_end = []
                 last_epoch = epoch
 
             i += 1
@@ -235,11 +238,20 @@ if __name__ == '__main__':
         '--use_dask',
         action='store_true',
         help='Read data from disk. Use if you cannot store everything in memory.')
-
+    parser.add_argument(
+        '--in_memory',
+        help='How many vectors to hold in memory when using dask.',
+        type=int,
+        default=200000)
+    parser.add_argument(
+        '--dask_chunksize',
+        help='The size of dask chunks on disk.',
+        type=int,
+        default=8*1024)
 
     args = parser.parse_args()
 
     learn(args.train_states, args.test_states, args.learning_rate,
           args.save_every, args.batch_size, args.hidden_size, args.dropout,
           args.epochs, args.print_every, args.model_dir, args.perceptron, args.mem_ratio,
-          args.q_size, args.use_dask)
+          args.q_size, args.use_dask, args.in_memory, args.dask_chunksize)
