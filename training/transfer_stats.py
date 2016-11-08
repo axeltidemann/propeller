@@ -22,9 +22,7 @@ import matplotlib.pyplot as plt
 from training_data import states
 from utils import load_graph, pretty_float
 
-os.environ['CUDA_VISIBLE_DEVICES'] = ''
-
-def evaluate(model, h5_files, top_k):
+def evaluate(model, h5_files, top_k, categories=None):
     
     figure = plt.figure()
     
@@ -68,7 +66,9 @@ def evaluate(model, h5_files, top_k):
             correct_confidence_median = np.median(np.max(predictions[np.where(correct)], axis=1))
             correct_confidence_std = np.std(np.max(predictions[np.where(correct)], axis=1))
 
-            plt.plot(correct_x, sorted(correct_scores), label='{} correct'.format(os.path.basename(h5)))
+            category_i = os.path.basename(h5).replace('.h5','')
+            category = categories[category_i]['name'] if categories else category_i
+            plt.plot(correct_x, sorted(correct_scores), label=category)
 
             wrong_scores = np.max(predictions[np.where(~correct)], axis=1)
             wrong_x = np.linspace(0,1, num=len(wrong_scores))
@@ -76,18 +76,23 @@ def evaluate(model, h5_files, top_k):
             wrong_confidence_median = np.median(np.max(predictions[np.where(~correct)], axis=1))
             wrong_confidence_std = np.std(np.max(predictions[np.where(~correct)], axis=1))
 
-            plt.plot(wrong_x, sorted(wrong_scores), '--', label='{} wrong'.format(os.path.basename(h5)))
+            plt.plot(wrong_x, sorted(wrong_scores), '--', label=category)
             
             print('Category {}, {} images. \t accuracy: {} top_{} accuracy: {} '
-                  'correct confidence: {}, {}, {} wrong confidence: {}, {}, {}'
-                  ''.format(os.path.basename(h5), len(X), pretty_float(accuracy), top_k,
+                  'correct confidence: {}, {}, {} wrong confidence: {}, {}, {} '
+                  'diff: {}, {}, {}'
+                  ''.format(category_i, len(X), pretty_float(accuracy), top_k,
                             pretty_float(top_k_accuracy),
                             pretty_float(correct_confidence),
                             pretty_float(correct_confidence_median),
                             pretty_float(correct_confidence_std),
                             pretty_float(wrong_confidence),
                             pretty_float(wrong_confidence_median),
-                            pretty_float(wrong_confidence_std)))
+                            pretty_float(wrong_confidence_std),
+                            pretty_float(correct_confidence - wrong_confidence),
+                            pretty_float(correct_confidence_median - wrong_confidence_median),
+                            pretty_float(correct_confidence_std - wrong_confidence_std)
+                        ))
 
             all_accuracies.append(accuracy)
             all_top_k_accuracy.append(top_k_accuracy)
@@ -107,7 +112,7 @@ def evaluate(model, h5_files, top_k):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='''
-    Performs statistics on a trained model. Does not run on GPU.
+    Performs statistics on a trained model.
     ''', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument(
         'test_folder',
@@ -121,8 +126,15 @@ if __name__ == "__main__":
         help='How many to consider',
         type=int,
         default=3)
+    parser.add_argument(
+        '--gpu',
+        help='Which GPU to use for inference. Empty string means no GPU.',
+        default='')
+
     args = parser.parse_args()
 
+    os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
+    
     h5_files = sorted(glob.glob('{}/*'.format(args.test_folder)))
 
     for model in args.models:

@@ -15,7 +15,7 @@ import os
 import time
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),'../misc')))
-
+import gc
 
 import numpy as np
 import pandas as pd
@@ -27,7 +27,7 @@ from sklearn.utils import shuffle
 
 from utils import pretty_float as pf
 
-def states(h5_files, use_dask, dask_chunksize, separator='_'):
+def states(h5_files, use_dask=False, dask_chunksize=8*1024, separator='_'):
     
     h5_lengths = {}
     for h5 in h5_files:
@@ -106,7 +106,9 @@ class DataSet:
 
         self.shuffle()
 
-        
+
+    # Possibilities for optimization: del self._X/Y, followed by gc.collect(). Run through the algorithm
+    # below, and collect indices for each dask array. Create matrix and fill it accordingly. Shuffle in-place.
     def load(self):
         X = []
         Y = []

@@ -15,9 +15,10 @@ import tensorflow as tf
 from tensorflow.python.client import graph_util
 from tensorflow.python.platform import gfile
 from tensorflow.contrib.layers.python.layers import batch_norm as batch_norm
+from sklearn.utils import shuffle
 
 from training_data import read_data
-from utils import pretty_float as pf
+from utils import pretty_float as pf, trueXor, chunks
 
 def weight_variable(shape, name=None):
     initial = tf.truncated_normal(shape, stddev=0.1)
@@ -28,7 +29,8 @@ def bias_variable(shape, name=None):
     return tf.Variable(initial,name=name)
 
 def learn(train_states, test_states, learning_rate, save_every, batch_size, hidden_size, dropout, epochs,
-          print_every, model_dir, perceptron, mem_ratio, q_size, use_dask, in_memory, dask_chunksize):
+          print_every, model_dir, perceptron, dense, lenet, filter_width, depth, mem_ratio,
+          q_size, use_dask, in_memory, dask_chunksize):
 
     data = read_data(train_states, test_states, use_dask, in_memory, dask_chunksize)
 
@@ -37,9 +39,11 @@ def learn(train_states, test_states, learning_rate, save_every, batch_size, hidd
     
     if perceptron:
         model_name = '{}_perceptron.pb'.format(model_name)
-    else:
-        model_name = '{}_dropout_{}_hidden_size_{}.pb'.format(model_name, dropout, hidden_size)
-
+    if dense:
+        model_name = '{}_dense_dropout_{}_hidden_size_{}.pb'.format(model_name, dropout, hidden_size)
+    if lenet:
+        model_name = '{}_lenet_dropout_{}_hidden_size_{}.pb'.format(model_name, dropout, hidden_size)
+        
     gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=mem_ratio)
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
         
@@ -62,19 +66,45 @@ def learn(train_states, test_states, learning_rate, save_every, batch_size, hidd
             b = bias_variable([data.train.Y_features])
 
             logits = tf.matmul(x, W) + b
-        else:
+        if dense:
             W_in = weight_variable([data.train.X_features, hidden_size])
             b_in = bias_variable([hidden_size])
 
             hidden = tf.matmul(x, W_in) + b_in
             relu = tf.nn.relu(hidden)
-
             hidden_dropout = tf.nn.dropout(relu, keep_prob)
 
             W_out = weight_variable([hidden_size,data.train.Y_features])
             b_out = bias_variable([data.train.Y_features])
 
-            logits = tf.matmul(relu, W_out) + b_out
+            logits = tf.matmul(hidden_dropout, W_out) + b_out
+        if lenet:
+            w1 = weight_variable([1, filter_width, 1, depth])
+            b1 = bias_variable([depth])
+            x_4d = tf.expand_dims(tf.expand_dims(x,1),-1) # Singleton dimension height, out_channel
+            conv = tf.nn.conv2d(x_4d, w1, strides=[1,1,1,1], padding='SAME')
+            relu = tf.nn.relu(tf.nn.bias_add(conv, b1))
+            pool = tf.nn.max_pool(relu, ksize=[1, 1, 2, 1], strides=[1, 1, 2, 1], padding='SAME')
+
+            w2 = weight_variable([1, filter_width, depth, depth*2])
+            b2 = bias_variable([depth*2])
+            conv = tf.nn.conv2d(pool, w2, strides=[1,1,1,1], padding='SAME')
+            relu = tf.nn.relu(tf.nn.bias_add(conv, b2))
+            pool = tf.nn.max_pool(relu, ksize=[1, 1, 2, 1], strides=[1, 1, 2, 1], padding='SAME')
+
+            pool_shape = tf.shape(pool)
+            reshape = tf.reshape(pool,
+                                 [pool_shape[0], pool_shape[1] * pool_shape[2] * pool_shape[3] ])
+
+            w3 = weight_variable([ (data.train.X_features/4)*2*depth, hidden_size])
+            b3 = bias_variable([hidden_size])
+            hidden = tf.matmul(reshape, w3) + b3
+            relu = tf.nn.relu(hidden)
+            hidden_dropout = tf.nn.dropout(relu, keep_prob)
+
+            w4 = weight_variable([hidden_size, data.train.Y_features])
+            b4 = bias_variable([data.train.Y_features])
+            logits = tf.matmul(hidden_dropout, w4) + b4
 
         # Loss & train
         cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(logits, y_)
@@ -91,7 +121,7 @@ def learn(train_states, test_states, learning_rate, save_every, batch_size, hidd
 
         conv_in = tf.expand_dims(y, 0)
         conv_in = tf.expand_dims(conv_in,-1)
-        conv_out = tf.nn.conv2d(conv_in, _filter, stride, 'VALID')
+        conv_out = tf.nn.conv2d(conv_in, _filter, stride, 'VALID') # We don't want zero padding.
         back = tf.squeeze(conv_out, squeeze_dims=[0,2], name='output')
 
         test_correct_prediction = tf.equal(tf.to_int32(tf.argmax(back, 1)), y_real)
@@ -99,21 +129,18 @@ def learn(train_states, test_states, learning_rate, save_every, batch_size, hidd
         
         sess.run(tf.initialize_all_variables())
 
-        coord = tf.train.Coordinator()
-
-        def put():
-            next_x, next_y = data.train.next_batch(batch_size)
-            sess.run(enqueue_op, feed_dict={q_x_in: next_x, q_y_in: next_y})
-        
-        def putting():
-            while not coord.should_stop():
-                put()
-
-        t0 = time.time()
-        for _ in range(q_size): put()
-        print('Filling the queue with {} batches took {} seconds.'.format(q_size, pf(time.time()-t0)))
-            
-        data_thread = threading.Thread(target=putting)
+        def load_data():
+            try:
+                while True:
+                    next_x, next_y = data.train.next_batch(batch_size)
+                    if next_x.shape[0] == batch_size:
+                        sess.run(enqueue_op, feed_dict={q_x_in: next_x, q_y_in: next_y})
+            except Exception as error:
+                print(error)
+                print('Stopped streaming of data.')
+                
+        data_thread = threading.Thread(target=load_data)
+        data_thread.daemon = True
         data_thread.start()
 
         last_epoch = 0
@@ -123,9 +150,6 @@ def learn(train_states, test_states, learning_rate, save_every, batch_size, hidd
         t_end = []
         i = 0 
         while epoch <= epochs:
-            if batch_size*i > data.train.X_len:
-                epoch += 1
-                i = 0
 
             t_start = time.time()
             sess.run(train_step, feed_dict={keep_prob: dropout})
@@ -140,9 +164,9 @@ def learn(train_states, test_states, learning_rate, save_every, batch_size, hidd
                         x: batch_x,
                         y_: batch_y })
 
-                    validation_accuracy_mean = test_accuracy.eval(feed_dict={
-                        x: data.test.X,
-                        y_real: data.test.Y })
+                    validation_accuracy_mean = np.mean([ test_accuracy.eval(feed_dict={x: t_x, y_real: t_y })
+                                                         for t_x, t_y in zip(chunks(data.test.X, batch_size),
+                                                                             chunks(data.test.Y, batch_size)) ])
 
                     print('''Epoch {} train accuracy: {}, test accuracy: {}. '''
                           '''{} states/sec on average, {} secs/epoch.'''.format(epoch, pf(train_accuracy_mean),
@@ -160,11 +184,15 @@ def learn(train_states, test_states, learning_rate, save_every, batch_size, hidd
                 t_end = []
                 last_epoch = epoch
 
-            i += 1
             
-        coord.request_stop()
-        coord.join([data_thread])
+            i += 1
+                
+            if batch_size*i > data.train.X_len:
+                epoch += 1
+                i = 0
 
+        q.close(cancel_pending_enqueues=True)
+        
         print('Trained model saved to {}'.format(os.path.join(model_dir, model_name)))
 
 if __name__ == '__main__':
@@ -223,7 +251,25 @@ if __name__ == '__main__':
     parser.add_argument(
         '--perceptron',
         action='store_true',
-        help='Train a perceptron instead of a network with a hidden layer.')
+        help='Train a perceptron as the last layer.')
+    parser.add_argument(
+        '--dense',
+        action='store_true',
+        help='Train a layer with hidden connections and dropout as the last layer.')
+    parser.add_argument(
+        '--lenet',
+        action='store_true',
+        help='5-LeNet as final layer.')
+    parser.add_argument(
+        '--filter_width',
+        help='Width of convolutional filter',
+        type=int,
+        default=32)
+    parser.add_argument(
+        '--depth',
+        help='Convnet depth',
+        type=int,
+        default=16)
     parser.add_argument(
         '--mem_ratio',
         help='Ratio of memory to reserve on the GPU instance',
@@ -251,7 +297,10 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
+    assert trueXor(args.perceptron, args.dense, args.lenet), 'Specify one of perceptron, dense or lenet'
+    
     learn(args.train_states, args.test_states, args.learning_rate,
           args.save_every, args.batch_size, args.hidden_size, args.dropout,
-          args.epochs, args.print_every, args.model_dir, args.perceptron, args.mem_ratio,
+          args.epochs, args.print_every, args.model_dir, args.perceptron,
+          args.dense, args.lenet, args.filter_width, args.depth, args.mem_ratio,
           args.q_size, args.use_dask, args.in_memory, args.dask_chunksize)

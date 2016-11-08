@@ -14,6 +14,9 @@ def save_df(name, df):
               key='result', mode='w', format='table', complib='blosc', complevel=9)
 
 
+def trueXor(*args):
+    return sum(args) == 1
+    
 def chunks(chunkable, n):
     """ Yield successive n-sized chunks from l. """
     for i in xrange(0, len(chunkable), n):
