@@ -224,6 +224,10 @@ def get_json_bulgaria2(threshold_obs, distance_min, distance_max):
     return flask.jsonify({"vertices":vertices, "edges":kept_edges})
 
 
+################################### Mudah report #####################################
+
+
+
 ################################### Images ###########################################
 
 @app.route('/images')

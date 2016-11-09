@@ -10,6 +10,7 @@ import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),'../misc')))
 from itertools import chain
 import json
+from collections import Counter
 
 import pandas as pd
 import tensorflow as tf
@@ -17,9 +18,7 @@ from tensorflow.python.platform import gfile
 from tensorflow.python.framework import ops
 import numpy as np
 import ipdb 
-
 import plotly.graph_objs as go
-
 
 from training_data import states
 from utils import load_graph, pretty_float as pf
@@ -63,15 +62,18 @@ def evaluate(model, h5_files, top_k, categories=None):
             category_i = os.path.basename(h5).replace('.h5','')
             category = categories[category_i]['name'] if categories else category_i
 
+            sorted_correct = sorted(zip(correct_scores, data.index[correct]), key=lambda x: x[0])
+            sorted_correct_scores, sorted_correct_paths = zip(*sorted_correct)
+            
             plotly_data.append(go.Scatter(
                 x=correct_x,
-                y=sorted(correct_scores),
+                y=sorted_correct_scores,
                 mode='lines',
                 name=category,
                 hoverinfo='name+y',
                 text=[ json.dumps({ 'path': path, 'prediction': category })
-                       for path in data.index[correct]]))
-            
+                       for path in sorted_correct_paths ]))
+
             wrong_scores = np.max(predictions[~correct], axis=1)
             wrong_categories_i = np.argmax(predictions[~correct], axis=1)
             wrong_x = np.linspace(0,1, num=len(wrong_scores))
@@ -80,19 +82,22 @@ def evaluate(model, h5_files, top_k, categories=None):
             wrong_confidence_std = np.std(np.max(predictions[~correct], axis=1))
 
             wrong_categories = []
-
+            
             for i in wrong_categories_i:
                 wrong_i = os.path.basename(h5_files[i]).replace('.h5','')
                 wrong_categories.append(categories[wrong_i]['name'] if categories else wrong_i)
 
+            sorted_wrong = sorted(zip(wrong_scores, data.index[~correct], wrong_categories), key=lambda x: x[0])
+            sorted_wrong_scores, sorted_wrong_paths, sorted_wrong_categories = zip(*sorted_wrong)
+            
             plotly_data.append(go.Scatter(
                 x=wrong_x,
-                y=sorted(wrong_scores),
+                y=sorted_wrong_scores,
                 mode='markers',
                 name=category,
                 hoverinfo='name+y',
                 text=[ json.dumps({ 'path': path, 'prediction': prediction }) for path, prediction in
-                       zip(data.index[~correct], wrong_categories)]))
+                       zip(sorted_wrong_paths, sorted_wrong_categories)]))
             
             print('Category {}, {} images. \t accuracy: {} top_{} accuracy: {} '
                   'correct confidence: {}, {}, {} wrong confidence: {}, {}, {} '
@@ -112,7 +117,7 @@ def evaluate(model, h5_files, top_k, categories=None):
 
             all_accuracies.append(accuracy)
             all_top_k_accuracy.append(top_k_accuracy)
-            stats.append([ category, pf(accuracy), pf(top_k_accuracy), pf(correct_confidence) ])
+            stats.append([ category, pf(accuracy), pf(top_k_accuracy), pf(correct_confidence), wrong_categories, wrong_scores, data.index[~correct] ])
 
         mean_accuracy = pf(np.mean(all_accuracies))
         top_k_accuracy = pf(np.mean(all_top_k_accuracy))
