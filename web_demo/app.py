@@ -17,7 +17,7 @@ import urllib
 import random
 from functools import wraps
 import threading
-from collections import defaultdict
+from collections import defaultdict, Counter
 import json
 import base64
 import glob
@@ -33,6 +33,9 @@ import tornado.websocket
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 import blosc
+import pandas as pd
+import plotly.graph_objs as go
+from plotly.offline.offline import _plot_html
 
 from ast import literal_eval as make_tuple
 
@@ -225,7 +228,72 @@ def get_json_bulgaria2(threshold_obs, distance_min, distance_max):
 
 
 ################################### Mudah report #####################################
+@app.route('/report')
+@requires_auth
+def report_index():
+    with pd.HDFStore(args.report, 'r') as store:
+        keys = store.keys()
+    categories_number = set([ category.split('/')[1] for category in keys ])
+    categories = [ num2category[number]['name'] for number in categories_number ]
+    sorted_categories = sorted(zip(categories_number, categories), key=lambda x: x[1])
+    return flask.render_template('report.html', categories=sorted_categories)
 
+@app.route('/report/<path:number>')
+@requires_auth
+def report_category(number):
+
+    category = num2category[number]['name']
+    with pd.HDFStore(args.report, 'r') as store:
+        plotly_data = []
+        correct = store['{}/correct'.format(number)]
+
+        plotly_data.append(go.Scatter(
+            x=np.linspace(0,1, num=len(correct)),
+            y=correct.score,
+            mode='lines',
+            name=category,
+            hoverinfo='name+y',
+            text=[ json.dumps({ 'path': path, 'prediction': category })
+                       for path in correct.index ]))
+
+        wrong = store['{}/wrong/out'.format(number)]
+
+        wrong_categories = [ num2category[c]['name'] for c in wrong.category ]
+        
+        plotly_data.append(go.Scatter(
+            x=np.linspace(0,1, num=len(wrong)),
+            y=wrong.score,
+            mode='markers',
+            name=category,
+            hoverinfo='name+y',
+            text=[ json.dumps({ 'path': path, 'prediction': prediction })
+                   for path, prediction in zip(wrong.index, wrong_categories)]))
+
+        layout= go.Layout(
+            showlegend=False,
+            hovermode='closest')
+
+        figure = go.Figure(data=plotly_data, layout=layout)
+
+        performance_plot, performance_id, _,_ = _plot_html(figure, False, '', True, '50%', '100%', False)
+
+        categories_counter = Counter(wrong_categories)
+        labels, values = zip(*categories_counter.items())
+
+        accuracy = 1.0*len(correct)/(len(correct) + len(wrong)) #from future import division
+        
+        figure = {
+            'data': [{'labels': labels, 'values': values, 'type': 'pie'}],
+            'layout': {'showlegend': False}
+        }
+
+        pie, _, _, _ = _plot_html(figure, False, '', True, 400, 400, False)
+
+        wrong_as_this = store['{}/wrong/in'.format(number)]
+        
+    return flask.render_template('report.html', accuracy=100*accuracy, category=category, performance_plot=performance_plot, performance_id=performance_id,
+                                 pie=pie, wrong_out=zip(wrong.index, [ num2category[c]['name'] for c in  wrong.category], wrong.score),
+                                 wrong_in=zip(wrong_as_this.index, wrong_as_this.score))
 
 
 ################################### Images ###########################################
@@ -487,8 +555,19 @@ parser.add_argument(
     '-q', '--queue',
     help='redis queue to post image classification tasks to',
     default='classify')
+parser.add_argument(
+    '--report',
+    help='Where the Mudah report HDF5 file is',
+    default='/Users/tidemann/Documents/data/mudah/report.h5')
+parser.add_argument(
+    '--categories',
+    help='Where the Mudah JSON categories file is',
+    default='/Users/tidemann/Documents/code/propeller/mudah/categories.json')
+
 
 args = parser.parse_args()
+
+num2category = json.load(open(args.categories))
 
 red = redis.StrictRedis(args.redis_server, args.redis_port)
 red_db_1 = redis.StrictRedis(args.redis_server, args.redis_port, db=1)
