@@ -90,6 +90,7 @@ def evaluate(model, h5_files, top_k, categories=None, out_file='stats.h5'):
                 
                 sorted_wrong = sorted(zip(wrong_scores, data.index[~correct], wrong_categories),
                                       key=lambda x: x[0])
+
                 sorted_wrong_scores, sorted_wrong_paths, sorted_wrong_categories = zip(*sorted_wrong)
 
                 df = pd.DataFrame(data=zip(sorted_wrong_scores, sorted_wrong_categories),
@@ -99,16 +100,16 @@ def evaluate(model, h5_files, top_k, categories=None, out_file='stats.h5'):
                 store.append('{}/wrong/out'.format(category_i), df)
 
                 spread = defaultdict(list)
-                for score, path, category in sorted_wrong:
-                    spread[category].append((path, score))
+                for score, path, wrong_category in sorted_wrong:
+                    spread[wrong_category].append((path, score))
 
-                for category, X in spread.items():
+                for wrong_category, X in spread.items():
                     paths, scores = zip(*X)
                     
-                    df = pd.DataFrame(data=list(scores), index=paths, columns=['score'])
+                    df = pd.DataFrame(data=zip(scores, [category_i]*len(paths)), index=paths, columns=['score', 'category'])
                     df.index.name='filename'
 
-                    store.append('{}/wrong/in'.format(category), df, min_itemsize={'index': 50})
+                    store.append('{}/wrong/in'.format(wrong_category), df, min_itemsize={'index': 50})
                     
                 # plotly_data.append(go.Scatter(
                 #     x=wrong_x,

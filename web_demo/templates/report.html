@@ -1,15 +1,12 @@
 {% extends "layout.html" %}
 
-{% block header %}Mudah performance report: {{ category }}, accuracy: {{ accuracy|round(1) }}%{% endblock %}
+{% block header %}Mudah performance report: {{ category }}{% endblock %}
 
 {% block content %}
-<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
-<!-- sneaky way to have both index and category in same template -->
-{% for number, category in categories %}
-<a href={{ url_for('report_category', number=number) }}>{{ category }}</a><br>
-{% endfor %}
-<!-- end sneaky -->
+<b>Accuracy: {{ accuracy|round(1) }}%, top level accuracy: {{ top_level_accuracy|round(1) }}%</b>
+
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
 <style>
 img{
@@ -26,7 +23,7 @@ max-width: "50%";
     </td>
   </tr>
   <tr>
-    <td colspan=2>Wrongly classified pictures ({{ 100-accuracy|round(1) }}%) <br> {{ pie|safe }}</td>
+    <td colspan=2>{{ pie|safe }}</td>
   </tr>
   <tr>
     <td colspan=2>
@@ -36,12 +33,12 @@ max-width: "50%";
 	  <li><a href="#tabs-2">Images the classifier has erroneously classified as <b>{{ category }}</b> </a></li>
 	</ul>
 	<div id="tabs-1">
-	  At test time, these images were labelled as <b>{{ category }}</b>, but the classifier predicted it was something else.
+	  At test time, these images were labelled as <b>{{ category }}</b>, but the classifier predicted it as something else.
 	  Hover over each image to see what category it was predicted to be, and with what score. Images that are here that do not
 	  seem to fit in this category hints at noisy labels, i.e. they should have been in a different category.
 	  <br/>
 	  {% for path, cat, score in wrong_out %}
-	  <img class="lazy" data-original=http://52.77.195.194:8080/static{{ path }} title="{{ cat }}: {{ score }}" width=200>
+	  <img class="lazy" data-original={{ url_for('static') }}{{ path }} title="{{ cat }}: {{ score }}" width=200>
 	  {% endfor %}
 	</div>
 	<div id="tabs-2">
@@ -49,8 +46,8 @@ max-width: "50%";
 	  here seem to belong to this category, it is an indication that the classifier was indeed predicting the right category, but that there were
 	  noisy labels in the other categories.
 	  <br/>
-	  {% for path, score in wrong_in %}
-	  <img class="lazy" data-original=http://52.77.195.194:8080/static{{ path }} title="{{ score }}" width=200>
+	  {% for path, cat, score in wrong_in %}
+	  <img class="lazy" data-original={{ url_for('static') }}{{ path }} title="{{ score }}, originally in {{ cat }}" width=200>
 	  {% endfor %}
 	</div>
       </div>
@@ -68,11 +65,7 @@ max-width: "50%";
         data.points.map(function(d){
            var info=JSON.parse(d.data.text[d.pointNumber]);
            hoverImage.src="http://52.77.195.194:8080/static"+info.path;
-           if( d.data.name == info.prediction ){
-               hoverInfo.innerHTML = 'Correctly classified as <b>' + info.prediction +'</b>, score <b>' + d.y.toPrecision(3) + '</b>';
-           } else {
-    hoverInfo.innerHTML = 'Wrongly classified as <b>'+info.prediction+'</b> with score <b>' + d.y.toPrecision(3) + '</b>';
-           }
+           hoverInfo.innerHTML = d.data.name+'ly classified as <b>' + info.prediction +'</b>, score <b>' + d.y.toPrecision(3) + '</b>';
         });
     });
 </script>

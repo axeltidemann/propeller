@@ -5,6 +5,7 @@ which the workers read from.
 Author: Axel.Tidemann@telenor.com, Cyril.Banino-Rokkones@telenor.com
 '''
 
+from __future__ import division
 import os
 import time
 import cPickle as pickle
@@ -227,51 +228,69 @@ def get_json_bulgaria2(threshold_obs, distance_min, distance_max):
     return flask.jsonify({"vertices":vertices, "edges":kept_edges})
 
 
+
 ################################### Mudah report #####################################
+
+def category_stats(cat_n):
+    with pd.HDFStore(args.report, 'r') as store:
+        correct = store['{}/correct'.format(cat_n)]
+        wrong = store['{}/wrong/out'.format(cat_n)]
+    count = len(correct) + len(wrong)
+    accuracy = 100*len(correct)/count
+    top_level = sum([ num2category[cat_n]['parent'] == num2category[c]['parent'] for c in wrong.category ])
+    top_level_accuracy = 100*(top_level + len(correct))/count
+
+    return correct, wrong, count, accuracy, top_level_accuracy
+
 @app.route('/report')
-@requires_auth
+#@requires_auth
 def report_index():
     with pd.HDFStore(args.report, 'r') as store:
         keys = store.keys()
+        
     categories_number = set([ category.split('/')[1] for category in keys ])
-    categories = [ num2category[number]['name'] for number in categories_number ]
-    sorted_categories = sorted(zip(categories_number, categories), key=lambda x: x[1])
-    return flask.render_template('report.html', categories=sorted_categories)
+
+    accuracy = []
+    top_level_accuracy = []
+    count = []
+
+    _, _, count, accuracy, top_level_accuracy = zip(*[ category_stats(cat_n) for cat_n in categories_number ])
+        
+    categories = [ num2category[cat_n]['name'] for cat_n in categories_number ]
+    sorted_categories = sorted(zip(categories_number, categories, accuracy, top_level_accuracy, count), key=lambda x: x[2], reverse=True)
+    return flask.render_template('report_index.html', categories=sorted_categories, accuracy=np.mean(accuracy), top_level_accuracy=np.mean(top_level_accuracy))
 
 @app.route('/report/<path:number>')
-@requires_auth
+#@requires_auth
 def report_category(number):
 
     category = num2category[number]['name']
     with pd.HDFStore(args.report, 'r') as store:
         plotly_data = []
-        correct = store['{}/correct'.format(number)]
 
+        correct, wrong, count, accuracy, top_level_accuracy = category_stats(number)
+        
         plotly_data.append(go.Scatter(
-            x=np.linspace(0,1, num=len(correct)),
+            x=np.linspace(0,100, num=len(correct)),
             y=correct.score,
             mode='lines',
-            name=category,
+            name='Correct',
             hoverinfo='name+y',
             text=[ json.dumps({ 'path': path, 'prediction': category })
                        for path in correct.index ]))
 
-        wrong = store['{}/wrong/out'.format(number)]
-
         wrong_categories = [ num2category[c]['name'] for c in wrong.category ]
         
         plotly_data.append(go.Scatter(
-            x=np.linspace(0,1, num=len(wrong)),
+            x=np.linspace(0,100, num=len(wrong)),
             y=wrong.score,
-            mode='markers',
-            name=category,
+            mode='lines',
+            name='Wrong',
             hoverinfo='name+y',
             text=[ json.dumps({ 'path': path, 'prediction': prediction })
                    for path, prediction in zip(wrong.index, wrong_categories)]))
 
-        layout= go.Layout(
-            showlegend=False,
-            hovermode='closest')
+        layout = go.Layout(hovermode='closest', title='Performance of correct vs wrong classified pictures')
 
         figure = go.Figure(data=plotly_data, layout=layout)
 
@@ -280,21 +299,19 @@ def report_category(number):
         categories_counter = Counter(wrong_categories)
         labels, values = zip(*categories_counter.items())
 
-        accuracy = 1.0*len(correct)/(len(correct) + len(wrong)) #from future import division
-        
-        figure = {
-            'data': [{'labels': labels, 'values': values, 'type': 'pie'}],
-            'layout': {'showlegend': False}
-        }
+        pie = go.Pie(labels=labels, values=values, showlegend=False, textinfo='text', text=[None]*len(values))
+        layout= go.Layout(hovermode='closest', title='Wrongly classified pictures ({}%) that were labelled {}'.format(np.round(100-accuracy, 1), category))
+        figure = go.Figure(data=[pie], layout=layout)
 
-        pie, _, _, _ = _plot_html(figure, False, '', True, 400, 400, False)
+        pie, _, _, _ = _plot_html(figure, False, '', True, '100%', '100%', False)
 
         wrong_as_this = store['{}/wrong/in'.format(number)]
-        
-    return flask.render_template('report.html', accuracy=100*accuracy, category=category, performance_plot=performance_plot, performance_id=performance_id,
-                                 pie=pie, wrong_out=zip(wrong.index, [ num2category[c]['name'] for c in  wrong.category], wrong.score),
-                                 wrong_in=zip(wrong_as_this.index, wrong_as_this.score))
 
+    wrong_out = sorted(zip(wrong.index, [ num2category[c]['name'] for c in wrong.category], wrong.score), key=lambda x: x[2], reverse=True)
+    wrong_in = sorted(zip(wrong_as_this.index, [ num2category[c]['name'] for c in wrong_as_this.category], wrong_as_this.score), key=lambda x: x[2], reverse=True)
+        
+    return flask.render_template('report.html', accuracy=accuracy, category=category, performance_plot=performance_plot, performance_id=performance_id,
+                                 pie=pie, wrong_out=wrong_out, wrong_in = wrong_in, count=count, top_level_accuracy=top_level_accuracy)
 
 ################################### Images ###########################################
 
