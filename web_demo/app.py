@@ -575,11 +575,11 @@ parser.add_argument(
 parser.add_argument(
     '--report',
     help='Where the Mudah report HDF5 file is',
-    default='/Users/tidemann/Documents/data/mudah/report.h5')
+    default='/mnt/mudah/sub_category/report.h5')
 parser.add_argument(
     '--categories',
     help='Where the Mudah JSON categories file is',
-    default='/Users/tidemann/Documents/code/propeller/mudah/categories.json')
+    default='/home/axel/propeller/mudah/categories.json')
 
 
 args = parser.parse_args()
