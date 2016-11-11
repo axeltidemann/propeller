@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+
+{% block header %}Mudah performance report{% endblock %}
+
+{% block content %}
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+<p>
+<b>Overall accuracy: {{ accuracy|round(1) }}%, top level accuracy: {{ top_level_accuracy|round(1) }}%</b>
+<p/>
+
+<p>
+Each category was populated with 10000 images. For each category, 8000 was added to the training set, 2000 was added to the test set. Some
+categories had less than 10000 images, for these the train/test divide was also 80%/20%. This explains why some of the categories below are tested on less
+than 2000 images. <i>Accuracy</i> reflects how many of the images in the test set of that category was correctly classified. <i>Top level accuracy</i> shows
+how many of the wrongly classified pictures within the same category were still within the same top level category. For instance, the top level category
+VEHICULES entails both "Motorcycles" and "Motorcycles and Parts".
+<p/>
+
+<table>
+  <tr>
+    <th>Category</th><th width=100>Images</th><th width=100>Accuracy</th><th>Top level accuracy</th>
+  </tr>
+  {% for number, category, accuracy, top_level_accuracy, count in categories %}
+  <tr>
+    <td><a href={{ url_for('report_category', number=number) }}>{{ category }}</a></td>
+    <td>{{ count }}</td>
+    <td>{{ accuracy|round(1)}}%</td>
+    <td>{{ top_level_accuracy|round(1)}}%</td>
+  </tr>
+{% endfor %}
+</table>
+{% endblock %}
