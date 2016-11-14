@@ -242,17 +242,13 @@ def category_stats(cat_n):
 
     return correct, wrong, count, accuracy, top_level_accuracy
 
-@app.route('/report')
-#@requires_auth
+@app.route('/report/mudah')
+# @requires_auth
 def report_index():
     with pd.HDFStore(args.report, 'r') as store:
         keys = store.keys()
         
     categories_number = set([ category.split('/')[1] for category in keys ])
-
-    accuracy = []
-    top_level_accuracy = []
-    count = []
 
     _, _, count, accuracy, top_level_accuracy = zip(*[ category_stats(cat_n) for cat_n in categories_number ])
         
@@ -260,8 +256,8 @@ def report_index():
     sorted_categories = sorted(zip(categories_number, categories, accuracy, top_level_accuracy, count), key=lambda x: x[2], reverse=True)
     return flask.render_template('report_index.html', categories=sorted_categories, accuracy=np.mean(accuracy), top_level_accuracy=np.mean(top_level_accuracy))
 
-@app.route('/report/<path:number>')
-#@requires_auth
+@app.route('/report/mudah/<path:number>')
+# @requires_auth
 def report_category(number):
 
     category = num2category[number]['name']
@@ -290,7 +286,7 @@ def report_category(number):
             text=[ json.dumps({ 'path': path, 'prediction': prediction })
                    for path, prediction in zip(wrong.index, wrong_categories)]))
 
-        layout = go.Layout(hovermode='closest', title='Performance of correct vs wrong classified pictures')
+        layout = go.Layout(hovermode='closest', title='Performance of correct vs wrong classified pictures', xaxis={'title': '%'}, yaxis={'title': 'score'})
 
         figure = go.Figure(data=plotly_data, layout=layout)
 
@@ -300,7 +296,7 @@ def report_category(number):
         labels, values = zip(*categories_counter.items())
 
         pie = go.Pie(labels=labels, values=values, showlegend=False, textinfo='text', text=[None]*len(values))
-        layout= go.Layout(hovermode='closest', title='Wrongly classified pictures ({}%) that were labelled {}'.format(np.round(100-accuracy, 1), category))
+        layout= go.Layout(hovermode='closest', title='Wrongly classified pictures ({}%) labelled {}'.format(np.round(100-accuracy, 1), category))
         figure = go.Figure(data=[pie], layout=layout)
 
         pie, _, _, _ = _plot_html(figure, False, '', True, '100%', '100%', False)

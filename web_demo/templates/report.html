@@ -4,7 +4,7 @@
 
 {% block content %}
 
-<b>Accuracy: {{ accuracy|round(1) }}%, top level accuracy: {{ top_level_accuracy|round(1) }}%</b>
+<b>Sub category accuracy: {{ accuracy|round(1) }}%, top category accuracy: {{ top_level_accuracy|round(1) }}%</b>
 
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
@@ -34,11 +34,11 @@ max-width: "50%";
 	</ul>
 	<div id="tabs-1">
 	  At test time, these images were labelled as <b>{{ category }}</b>, but the classifier predicted it as something else.
-	  Hover over each image to see what category it was predicted to be, and with what score. Images that are here that do not
-	  seem to fit in this category hints at noisy labels, i.e. they should have been in a different category.
+	  Hover over each image to see what category it was predicted to be, and with what score. Images that do not
+	  seem to fit in this category but in the <i>predicted</i> category indicates that the original label was wrong.
 	  <br/>
 	  {% for path, cat, score in wrong_out %}
-	  <img class="lazy" data-original={{ url_for('static') }}{{ path }} title="{{ cat }}: {{ score }}" width=200>
+	  <a href=/static{{ path }}><img class="lazy" data-original=/static{{ path }} title="Predicted to be '{{ cat }}' with score {{ score|round(2) }}" width=200></a>
 	  {% endfor %}
 	</div>
 	<div id="tabs-2">
@@ -47,7 +47,7 @@ max-width: "50%";
 	  noisy labels in the other categories.
 	  <br/>
 	  {% for path, cat, score in wrong_in %}
-	  <img class="lazy" data-original={{ url_for('static') }}{{ path }} title="{{ score }}, originally in {{ cat }}" width=200>
+	  <a href=/static{{ path }}><img class="lazy" data-original=/static{{ path }} title="Predicted to be '{{ category }}' with score {{ score|round(2) }}, originally in '{{ cat }}'" width=200></a>
 	  {% endfor %}
 	</div>
       </div>
@@ -64,7 +64,7 @@ max-width: "50%";
     myPlot.on('plotly_hover', function(data){
         data.points.map(function(d){
            var info=JSON.parse(d.data.text[d.pointNumber]);
-           hoverImage.src="http://52.77.195.194:8080/static"+info.path;
+           hoverImage.src="/static"+info.path;
            hoverInfo.innerHTML = d.data.name+'ly classified as <b>' + info.prediction +'</b>, score <b>' + d.y.toPrecision(3) + '</b>';
         });
     });
