@@ -23,7 +23,7 @@ import plotly.graph_objs as go
 from training_data import states
 from utils import load_graph, pretty_float as pf
 
-def evaluate(model, h5_files, top_k, categories=None, out_file='stats.h5'):
+def evaluate(model, h5_files, top_k, categories, out_file):
     h5_files = sorted(h5_files)
 
     plotly_data = []
@@ -67,7 +67,7 @@ def evaluate(model, h5_files, top_k, categories=None, out_file='stats.h5'):
                 correct_confidence_median = np.median(np.max(predictions[correct], axis=1))
                 correct_confidence_std = np.std(np.max(predictions[correct], axis=1))
 
-                category = categories[category_i]['name'] if categories else category_i
+                category = categories[category_i]['name']
 
                 sorted_correct = sorted(zip(correct_scores, data.index[correct]),
                                         key=lambda x: x[0])
@@ -109,16 +109,7 @@ def evaluate(model, h5_files, top_k, categories=None, out_file='stats.h5'):
                     df = pd.DataFrame(data=zip(scores, [category_i]*len(paths)), index=paths, columns=['score', 'category'])
                     df.index.name='filename'
 
-                    store.append('{}/wrong/in'.format(wrong_category), df, min_itemsize={'index': 50})
-                    
-                # plotly_data.append(go.Scatter(
-                #     x=wrong_x,
-                #     y=sorted_wrong_scores,
-                #     mode='markers',
-                #     name=category,
-                #     hoverinfo='name+y',
-                #     text=[ json.dumps({ 'path': path, 'prediction': prediction }) for path, prediction in
-                #            zip(sorted_wrong_paths, sorted_wrong_categories)]))
+                    store.append('{}/wrong/in'.format(wrong_category), df, min_itemsize={'index': 63, 'category': 4})
 
                 print('Category {}, {} images. \t accuracy: {} top level accuracy: {} top_{} accuracy: {} '
                       'correct confidence: {}, {}, {} wrong confidence: {}, {}, {} '
@@ -157,7 +148,7 @@ def evaluate(model, h5_files, top_k, categories=None, out_file='stats.h5'):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='''
-    Performs statistics on a trained model.
+    Calculates statistics on a trained model, prints the results and saves to HDF5 file.
     ''', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument(
         'test_folder',
@@ -178,7 +169,10 @@ if __name__ == "__main__":
         '--gpu',
         help='Which GPU to use for inference. Empty string means no GPU.',
         default='')
-
+    parser.add_argument(
+        '--out_file',
+        help='Name of the HDF5 file with the results.',
+        default='report.h5')
     args = parser.parse_args()
 
     os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
@@ -188,4 +182,4 @@ if __name__ == "__main__":
     categories = json.load(open(args.categories))
     
     for model in args.models:
-        evaluate(model, h5_files, args.top_k, categories)
+        evaluate(model, h5_files, args.top_k, categories, args.out_file)

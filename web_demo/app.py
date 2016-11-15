@@ -1,6 +1,5 @@
 '''
-Web frontend for the image classifier. Posts images to be classified to the redis server,
-which the workers read from.
+Various web demos for Telenor Research.
 
 Author: Axel.Tidemann@telenor.com, Cyril.Banino-Rokkones@telenor.com
 '''
@@ -227,44 +226,62 @@ def get_json_bulgaria2(threshold_obs, distance_min, distance_max):
     print "kept", len(kept_edges), "edges"
     return flask.jsonify({"vertices":vertices, "edges":kept_edges})
 
+################################### Reports of classifier performance #####################################
 
-
-################################### Mudah report #####################################
-
-def category_stats(cat_n):
-    with pd.HDFStore(args.report, 'r') as store:
+def category_stats(cat_n, report, categories):
+    with pd.HDFStore(report, 'r') as store:
         correct = store['{}/correct'.format(cat_n)]
         wrong = store['{}/wrong/out'.format(cat_n)]
     count = len(correct) + len(wrong)
     accuracy = 100*len(correct)/count
-    top_level = sum([ num2category[cat_n]['parent'] == num2category[c]['parent'] for c in wrong.category ])
+    top_level = sum([ categories[cat_n]['parent'] == categories[c]['parent'] for c in wrong.category ])
     top_level_accuracy = 100*(top_level + len(correct))/count
 
     return correct, wrong, count, accuracy, top_level_accuracy
 
-@app.route('/report/mudah')
+def _site_data(site):
+    report = data[site]['report']
+    categories = json.load(open(data[site]['categories']))
+    return report, categories
+    
+@app.route('/report/<site>')
 # @requires_auth
-def report_index():
-    with pd.HDFStore(args.report, 'r') as store:
+def report_index(site):
+    report, categories = _site_data(site)
+    
+    with pd.HDFStore(report, 'r') as store:
         keys = store.keys()
         
-    categories_number = set([ category.split('/')[1] for category in keys ])
+    category_numbers = set([ category.split('/')[1] for category in keys ])
 
-    _, _, count, accuracy, top_level_accuracy = zip(*[ category_stats(cat_n) for cat_n in categories_number ])
+    _, _, count, accuracy, top_level_accuracy = zip(*[ category_stats(cat_n, report, categories) for cat_n in category_numbers ])
         
-    categories = [ num2category[cat_n]['name'] for cat_n in categories_number ]
-    sorted_categories = sorted(zip(categories_number, categories, accuracy, top_level_accuracy, count), key=lambda x: x[2], reverse=True)
-    return flask.render_template('report_index.html', categories=sorted_categories, accuracy=np.mean(accuracy), top_level_accuracy=np.mean(top_level_accuracy))
+    category_names = [ categories[cat_n]['name'] for cat_n in category_numbers ]
+    sorted_categories = sorted(zip(category_numbers, category_names, accuracy, top_level_accuracy, count), key=lambda x: x[2], reverse=True)
 
-@app.route('/report/mudah/<path:number>')
+    children = [ categories[child] for child in categories.keys() if categories[child].has_key('parent') ]
+    candidate = random.choice(children)
+    friend = random.choice([ orphan for orphan in children if orphan['parent'] == candidate['parent'] and orphan['name'] != candidate['name']])
+    
+    return flask.render_template('report_index.html',
+                                 categories=sorted_categories,
+                                 accuracy=np.mean(accuracy),
+                                 top_level_accuracy=np.mean(top_level_accuracy),
+                                 site=site,
+                                 candidate=candidate['name'],
+                                 friend=friend['name'],
+                                 parent=categories[str(friend['parent'])]['name'])
+
+@app.route('/report/<site>/<number>')
 # @requires_auth
-def report_category(number):
-
-    category = num2category[number]['name']
-    with pd.HDFStore(args.report, 'r') as store:
+def report_category(site, number):
+    report, categories = _site_data(site)
+    
+    category = categories[number]['name']
+    with pd.HDFStore(report, 'r') as store:
         plotly_data = []
 
-        correct, wrong, count, accuracy, top_level_accuracy = category_stats(number)
+        correct, wrong, count, accuracy, top_level_accuracy = category_stats(number, report, categories)
         
         plotly_data.append(go.Scatter(
             x=np.linspace(0,100, num=len(correct)),
@@ -275,7 +292,7 @@ def report_category(number):
             text=[ json.dumps({ 'path': path, 'prediction': category })
                        for path in correct.index ]))
 
-        wrong_categories = [ num2category[c]['name'] for c in wrong.category ]
+        wrong_categories = [ categories[c]['name'] for c in wrong.category ]
         
         plotly_data.append(go.Scatter(
             x=np.linspace(0,100, num=len(wrong)),
@@ -303,11 +320,20 @@ def report_category(number):
 
         wrong_as_this = store['{}/wrong/in'.format(number)]
 
-    wrong_out = sorted(zip(wrong.index, [ num2category[c]['name'] for c in wrong.category], wrong.score), key=lambda x: x[2], reverse=True)
-    wrong_in = sorted(zip(wrong_as_this.index, [ num2category[c]['name'] for c in wrong_as_this.category], wrong_as_this.score), key=lambda x: x[2], reverse=True)
+    wrong_out = sorted(zip(wrong.index, [ categories[c]['name'] for c in wrong.category], wrong.score), key=lambda x: x[2], reverse=True)
+    wrong_in = sorted(zip(wrong_as_this.index, [ categories[c]['name'] for c in wrong_as_this.category], wrong_as_this.score), key=lambda x: x[2], reverse=True)
         
-    return flask.render_template('report.html', accuracy=accuracy, category=category, performance_plot=performance_plot, performance_id=performance_id,
-                                 pie=pie, wrong_out=wrong_out, wrong_in = wrong_in, count=count, top_level_accuracy=top_level_accuracy)
+    return flask.render_template('report.html',
+                                 accuracy=accuracy,
+                                 category=category,
+                                 performance_plot=performance_plot,
+                                 performance_id=performance_id,
+                                 pie=pie,
+                                 wrong_out=wrong_out,
+                                 wrong_in = wrong_in,
+                                 count=count,
+                                 top_level_accuracy=top_level_accuracy,
+                                 site=site)
 
 ################################### Images ###########################################
 
@@ -568,19 +594,12 @@ parser.add_argument(
     '-q', '--queue',
     help='redis queue to post image classification tasks to',
     default='classify')
-parser.add_argument(
-    '--report',
-    help='Where the Mudah report HDF5 file is',
-    default='/mnt/mudah/sub_category/report.h5')
-parser.add_argument(
-    '--categories',
-    help='Where the Mudah JSON categories file is',
-    default='/home/axel/propeller/mudah/categories.json')
-
-
 args = parser.parse_args()
 
-num2category = json.load(open(args.categories))
+data = { 'mudah': {'categories': '/home/axel/propeller/mudah/categories.json',
+                   'report': '/mnt/mudah/sub_category/report.h5' },
+         'kaidee': {'categories': '/home/axel/propeller/kaidee/categories.json',
+                    'report': '/mnt/kaidee/report.h5' } }
 
 red = redis.StrictRedis(args.redis_server, args.redis_port)
 red_db_1 = redis.StrictRedis(args.redis_server, args.redis_port, db=1)

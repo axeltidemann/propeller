@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 
-{% block header %}Mudah performance report{% endblock %}
+{% block header %}{{ site|capitalize }} performance report{% endblock %}
 
 {% block content %}
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
@@ -14,7 +14,7 @@ Each sub category was populated with 10000 images. For each sub category, 8000 w
 sub categories had less than 10000 images, for these the train/test divide was also 80%/20%. This explains why some of the categories below are tested on less
 than 2000 images. <i>Sub category accuracy</i> reflects how many of the images in the test set of that category was correctly classified. <i>Top category accuracy</i> shows
 how many of the wrongly classified pictures within the same category were still within the same top category (i.e. the same parent category). For instance, the sub categories
- "Motorcycles" and "Motorcycles and Parts" have the same parent category "VEHICULES". Click on each category to learn more of the classifier performance. 
+ "{{ candidate }}" and "{{ friend }}" have the same parent category "{{ parent }}". Click on each category to learn more of the classifier performance. 
 <p/>
 
 <table>
@@ -23,7 +23,7 @@ how many of the wrongly classified pictures within the same category were still 
   </tr>
   {% for number, category, accuracy, top_level_accuracy, count in categories %}
   <tr>
-    <td><a href={{ url_for('report_category', number=number) }}>{{ category }}</a></td>
+    <td><a href={{ url_for('report_category', site=site, number=number) }}>{{ category }}</a></td>
     <td>{{ count }}</td>
     <td>{{ accuracy|round(1)}}%</td>
     <td>{{ top_level_accuracy|round(1)}}%</td>
