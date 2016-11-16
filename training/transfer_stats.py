@@ -51,13 +51,17 @@ def evaluate(model, h5_files, top_k, categories, out_file):
 
                 predictions = sess.run(transfer_predictor, { 'input:0': data })
 
-                top_level_accuracy = np.mean([ categories[category_i]['parent'] ==
-                                               categories[os.path.basename(h5_files[prediction]).replace('.h5','')]['parent']
-                                               for prediction in np.argmax(predictions, axis=1) ])
-
                 correct = np.argmax(predictions, axis=1) == target
                 accuracy = np.mean(correct)
 
+                if 'parent' in categories[category_i]:
+                    top_level_accuracy = np.mean([ 'parent' in categories[os.path.basename(h5_files[prediction]).replace('.h5','')] and
+                                                   categories[category_i]['parent'] == categories[os.path.basename(h5_files[prediction]).replace('.h5','')]['parent']
+                                                   for prediction in np.argmax(predictions, axis=1) ])
+                else:
+                    top_level_accuracy = accuracy
+                    
+                
                 top_k_accuracy = np.mean([ target in np.argsort(prediction)[-top_k:]
                                            for prediction in predictions ])
 

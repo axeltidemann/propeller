@@ -234,7 +234,10 @@ def category_stats(cat_n, report, categories):
         wrong = store['{}/wrong/out'.format(cat_n)]
     count = len(correct) + len(wrong)
     accuracy = 100*len(correct)/count
-    top_level = sum([ categories[cat_n]['parent'] == categories[c]['parent'] for c in wrong.category ])
+    if 'parent' in categories[cat_n]:
+        top_level = sum([ 'parent' in categories[c] and categories[cat_n]['parent'] == categories[c]['parent'] for c in wrong.category ])
+    else:
+        top_level = accuracy
     top_level_accuracy = 100*(top_level + len(correct))/count
 
     return correct, wrong, count, accuracy, top_level_accuracy
@@ -264,9 +267,9 @@ def report_index(site):
     category_names = [ categories[cat_n]['name'] for cat_n in category_numbers ]
     sorted_categories = sorted(zip(category_numbers, category_names, accuracy, top_level_accuracy, train_count, test_count), key=lambda x: x[2], reverse=True)
 
-    children = [ categories[child] for child in categories.keys() if categories[child].has_key('parent') ]
+    children = [ categories[child] for child in categories.keys() if 'parent' in categories[child] ]
     candidate = random.choice(children)
-    friend = random.choice([ orphan for orphan in children if orphan['parent'] == candidate['parent'] and orphan['name'] != candidate['name']])
+    friend = random.choice([ orphan for orphan in children if 'parent' in orphan and orphan['parent'] == candidate['parent'] and orphan['name'] != candidate['name']])
     
     return flask.render_template('report_index.html',
                                  categories=sorted_categories,
