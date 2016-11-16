@@ -12,7 +12,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),'../misc'
 
 import numpy as np
 import tensorflow as tf
-from tensorflow.python.client import graph_util
+from tensorflow.python.framework import graph_util
 from tensorflow.python.platform import gfile
 from tensorflow.contrib.layers.python.layers import batch_norm as batch_norm
 from sklearn.utils import shuffle
@@ -29,7 +29,7 @@ def bias_variable(shape, name=None):
     return tf.Variable(initial,name=name)
 
 def learn(train_states, test_states, learning_rate, save_every, batch_size, hidden_size, dropout, epochs,
-          print_every, model_dir, perceptron, dense, lenet, filter_width, depth, mem_ratio,
+          print_every, model_dir, perceptron, dense, lenet, filter_width, depth,
           q_size, use_dask, in_memory, dask_chunksize):
 
     data = read_data(train_states, test_states, use_dask, in_memory, dask_chunksize)
@@ -43,9 +43,8 @@ def learn(train_states, test_states, learning_rate, save_every, batch_size, hidd
         model_name = '{}_dense_dropout_{}_hidden_size_{}.pb'.format(model_name, dropout, hidden_size)
     if lenet:
         model_name = '{}_lenet_dropout_{}_hidden_size_{}.pb'.format(model_name, dropout, hidden_size)
-        
-    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=mem_ratio)
-    with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
+
+    with tf.Session() as sess:
         
         q_x_in = tf.placeholder(tf.float32, shape=[batch_size, data.train.X_features])
         q_y_in = tf.placeholder(tf.int32, shape=[batch_size])
@@ -271,11 +270,6 @@ if __name__ == '__main__':
         type=int,
         default=16)
     parser.add_argument(
-        '--mem_ratio',
-        help='Ratio of memory to reserve on the GPU instance',
-        type=float,
-        default=.95)
-    parser.add_argument(
         '--q_size',
         help='Capacity of FIFOQueue for loading training data.',
         type=int,
@@ -302,5 +296,5 @@ if __name__ == '__main__':
     learn(args.train_states, args.test_states, args.learning_rate,
           args.save_every, args.batch_size, args.hidden_size, args.dropout,
           args.epochs, args.print_every, args.model_dir, args.perceptron,
-          args.dense, args.lenet, args.filter_width, args.depth, args.mem_ratio,
+          args.dense, args.lenet, args.filter_width, args.depth,
           args.q_size, args.use_dask, args.in_memory, args.dask_chunksize)

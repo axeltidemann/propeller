@@ -106,7 +106,6 @@ class DataSet:
 
         self.shuffle()
 
-
     # Possibilities for optimization: del self._X/Y, followed by gc.collect(). Run through the algorithm
     # below, and collect indices for each dask array. Create matrix and fill it accordingly. Shuffle in-place.
     def load(self):
