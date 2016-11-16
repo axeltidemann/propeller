@@ -25,18 +25,18 @@ args = parser.parse_args()
 book = open_workbook(args.excel_file)
 sheet = book.sheet_by_index(0)
 
-category_level = map(lambda x: str(int(x)), sheet.col_values(6, start_rowx=1))
+category_level = map(int, sheet.col_values(6, start_rowx=1))
 
-top_ids = map(lambda x: str(int(x)), sheet.col_values(0, start_rowx=1))
+top_ids = map(int, sheet.col_values(0, start_rowx=1))
 top_names = sheet.col_values(1, start_rowx=1)
 
-sub_ids = map(lambda x: str(int(x)), sheet.col_values(4, start_rowx=1))
+sub_ids = map(int, sheet.col_values(4, start_rowx=1))
 sub_names = sheet.col_values(5, start_rowx=1)
 
 categories = {}
 for top_i, top_n, sub_i, sub_n, lvl in zip(top_ids, top_names, sub_ids, sub_names, category_level):
     if lvl == 1:
-        categories[top_i] = {"name": n, "level":lvl }
+        categories[top_i] = {"name": top_n, "level": lvl }
     else:
         categories[sub_i] = {"name": sub_n, "level": lvl, "parent": top_i}
 
