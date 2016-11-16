@@ -4,14 +4,14 @@
 
 {% block content %}
 
-<b>Sub category accuracy: {{ accuracy|round(1) }}%, top category accuracy: {{ top_level_accuracy|round(1) }}%</b>
+<b>Sub category accuracy: {{ accuracy|round(1) }}%, top category accuracy: {{ top_level_accuracy|round(1) }}%</b>, tested on <b>{{ count }}</b> images.
 
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
 <style>
 img{
 max-height: 300px;
-max-width: "50%";
+max-width: 300px;
 }
 </style>
 

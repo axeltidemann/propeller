@@ -254,10 +254,15 @@ def report_index(site):
         
     category_numbers = set([ category.split('/')[1] for category in keys ])
 
-    _, _, count, accuracy, top_level_accuracy = zip(*[ category_stats(cat_n, report, categories) for cat_n in category_numbers ])
+    _, _, test_count, accuracy, top_level_accuracy = zip(*[ category_stats(cat_n, report, categories) for cat_n in category_numbers ])
+
+    train_count = [ c*4 for c in test_count ] # Assuming 20% test, 80% train
+
+    train_sum = sum(train_count)
+    test_sum = sum(test_count)
         
     category_names = [ categories[cat_n]['name'] for cat_n in category_numbers ]
-    sorted_categories = sorted(zip(category_numbers, category_names, accuracy, top_level_accuracy, count), key=lambda x: x[2], reverse=True)
+    sorted_categories = sorted(zip(category_numbers, category_names, accuracy, top_level_accuracy, train_count, test_count), key=lambda x: x[2], reverse=True)
 
     children = [ categories[child] for child in categories.keys() if categories[child].has_key('parent') ]
     candidate = random.choice(children)
@@ -268,6 +273,8 @@ def report_index(site):
                                  accuracy=np.mean(accuracy),
                                  top_level_accuracy=np.mean(top_level_accuracy),
                                  site=site,
+                                 train_sum=train_sum,
+                                 test_sum=test_sum,
                                  candidate=candidate['name'],
                                  friend=friend['name'],
                                  parent=categories[str(friend['parent'])]['name'])
@@ -307,7 +314,7 @@ def report_category(site, number):
 
         figure = go.Figure(data=plotly_data, layout=layout)
 
-        performance_plot, performance_id, _,_ = _plot_html(figure, False, '', True, '50%', '100%', False)
+        performance_plot, performance_id, _,_ = _plot_html(figure, False, '', True, 700, '100%', False)
 
         categories_counter = Counter(wrong_categories)
         labels, values = zip(*categories_counter.items())
