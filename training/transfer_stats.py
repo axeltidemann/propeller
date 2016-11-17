@@ -113,7 +113,7 @@ def evaluate(model, h5_files, top_k, categories, out_file):
                     df = pd.DataFrame(data=zip(scores, [category_i]*len(paths)), index=paths, columns=['score', 'category'])
                     df.index.name='filename'
 
-                    store.append('{}/wrong/in'.format(wrong_category), df, min_itemsize={'index': 63, 'category': 4})
+                    store.append('{}/wrong/in'.format(wrong_category), df, min_itemsize={'index': 79, 'category': 12})
 
                 print('Category {}, {} images. \t accuracy: {} top level accuracy: {} top_{} accuracy: {} '
                       'correct confidence: {}, {}, {} wrong confidence: {}, {}, {} '

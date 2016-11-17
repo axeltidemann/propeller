@@ -609,7 +609,9 @@ args = parser.parse_args()
 data = { 'mudah': {'categories': '/home/axel/propeller/mudah/categories.json',
                    'report': '/mnt/mudah/sub_category/report.h5' },
          'kaidee': {'categories': '/home/axel/propeller/kaidee/categories.json',
-                    'report': '/mnt/kaidee/report.h5' } }
+                    'report': '/mnt/kaidee/report.h5' },
+         'kaidee_cars': {'categories': '/mnt/kaidee/car_categories.json', 
+                         'report': '/mnt/kaidee/car_report.h5' } }
 
 red = redis.StrictRedis(args.redis_server, args.redis_port)
 red_db_1 = redis.StrictRedis(args.redis_server, args.redis_port, db=1)
