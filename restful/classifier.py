@@ -19,8 +19,7 @@ import numpy as np
 import redis
 import boto3
 
-DATA_URL = 'http://download.tensorflow.org/models/image/imagenet/inception-v3-2016-03-01.tar.gz'
-# DATA_URL = 'http://download.tensorflow.org/models/image/imagenet/inception-2015-12-05.tgz'
+DATA_URL = 'http://download.tensorflow.org/models/image/imagenet/inception-2015-12-05.tgz'
 
 def classify_images(cuda_device, mapping, sqs_queue, mem_ratio, model_dir, classifier, redis_server, redis_port, redis_prefix, num_top_predictions):
     sqs = boto3.resource('sqs')
