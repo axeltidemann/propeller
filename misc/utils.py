@@ -7,8 +7,7 @@ import sys
 from six.moves import urllib
 import pandas as pd
 
-DATA_URL = 'http://download.tensorflow.org/models/image/imagenet/inception-v3-2016-03-01.tar.gz'
-# DATA_URL = 'http://download.tensorflow.org/models/image/imagenet/inception-2015-12-05.tgz'
+DATA_URL = 'http://download.tensorflow.org/models/image/imagenet/inception-2015-12-05.tgz'
 
 def save_df(name, df):
     df.to_hdf('{}_{}.h5'.format(name, datetime.datetime.now().isoformat()),
