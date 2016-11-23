@@ -13,6 +13,7 @@ from binascii import a2b_base64
 import argparse
 import multiprocessing as mp
 
+from six.moves import urllib
 import tensorflow as tf
 from tensorflow.python.platform import gfile
 import numpy as np

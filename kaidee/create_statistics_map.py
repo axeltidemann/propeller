@@ -2,7 +2,8 @@
 
 '''
 Reads the canonical JSON file that has everything in it (in list form), 
-convert to the JSON hierarchy that will eventually evolve to become the standard.
+convert to the JSON hierarchy. This is used for display of statistics and reports,
+not for output of the neural network.
 '''
 
 import argparse

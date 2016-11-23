@@ -101,7 +101,8 @@ def check_auth(username, password):
     """This function is called to check if a username /
     password combination is valid.
     """
-    return username == 'telenor' and password == 'research'
+    return True
+    #return username == 'telenor' and password == 'research'
 
 def authenticate():
     """Sends a 401 response that enables basic auth"""
@@ -248,7 +249,7 @@ def _site_data(site):
     return report, categories
     
 @app.route('/report/<site>')
-# @requires_auth
+@requires_auth
 def report_index(site):
     report, categories = _site_data(site)
     
@@ -283,7 +284,7 @@ def report_index(site):
                                  parent=categories[str(friend['parent'])]['name'])
 
 @app.route('/report/<site>/<number>')
-# @requires_auth
+@requires_auth
 def report_category(site, number):
     report, categories = _site_data(site)
     
@@ -550,25 +551,35 @@ def clusters():
 @app.route('/images/clusters/list/<path:clusterfolder>')
 @requires_auth
 def clusters_folder(clusterfolder):
-    names = sorted(os.listdir(os.path.join(app.static_folder, clusterfolder)))
-    paths = [ url_for('clusters_display', clusterfile='{}/{}'.format(clusterfolder, name), index=0)
-              for name in names ]
+    path = os.path.join(app.static_folder, clusterfolder)
+    files = os.listdir(path)
+    files.remove('categories.json')
+    categories = json.load(open(os.path.join(path, 'categories.json')))
+    names = [ categories[_file.split('.')[0]]['name'] for _file in files ]
 
-    return flask.render_template('clusters.html', clusterfiles=zip(names, paths))
+    paths = [ url_for('clusters_display', clusterfile='{}/{}'.format(clusterfolder, _file), index=0)
+              for _file in files ]
+
+    return flask.render_template('clusters.html', clusterfiles=sorted(zip(names, paths), key=lambda x: x[0]))
         
 @app.route('/images/clusters/display/<path:clusterfile>/<string:index>')
 @requires_auth
 def clusters_display(clusterfile, index):
-    with open(os.path.join('/', clusterfile), 'r') as _file:
-        clusters = json.load(_file)
-        keys = clusters.keys()
-        keys.remove('rejected')
-        keys = sorted(keys, key=lambda x: len(clusters[x]), reverse=True)
-        seed = 'rejected' if index == 'rejected' else keys[int(index)] 
-        return flask.render_template('clusters_display.html', clusterfile=clusterfile,
-                                     clusterfolder=os.path.dirname(clusterfile),
-                                     seed=seed, index=index, clusters=range(len(keys)),
-                                     images=clusters[seed])
+    path = os.path.join('/', clusterfile)
+    clusters = json.load(open(path))
+    keys = clusters.keys()
+    keys.remove('rejected')
+    keys = sorted(keys, key=lambda x: len(clusters[x]), reverse=True)
+    seed = 'rejected' if index == 'rejected' else keys[int(index)]
+
+    categories = json.load(open(os.path.join(os.path.dirname(path), 'categories.json')))
+    _, filename = os.path.split(clusterfile)
+    category_name = categories[filename.split('.')[0]]['name']
+    
+    return flask.render_template('clusters_display.html', clusterfile=clusterfile,
+                                 clusterfolder=os.path.dirname(clusterfile),
+                                 seed=seed, index=index, clusters=range(len(keys)),
+                                 images=clusters[seed], category_name=category_name)
 
 def start_tornado(app, port=5000):
     container = tornado.wsgi.WSGIContainer(app)
