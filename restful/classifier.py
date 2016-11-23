@@ -16,6 +16,7 @@ import multiprocessing as mp
 from six.moves import urllib
 import tensorflow as tf
 from tensorflow.python.platform import gfile
+from tensorflow.python.client import device_lib # Undocumented, subject to change
 import numpy as np
 import redis
 import boto3
@@ -69,7 +70,11 @@ def classify_images(cuda_device, mapping, sqs_queue, mem_ratio, model_dir, class
                 message.delete()
                 print(result)
 
-                
+def get_available_gpus():
+    local_device_protos = device_lib.list_local_devices()
+    return len([x.name for x in local_device_protos if x.device_type == 'GPU'])
+
+    
 def load_graph(path):
     """"Creates a graph from saved GraphDef file and returns a saver."""
     with gfile.FastGFile(path, 'r') as f:
@@ -135,7 +140,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--gpus',
         help='How many GPUs to use',
-        default=4,
+        default=get_available_gpus(),
         type=int)
     parser.add_argument(
         '--threads',
