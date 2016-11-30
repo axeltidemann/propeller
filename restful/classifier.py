@@ -70,6 +70,7 @@ def classify_images(cuda_device, mapping, sqs_queue, mem_ratio, model_dir, class
                 message.delete()
                 print(result)
 
+# http://stackoverflow.com/questions/38559755/how-to-get-current-available-gpus-in-tensorflow
 def get_available_gpus():
     local_device_protos = device_lib.list_local_devices()
     return len([x.name for x in local_device_protos if x.device_type == 'GPU'])

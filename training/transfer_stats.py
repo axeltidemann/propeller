@@ -18,15 +18,20 @@ from tensorflow.python.platform import gfile
 from tensorflow.python.framework import ops
 import numpy as np
 import ipdb 
-import plotly.graph_objs as go
 
 from training_data import states
 from utils import load_graph, pretty_float as pf
 
-def evaluate(model, h5_files, top_k, categories, out_file):
+def evaluate(model, h5_files, top_k, categories, out_file, special, num_images):
     h5_files = sorted(h5_files)
 
-    plotly_data = []
+    try:
+        num_images = int(num_images)
+    except:
+        needle = 'images_'
+        substr = model[model.find(needle) + len(needle):]
+        num_images = substr[:substr.find('_')]
+        num_images = int(num_images)
     
     with tf.Session() as sess:
         print('Evaluating {}'.format(model))
@@ -46,21 +51,35 @@ def evaluate(model, h5_files, top_k, categories, out_file):
             
             for target, h5 in enumerate(h5_files):
 
-                data = pd.read_hdf(h5)
-                category_i = os.path.basename(h5).replace('.h5','')
+                with pd.HDFStore(h5, mode='r') as in_store:
+                    keys = sorted(in_store.keys())[:num_images]
 
-                predictions = sess.run(transfer_predictor, { 'input:0': data })
+                if special:
+                    all_predictions = defaultdict(list)
+                    for key in keys:
+                        X = pd.read_hdf(h5, key)
+                        local_predictions = sess.run(transfer_predictor, { 'input:0': X })
+                        for i, (prediction, x) in enumerate(zip(local_predictions, X.values)):
+                            if sum(x): # No image present equals all 0s
+                                all_predictions[i].append(prediction)
 
+                    predictions = np.vstack([ np.mean(x, axis=0) for x in all_predictions.values() ])
+                else:
+                    X = np.hstack([ pd.read_hdf(h5, key) for key in keys ])
+                    predictions = sess.run(transfer_predictor, { 'input:0': X })
+
+                data = pd.read_hdf(h5, key) # We need the index, that is why we load the file again.
                 correct = np.argmax(predictions, axis=1) == target
                 accuracy = np.mean(correct)
 
+                category_i = os.path.basename(h5).replace('.h5','')
+                
                 if 'parent' in categories[category_i]:
                     top_level_accuracy = np.mean([ 'parent' in categories[os.path.basename(h5_files[prediction]).replace('.h5','')] and
                                                    categories[category_i]['parent'] == categories[os.path.basename(h5_files[prediction]).replace('.h5','')]['parent']
                                                    for prediction in np.argmax(predictions, axis=1) ])
                 else:
                     top_level_accuracy = accuracy
-                    
                 
                 top_k_accuracy = np.mean([ target in np.argsort(prediction)[-top_k:]
                                            for prediction in predictions ])
@@ -71,14 +90,14 @@ def evaluate(model, h5_files, top_k, categories, out_file):
                 correct_confidence_median = np.median(np.max(predictions[correct], axis=1))
                 correct_confidence_std = np.std(np.max(predictions[correct], axis=1))
 
-                category = categories[category_i]['name']
+                category = categories[category_i]['english']
 
                 sorted_correct = sorted(zip(correct_scores, data.index[correct]),
                                         key=lambda x: x[0])
                 sorted_correct_scores, sorted_correct_paths = zip(*sorted_correct)
 
                 df = pd.DataFrame(data=list(sorted_correct_scores), index=sorted_correct_paths, columns=['score'])
-                df.index.name = 'filename'
+                df.index.name = 'ad_id'
 
                 store.append('{}/correct'.format(category_i), df)
                 
@@ -99,7 +118,7 @@ def evaluate(model, h5_files, top_k, categories, out_file):
 
                 df = pd.DataFrame(data=zip(sorted_wrong_scores, sorted_wrong_categories),
                                   index=sorted_wrong_paths, columns=['score', 'category'])
-                df.index.name='filename'
+                df.index.name='ad_id'
 
                 store.append('{}/wrong/out'.format(category_i), df)
 
@@ -111,7 +130,7 @@ def evaluate(model, h5_files, top_k, categories, out_file):
                     paths, scores = zip(*X)
                     
                     df = pd.DataFrame(data=zip(scores, [category_i]*len(paths)), index=paths, columns=['score', 'category'])
-                    df.index.name='filename'
+                    df.index.name='ad_id'
 
                     store.append('{}/wrong/in'.format(wrong_category), df, min_itemsize={'index': 79, 'category': 12})
 
@@ -138,6 +157,12 @@ def evaluate(model, h5_files, top_k, categories, out_file):
                 stats.append([ category, pf(accuracy), pf(top_k_accuracy), pf(correct_confidence),
                                wrong_categories, wrong_scores, data.index[~correct] ])
 
+                index = [ 'test_len', 'train_len', 'accuracy', 'top_k_accuracy', 'k', 'num_images']
+                values = [ len(data), len(data)*4, accuracy, top_k_accuracy, top_k, num_images ]
+
+                stats = pd.DataFrame(data=values, index=index, columns=[category])
+                store.append('{}/stats'.format(category_i), stats)
+
             mean_accuracy = pf(np.mean(all_accuracies))
             top_k_accuracy = pf(np.mean(all_top_k_accuracy))
             top_level_accuracy = pf(np.mean(all_top_level_accuracy))
@@ -147,7 +172,7 @@ def evaluate(model, h5_files, top_k, categories, out_file):
 
     tf.reset_default_graph()
 
-    return plotly_data, mean_accuracy, top_k_accuracy, stats
+    return mean_accuracy, top_k_accuracy, stats
 
 if __name__ == "__main__":
 
@@ -158,9 +183,8 @@ if __name__ == "__main__":
         'test_folder',
         help='Folder with Inception states for testing')
     parser.add_argument(
-        'models',
-        help='Models to evaluate',
-        nargs='+')
+        'model',
+        help='Model to evaluate')
     parser.add_argument(
         'categories',
         help='JSON file with description of categories.')
@@ -174,16 +198,26 @@ if __name__ == "__main__":
         help='Which GPU to use for inference. Empty string means no GPU.',
         default='')
     parser.add_argument(
+        '--num_images',
+        help='How many images to process. If unspecified, will try to guess from the filename.',
+        default='')
+    parser.add_argument(
         '--out_file',
-        help='Name of the HDF5 file with the results.',
-        default='report.h5')
+        help='Name of the HDF5 file with the results. If unspecified, will be model name + report.h5',
+        default=False)
+    parser.add_argument(
+        '--special',
+        help='Set this flag if you want to test out a classifier trained on everything, and classify each image separately and sum the result.',
+        action='store_true')
     args = parser.parse_args()
 
+    args.out_file = args.out_file if args.out_file else '{}_report.h5'.format(os.path.basename(args.model))
+    
     os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
     
     h5_files = sorted(glob.glob('{}/*'.format(args.test_folder)))
 
     categories = json.load(open(args.categories))
     
-    for model in args.models:
-        evaluate(model, h5_files, args.top_k, categories, args.out_file)
+    evaluate(args.model, h5_files, args.top_k, categories, args.out_file, args.special, args.num_images)
+    

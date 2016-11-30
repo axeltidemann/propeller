@@ -18,7 +18,7 @@ from tensorflow.contrib.layers.python.layers import batch_norm as batch_norm
 from sklearn.utils import shuffle
 
 from training_data import read_data
-from utils import pretty_float as pf, trueXor, chunks
+from utils import pretty_float as pf, chunks
 
 def weight_variable(shape, name=None):
     initial = tf.truncated_normal(shape, stddev=0.1)
@@ -28,23 +28,11 @@ def bias_variable(shape, name=None):
     initial = tf.constant(0.1, shape=shape)
     return tf.Variable(initial,name=name)
 
-def learn(train_states, test_states, learning_rate, save_every, batch_size, hidden_size, dropout, epochs,
-          print_every, model_dir, perceptron, dense, lenet, filter_width, depth,
-          q_size, use_dask, in_memory, dask_chunksize):
+def learn(data, model_name, learning_rate, save_every, batch_size, hidden_size, dropout, epochs,
+          print_every, model_dir, network, filter_width, depth, q_size, gpu_memory_ratio):
 
-    data = read_data(train_states, test_states, use_dask, in_memory, dask_chunksize)
-
-    model_name = ('''transfer_classifier_epochs_{}_batch_{}_learning_rate_{}'''.format(
-        epochs, batch_size, learning_rate))
-    
-    if perceptron:
-        model_name = '{}_perceptron.pb'.format(model_name)
-    if dense:
-        model_name = '{}_dense_dropout_{}_hidden_size_{}.pb'.format(model_name, dropout, hidden_size)
-    if lenet:
-        model_name = '{}_lenet_dropout_{}_hidden_size_{}.pb'.format(model_name, dropout, hidden_size)
-
-    with tf.Session() as sess:
+    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=gpu_memory_ratio)
+    with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
         
         q_x_in = tf.placeholder(tf.float32, shape=[batch_size, data.train.X_features])
         q_y_in = tf.placeholder(tf.int32, shape=[batch_size])
@@ -60,12 +48,12 @@ def learn(train_states, test_states, learning_rate, save_every, batch_size, hidd
         x = tf.placeholder_with_default(q_x_out, shape=[None, data.train.X_features], name='input')
         y_ = tf.placeholder_with_default(q_y_out, shape=[None])
 
-        if perceptron:
+        if network == 'perceptron':
             W = weight_variable([data.train.X_features, data.train.Y_features])
             b = bias_variable([data.train.Y_features])
 
             logits = tf.matmul(x, W) + b
-        if dense:
+        if network == 'dense':
             W_in = weight_variable([data.train.X_features, hidden_size])
             b_in = bias_variable([hidden_size])
 
@@ -77,7 +65,7 @@ def learn(train_states, test_states, learning_rate, save_every, batch_size, hidd
             b_out = bias_variable([data.train.Y_features])
 
             logits = tf.matmul(hidden_dropout, W_out) + b_out
-        if lenet:
+        if network == 'lenet':
             w1 = weight_variable([1, filter_width, 1, depth])
             b1 = bias_variable([depth])
             x_4d = tf.expand_dims(tf.expand_dims(x,1),-1) # Singleton dimension height, out_channel
@@ -151,7 +139,12 @@ def learn(train_states, test_states, learning_rate, save_every, batch_size, hidd
         while epoch <= epochs:
 
             t_start = time.time()
+
+            # batch_x, batch_y = data.train.next_batch(batch_size)
+            # sess.run(train_step, feed_dict={keep_prob: dropout, x: batch_x, y_: batch_y})
+            
             sess.run(train_step, feed_dict={keep_prob: dropout})
+
             t_end.append(time.time() - t_start)
 
             if epoch > last_epoch:
@@ -209,6 +202,11 @@ if __name__ == '__main__':
         'test_states',
         help='Folder with Inception states for testing')
     parser.add_argument(
+        '--num_images',
+        help='How many images per ad to use for classification.',
+        type=int,
+        default=1)
+    parser.add_argument(
         '--learning_rate',
         help='Learning rate',
         type=float,
@@ -248,17 +246,9 @@ if __name__ == '__main__':
         help='Where to save the transfer learned model',
         default='.')
     parser.add_argument(
-        '--perceptron',
-        action='store_true',
-        help='Train a perceptron as the last layer.')
-    parser.add_argument(
-        '--dense',
-        action='store_true',
-        help='Train a layer with hidden connections and dropout as the last layer.')
-    parser.add_argument(
-        '--lenet',
-        action='store_true',
-        help='5-LeNet as final layer.')
+        '--network',
+        help='What kind of network structure to use as the final layer. Can either be perceptron, dense or lenet.',
+        default='dense')
     parser.add_argument(
         '--filter_width',
         help='Width of convolutional filter',
@@ -273,7 +263,7 @@ if __name__ == '__main__':
         '--q_size',
         help='Capacity of FIFOQueue for loading training data.',
         type=int,
-        default=100)
+        default=1000)
     parser.add_argument(
         '--use_dask',
         action='store_true',
@@ -284,6 +274,11 @@ if __name__ == '__main__':
         type=int,
         default=200000)
     parser.add_argument(
+        '--gpu_memory_ratio',
+        help='How much memory to occupy on the GPU card',
+        type=float,
+        default=.95)
+    parser.add_argument(
         '--dask_chunksize',
         help='The size of dask chunks on disk.',
         type=int,
@@ -291,10 +286,19 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    assert trueXor(args.perceptron, args.dense, args.lenet), 'Specify one of perceptron, dense or lenet'
+    data = read_data(args.train_states, args.test_states, args.num_images, args.use_dask, args.in_memory, args.dask_chunksize)
+
+    model_name = ('''transfer_classifier_epochs_{}_batch_{}_learning_rate_{}_images_{}'''.format(
+        args.epochs, args.batch_size, args.learning_rate, args.num_images))
     
-    learn(args.train_states, args.test_states, args.learning_rate,
-          args.save_every, args.batch_size, args.hidden_size, args.dropout,
-          args.epochs, args.print_every, args.model_dir, args.perceptron,
-          args.dense, args.lenet, args.filter_width, args.depth,
-          args.q_size, args.use_dask, args.in_memory, args.dask_chunksize)
+    if args.network == 'perceptron':
+        model_name = '{}_perceptron.pb'.format(model_name)
+    if args.network == 'dense':
+        model_name = '{}_dense_dropout_{}_hidden_size_{}.pb'.format(model_name, args.dropout, args.hidden_size)
+    if args.network == 'lenet':
+        model_name = '{}_lenet_dropout_{}_hidden_size_{}.pb'.format(model_name, args.dropout, args.hidden_size)
+    
+    learn(data, model_name, 
+          args.learning_rate, args.save_every, args.batch_size, args.hidden_size, args.dropout,
+          args.epochs, args.print_every, args.model_dir, args.network, args.filter_width, args.depth,
+          args.q_size, args.gpu_memory_ratio)

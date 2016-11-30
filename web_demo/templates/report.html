@@ -4,21 +4,23 @@
 
 {% block content %}
 
-<b>Sub category accuracy: {{ accuracy|round(1) }}%, top category accuracy: {{ top_level_accuracy|round(1) }}%</b>, tested on <b>{{ count }}</b> images.
+<b>Sub category accuracy: {{ (100*accuracy)|round(1) }}%, top {{ k|int }} accuracy: {{ (100*top_k_accuracy)|round(1) }}%</b>, tested on <b>{{ test_len|int }}</b> ads.
 
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
 <style>
 img{
-max-height: 300px;
-max-width: 300px;
+max-height: 200px;
+max-width: 200px;
 }
 </style>
 
 <table>
-  <tr><td>{{ performance_plot|safe }}</td>
+  <tr><td valign="top">{{ performance_plot|safe }}</td>
     <td>
-      <img id="image" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">
+      {% for i in range(num_images) %}
+      <img id="image{{ i }}" src="/static/white.png">
+      {% endfor %}
       <div id="info"></div>
     </td>
   </tr>
@@ -29,25 +31,34 @@ max-width: 300px;
     <td colspan=2>
       <div id="tabs">
 	<ul>
-	  <li><a href="#tabs-1">Images labelled as <b>{{ category }}</b> but wrongly classified</a></li>
-	  <li><a href="#tabs-2">Images the classifier has erroneously classified as <b>{{ category }}</b> </a></li>
+	  <li><a href="#tabs-1">Ads labelled as <b>{{ category }}</b> but wrongly classified</a></li>
+	  <li><a href="#tabs-2">Ads the classifier has erroneously classified as <b>{{ category }}</b> </a></li>
 	</ul>
 	<div id="tabs-1">
-	  At test time, these images were labelled as <b>{{ category }}</b>, but the classifier predicted it as something else.
+	  At test time, these ads were labelled as <b>{{ category }}</b>, but the classifier predicted it as something else.
 	  Hover over each image to see what category it was predicted to be, and with what score. Images that do not
 	  seem to fit in this category but in the <i>predicted</i> category indicates that the original label was wrong.
 	  <br/>
-	  {% for path, cat, score in wrong_out %}
-	  <a href=/static{{ path }}><img class="lazy" data-original=/static{{ path }} title="Predicted to be '{{ cat }}' with score {{ score|round(2) }}" width=200></a>
+	  {% for ad_id, paths, cat, score in wrong_out %}
+	  <hr>
+	      Predicted to be <b>{{ cat }}</b> with score <b>{{ score|round(2) }}</b> <br/>
+	      {% for path in paths[:(num_images|int)] %}
+           	  <a href=/static{{ path }}><img class="lazy" data-original=/static{{ path }} title="Predicted to be '{{ cat }}' with score {{ score|round(2) }}"></a>
+	      {% endfor %}
 	  {% endfor %}
 	</div>
 	<div id="tabs-2">
-	  Images the classifier <i>erroneously</i> has predicted as <b>{{ category }}</b> when classifying other categories. If the images
+	  Ads the classifier <i>erroneously</i> has predicted as <b>{{ category }}</b> when classifying other categories. If the images
 	  here seem to belong to this category, it is an indication that the classifier was indeed predicting the right category, but that there were
-	  noisy labels in the other categories.
-	  <br/>
-	  {% for path, cat, score in wrong_in %}
-	  <a href=/static{{ path }}><img class="lazy" data-original=/static{{ path }} title="Predicted to be '{{ category }}' with score {{ score|round(2) }}, originally in '{{ cat }}'" width=200></a>
+	  noisy labels in the other categories. <br/>
+	  
+	  {% for ad_id, paths, cat, score in wrong_in %}
+	  <hr>
+	  Predicted to be <b>{{ category }}</b> with score <b>{{ score|round(2) }}</b>, originally in <b>{{ cat }}</b> <br/>
+	     {% for path in paths[:(num_images|int)] %}
+	         <a href=/static{{ path }}><img class="lazy" data-original=/static{{ path }}
+						title="Predicted to be '{{ category }}' with score {{ score|round(2) }}, originally in '{{ cat }}'"></a>
+	     {% endfor %}
 	  {% endfor %}
 	</div>
       </div>
@@ -58,13 +69,17 @@ max-width: 300px;
 
 <script>
     var myPlot = document.getElementById("{{ performance_id }}"),
-    hoverImage = document.getElementById("image");
+    {% for i in range(num_images) %}
+    hoverImage{{ i }} = document.getElementById("image{{ i }}");
+    {% endfor %}
     hoverInfo = document.getElementById("info"),
 
     myPlot.on('plotly_hover', function(data){
         data.points.map(function(d){
            var info=JSON.parse(d.data.text[d.pointNumber]);
-           hoverImage.src="/static"+info.path;
+           {% for i in range(num_images) %}
+           hoverImage{{ i }}.src="/static"+info.paths[{{ i }}];
+           {% endfor %}
            hoverInfo.innerHTML = d.data.name+'ly classified as <b>' + info.prediction +'</b>, score <b>' + d.y.toPrecision(3) + '</b>';
         });
     });

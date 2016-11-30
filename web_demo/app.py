@@ -228,71 +228,71 @@ def get_json_bulgaria2(threshold_obs, distance_min, distance_max):
     return flask.jsonify({"vertices":vertices, "edges":kept_edges})
 
 ################################### Reports of classifier performance #####################################
-
-def category_stats(cat_n, report, categories):
-    with pd.HDFStore(report, 'r') as store:
-        correct = store['{}/correct'.format(cat_n)]
-        wrong = store['{}/wrong/out'.format(cat_n)]
-    count = len(correct) + len(wrong)
-    accuracy = 100*len(correct)/count
-    if 'parent' in categories[cat_n]:
-        top_level = sum([ 'parent' in categories[c] and categories[cat_n]['parent'] == categories[c]['parent'] for c in wrong.category ])
-    else:
-        top_level = accuracy
-    top_level_accuracy = 100*(top_level + len(correct))/count
-
-    return correct, wrong, count, accuracy, top_level_accuracy
-
-def _site_data(site):
-    report = data[site]['report']
-    categories = json.load(open(data[site]['categories']))
-    return report, categories
     
 @app.route('/report/<site>')
 @requires_auth
 def report_index(site):
-    report, categories = _site_data(site)
-    
+    report = global_data[site]['report']
+
     with pd.HDFStore(report, 'r') as store:
         keys = store.keys()
+        category_numbers = set([ category.split('/')[1] for category in keys ])
+        data = pd.concat([ store['{}/stats'.format(key)] for key in category_numbers ], axis=1)
+
+        test_len, train_len, accuracy, top_k_accuracy, k, _ = data.values
+
+        assert len(set(k)) == 1, 'Varying k values should not be possible'
         
-    category_numbers = set([ category.split('/')[1] for category in keys ])
+        category_names = data.columns
 
-    _, _, test_count, accuracy, top_level_accuracy = zip(*[ category_stats(cat_n, report, categories) for cat_n in category_numbers ])
-
-    train_count = [ c*4 for c in test_count ] # Assuming 20% test, 80% train
-
-    train_sum = sum(train_count)
-    test_sum = sum(test_count)
-        
-    category_names = [ categories[cat_n]['name'] for cat_n in category_numbers ]
-    sorted_categories = sorted(zip(category_numbers, category_names, accuracy, top_level_accuracy, train_count, test_count), key=lambda x: x[2], reverse=True)
-
-    children = [ categories[child] for child in categories.keys() if 'parent' in categories[child] ]
-    candidate = random.choice(children)
-    friend = random.choice([ orphan for orphan in children if 'parent' in orphan and orphan['parent'] == candidate['parent'] and orphan['name'] != candidate['name']])
+        sorted_categories = sorted(zip(category_numbers, category_names, accuracy, top_k_accuracy, train_len, test_len), key=lambda x: x[2], reverse=True)
     
     return flask.render_template('report_index.html',
                                  categories=sorted_categories,
                                  accuracy=np.mean(accuracy),
-                                 top_level_accuracy=np.mean(top_level_accuracy),
+                                 top_k_accuracy=np.mean(top_k_accuracy),
+                                 k=np.mean(k),
                                  site=site,
-                                 train_sum=train_sum,
-                                 test_sum=test_sum,
-                                 candidate=candidate['name'],
-                                 friend=friend['name'],
-                                 parent=categories[str(friend['parent'])]['name'])
+                                 train_sum=sum(train_len),
+                                 test_sum=sum(test_len))
 
+def _ad_images(index, mapping, prefix, number):
+    paths = []
+    for ad_id,n in zip(index, number):
+        filenames = [ '/white.png' if pd.isnull(fname) else '{}/{}/{}'.format(prefix, n, fname)
+                      for fname in mapping[n].query('index == @ad_id').values[0] ]
+        paths.append(filenames)
+    return paths
+
+    
 @app.route('/report/<site>/<number>')
 @requires_auth
 def report_category(site, number):
-    report, categories = _site_data(site)
+
+    report = global_data[site]['report']
+
+    try: 
+        prefix = global_data[site]['prefix']
+        mapping = { number: pd.read_hdf(global_data[site]['mapping'], number) }
+    except:
+        pass
     
-    category = categories[number]['name']
     with pd.HDFStore(report, 'r') as store:
+        stats = store['{}/stats'.format(number)]
+
+        correct = store['{}/correct'.format(number)]
+        wrong = store['{}/wrong/out'.format(number)]
+
+        test_len, train_len, accuracy, top_k_accuracy, k, num_images = stats.values
+
+        category = stats.columns[0]
+        
         plotly_data = []
 
-        correct, wrong, count, accuracy, top_level_accuracy = category_stats(number, report, categories)
+        try:
+            correct_paths = _ad_images(correct.index, mapping, prefix, [number]*len(correct))
+        except:
+            correct_paths = [ [c] for c in correct.index ]
         
         plotly_data.append(go.Scatter(
             x=np.linspace(0,100, num=len(correct)),
@@ -300,19 +300,28 @@ def report_category(site, number):
             mode='lines',
             name='Correct',
             hoverinfo='name+y',
-            text=[ json.dumps({ 'path': path, 'prediction': category })
-                       for path in correct.index ]))
+            text=[ json.dumps({ 'paths': paths, 'prediction': category })
+                       for paths in correct_paths ]))
 
-        wrong_categories = [ categories[c]['name'] for c in wrong.category ]
+        category_map_names = {}
+        for c in set(wrong.category):
+            category_map_names[c] = store['{}/stats'.format(c)].columns[0]
         
+        wrong_categories = [ category_map_names[c] for c in wrong.category ]
+
+        try:
+            wrong_paths = _ad_images(wrong.index, mapping, prefix, [number]*len(wrong))
+        except:
+            wrong_paths = [ [c] for c in wrong.index ]
+
         plotly_data.append(go.Scatter(
             x=np.linspace(0,100, num=len(wrong)),
             y=wrong.score,
             mode='lines',
             name='Wrong',
             hoverinfo='name+y',
-            text=[ json.dumps({ 'path': path, 'prediction': prediction })
-                   for path, prediction in zip(wrong.index, wrong_categories)]))
+            text=[ json.dumps({ 'paths': paths, 'prediction': prediction })
+                   for paths, prediction in zip(wrong_paths, wrong_categories)]))
 
         layout = go.Layout(hovermode='closest', title='Performance of correct vs wrong classified pictures', xaxis={'title': '%'}, yaxis={'title': 'score'})
 
@@ -324,16 +333,36 @@ def report_category(site, number):
         labels, values = zip(*categories_counter.items())
 
         pie = go.Pie(labels=labels, values=values, showlegend=False, textinfo='text', text=[None]*len(values))
-        layout= go.Layout(hovermode='closest', title='Wrongly classified pictures ({}%) labelled {}'.format(np.round(100-accuracy, 1), category))
+        layout= go.Layout(hovermode='closest', title='Wrongly classified pictures ({}%) labelled {}'.format(np.round(100*(1-accuracy[0]), 1), category))
         figure = go.Figure(data=[pie], layout=layout)
 
         pie, _, _, _ = _plot_html(figure, False, '', True, '100%', '100%', False)
 
         wrong_as_this = store['{}/wrong/in'.format(number)]
 
-    wrong_out = sorted(zip(wrong.index, [ categories[c]['name'] for c in wrong.category], wrong.score), key=lambda x: x[2], reverse=True)
-    wrong_in = sorted(zip(wrong_as_this.index, [ categories[c]['name'] for c in wrong_as_this.category], wrong_as_this.score), key=lambda x: x[2], reverse=True)
+        for c in set(wrong_as_this.category):
+            category_map_names[c] = store['{}/stats'.format(c)].columns[0]
+
+            try:
+                mapping[c] = pd.read_hdf(global_data[site]['mapping'], c)
+            except:
+                pass
+
+    wrong_out = sorted(zip(wrong.index, wrong_paths, wrong_categories, wrong.score), key=lambda x: x[-1], reverse=True)
+
+    try:
+        wrong_in_paths = _ad_images(wrong_as_this.index, mapping, prefix, wrong_as_this.category)
+
+    except:
+        wrong_in_paths = [ [c] for c in wrong_as_this.index ]
+
         
+    wrong_in_categories = [ category_map_names[c] for c in wrong_as_this.category ]
+    
+    wrong_in = sorted(zip(wrong_as_this.index, wrong_in_paths, wrong_in_categories, wrong_as_this.score),
+                      key=lambda x: x[-1], reverse=True)
+
+    
     return flask.render_template('report.html',
                                  accuracy=accuracy,
                                  category=category,
@@ -341,10 +370,12 @@ def report_category(site, number):
                                  performance_id=performance_id,
                                  pie=pie,
                                  wrong_out=wrong_out,
-                                 wrong_in = wrong_in,
-                                 count=count,
-                                 top_level_accuracy=top_level_accuracy,
-                                 site=site)
+                                 wrong_in=wrong_in,
+                                 test_len=test_len[0],
+                                 top_k_accuracy=top_k_accuracy,
+                                 k=k,
+                                 site=site,
+                                 num_images=num_images)
 
 ################################### Images ###########################################
 
@@ -617,12 +648,28 @@ parser.add_argument(
     default='classify')
 args = parser.parse_args()
 
-data = { 'mudah': {'categories': '/home/axel/propeller/mudah/categories.json',
-                   'report': '/mnt/mudah/sub_category/report.h5' },
-         'kaidee': {'categories': '/home/axel/propeller/kaidee/categories.json',
-                    'report': '/mnt/kaidee/report.h5' },
-         'kaidee_cars': {'categories': '/mnt/kaidee/car_categories.json', 
-                         'report': '/mnt/kaidee/car_report.h5' } }
+# Maybe None as mapping when the index is the filename directly?
+global_data = {}
+for i in range(1,10):
+    global_data['kaidee_{}_images'.format(i)] = { 'report': 
+       '/mnt/kaidee/ads/reports/transfer_classifier_epochs_100_batch_2048_learning_rate_0.0001_images_{}_dense_dropout_0.5_hidden_size_2048.pb_report.h5'.format(i),
+       'mapping': '/mnt/kaidee/ads/mapping.h5',
+       'prefix': '/home/ubuntu/workspace/downloads' }
+
+    global_data['kaidee_trained_on_top90_curated_using_{}_images'.format(i)] = { 'report':
+       '/mnt/kaidee/single_images/reports/dense_trained_on_top90_curated_using_images_{}.h5'.format(i),
+       'mapping': '/mnt/kaidee/ads/mapping.h5',
+       'prefix': '/home/ubuntu/workspace/downloads' }
+
+    global_data['kaidee_trained_on_top90_using_{}_images'.format(i)] = { 'report':
+       '/mnt/kaidee/single_images/reports/trained_on_top_90_images_{}.h5'.format(i),
+       'mapping': '/mnt/kaidee/ads/mapping.h5',
+       'prefix': '/home/ubuntu/workspace/downloads' }
+    
+    
+global_data['kaidee_single_image'] = { 'report': '/mnt/kaidee/single_images/images_1_dense.pb_report.h5' }
+global_data['kaidee_single_image_top90'] = { 'report': '/mnt/kaidee/single_images/reports/dense_top90_report.h5' }
+global_data['kaidee_single_image_top90_curated'] = { 'report': '/mnt/kaidee/single_images/reports/dense_top90_curated_report.h5' }
 
 red = redis.StrictRedis(args.redis_server, args.redis_port)
 red_db_1 = redis.StrictRedis(args.redis_server, args.redis_port, db=1)

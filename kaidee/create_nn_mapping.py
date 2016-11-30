@@ -21,21 +21,25 @@ parser.add_argument(
     default='categories.json')
 parser.add_argument(
     '--mapping_filename',
-    help='Mapping filename', 
-    default='nn_mapping.txt')
+    help='Mapping filename. If unspecified, language+nn_mapping.txt', 
+    default=False)
 parser.add_argument(
-    '--machine',
-    help='Maps to categoy IDs instead of human readable text',
-    action='store_true')
+    '--language',
+    help='What should be the output. Can be either english, thai or machine (machine is the category IDs).',
+    default='english')
 args = parser.parse_args()
+
+args.mapping_filename = args.mapping_filename if args.mapping_filename else '{}_nn_mapping.txt'.format(args.language)
 
 categories = json.load(open(args.categories))
 
 mapping = {}
 
 for i, h5_file in enumerate(sorted(glob.glob('{}/*.h5'.format(args.source)))):
-    category = os.path.basename(h5_file[:h5_file.find('.')])
-    mapping[str(i)] = category if args.machine else categories[category]['name']
+    category, _ = os.path.splitext(os.path.basename(h5_file))
+    mapping[str(i)] = category
+    if args.language in ['english', 'thai']:
+        mapping[str(i)] = categories[category][args.language]
 
 with open(args.mapping_filename, 'w') as _file:
     json.dump(mapping, _file, sort_keys=True, indent=4)

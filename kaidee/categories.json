@@ -1,1153 +1,1448 @@
 {
     "1": {
-        "name": "Auto"
+        "english": "Auto", 
+        "thai": "\u0e40\u0e18\u0e03\u0e40\u0e18\u0096\u0e40\u0e18\u0e01\u0e40\u0e18\u0e17\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087"
     }, 
     "2": {
-        "name": "Property"
+        "english": "Property", 
+        "thai": "\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e11\u0e40\u0e18\u0087\u0e40\u0e18\u0e0b\u0e40\u0e18\u0e12\u0e40\u0e18\u0e03\u0e40\u0e18\u0e14\u0e40\u0e18\u0e01\u0e40\u0e18\u0097\u0e40\u0e18\u0e03\u0e40\u0e18\u0e11\u0e40\u0e18\u009e\u0e40\u0e18\u0e02\u0e40\u0e19\u008c"
     }, 
     "3": {
-        "name": "Home Decoration"
+        "english": "Home Decoration", 
+        "thai": "\u0e40\u0e18\u009a\u0e40\u0e19\u0089\u0e40\u0e18\u0e12\u0e40\u0e18\u0099\u0e40\u0e19\u0081\u0e40\u0e18\u0e05\u0e40\u0e18\u0e10\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e07\u0e40\u0e18\u0099"
     }, 
     "4": {
-        "name": "It"
+        "english": "It", 
+        "thai": "\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e14\u0e40\u0e18\u0099\u0e40\u0e18\u0084\u0e40\u0e19\u0089\u0e40\u0e18\u0e12\u0e40\u0e19\u0084\u0e40\u0e18\u0e0d\u0e40\u0e18\u0097\u0e40\u0e18\u0e15"
     }, 
     "5": {
-        "name": "Fashion"
+        "english": "Fashion", 
+        "thai": "\u0e40\u0e19\u0080\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e17\u0e40\u0e19\u0089\u0e40\u0e18\u0e0d\u0e40\u0e18\u009c\u0e40\u0e19\u0089\u0e40\u0e18\u0e12 \u0e40\u0e19\u0080\u0e40\u0e18\u0084\u0e40\u0e18\u0e03\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087\u0e40\u0e19\u0081\u0e40\u0e18\u0095\u0e40\u0e19\u0088\u0e40\u0e18\u0087\u0e40\u0e18\u0081\u0e40\u0e18\u0e12\u0e40\u0e18\u0e02"
     }, 
     "6": {
-        "name": "Beauty & Health"
+        "english": "Beauty & Health", 
+        "thai": "\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e18\u0e40\u0e18\u0082\u0e40\u0e18\u00a0\u0e40\u0e18\u0e12\u0e40\u0e18\u009e\u0e40\u0e19\u0081\u0e40\u0e18\u0e05\u0e40\u0e18\u0e10\u0e40\u0e18\u0084\u0e40\u0e18\u0e07\u0e40\u0e18\u0e12\u0e40\u0e18\u0e01\u0e40\u0e18\u0087\u0e40\u0e18\u0e12\u0e40\u0e18\u0e01"
     }, 
     "7": {
-        "name": "Business"
+        "english": "Business", 
+        "thai": "\u0e40\u0e18\u0098\u0e40\u0e18\u0e18\u0e40\u0e18\u0e03\u0e40\u0e18\u0081\u0e40\u0e18\u0e14\u0e40\u0e18\u0088"
     }, 
     "8": {
-        "name": "Education"
+        "english": "Education", 
+        "thai": "\u0e40\u0e18\u0081\u0e40\u0e18\u0e12\u0e40\u0e18\u0e03\u0e40\u0e18\u0e08\u0e40\u0e18\u0e16\u0e40\u0e18\u0081\u0e40\u0e18\u0e09\u0e40\u0e18\u0e12"
     }, 
     "9": {
-        "name": "Travel"
+        "english": "Travel", 
+        "thai": "\u0e40\u0e18\u0097\u0e40\u0e19\u0088\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087\u0e40\u0e19\u0080\u0e40\u0e18\u0097\u0e40\u0e18\u0e15\u0e40\u0e19\u0088\u0e40\u0e18\u0e02\u0e40\u0e18\u0e07"
     }, 
     "10": {
-        "name": "Hobbies"
+        "english": "Hobbies", 
+        "thai": "\u0e40\u0e18\u0087\u0e40\u0e18\u0e12\u0e40\u0e18\u0099\u0e40\u0e18\u0e0d\u0e40\u0e18\u0094\u0e40\u0e18\u0e14\u0e40\u0e19\u0080\u0e40\u0e18\u0e03\u0e40\u0e18\u0081"
     }, 
     "11": {
-        "name": "Car", 
-        "parent": 1
+        "english": "Car", 
+        "parent": 1, 
+        "thai": "\u0e40\u0e18\u0e03\u0e40\u0e18\u0096\u0e40\u0e18\u0e02\u0e40\u0e18\u0099\u0e40\u0e18\u0095\u0e40\u0e19\u008c"
     }, 
     "12": {
-        "name": "Motorcycle", 
-        "parent": 149
+        "english": "Motorcycle", 
+        "parent": 149, 
+        "thai": "\u0e40\u0e18\u0e01\u0e40\u0e18\u0e0d\u0e40\u0e19\u0080\u0e40\u0e18\u0095\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e03\u0e40\u0e19\u008c\u0e40\u0e19\u0084\u0e40\u0e18\u008b\u0e40\u0e18\u0084\u0e40\u0e19\u008c"
     }, 
     "13": {
-        "name": "Auto part", 
-        "parent": 1
+        "english": "Auto part", 
+        "parent": 1, 
+        "thai": "\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e10\u0e40\u0e19\u0084\u0e40\u0e18\u0e0b\u0e40\u0e18\u0e05\u0e40\u0e19\u0088\u0e40\u0e18\u0e03\u0e40\u0e18\u0096 \u0e40\u0e18\u009b\u0e40\u0e18\u0e03\u0e40\u0e18\u0e10\u0e40\u0e18\u0094\u0e40\u0e18\u0e11\u0e40\u0e18\u009a\u0e40\u0e18\u0e02\u0e40\u0e18\u0099\u0e40\u0e18\u0095\u0e40\u0e19\u008c"
     }, 
     "14": {
-        "name": "Auto service", 
-        "parent": 45
+        "english": "Auto service", 
+        "parent": 45, 
+        "thai": "\u0e40\u0e18\u009a\u0e40\u0e18\u0e03\u0e40\u0e18\u0e14\u0e40\u0e18\u0081\u0e40\u0e18\u0e12\u0e40\u0e18\u0e03\u0e40\u0e18\u0094\u0e40\u0e19\u0089\u0e40\u0e18\u0e12\u0e40\u0e18\u0099\u0e40\u0e18\u0e02\u0e40\u0e18\u0e12\u0e40\u0e18\u0099\u0e40\u0e18\u0e02\u0e40\u0e18\u0099\u0e40\u0e18\u0095\u0e40\u0e19\u008c"
     }, 
     "15": {
-        "name": "Home", 
-        "parent": 2
+        "english": "Home", 
+        "parent": 2, 
+        "thai": "\u0e40\u0e18\u009a\u0e40\u0e19\u0089\u0e40\u0e18\u0e12\u0e40\u0e18\u0099"
     }, 
     "16": {
-        "name": "Townhouse", 
-        "parent": 2
+        "english": "Townhouse", 
+        "parent": 2, 
+        "thai": "\u0e40\u0e18\u0097\u0e40\u0e18\u0e12\u0e40\u0e18\u0e07\u0e40\u0e18\u0099\u0e40\u0e19\u008c\u0e40\u0e19\u0080\u0e40\u0e18\u0e0e\u0e40\u0e19\u0089\u0e40\u0e18\u0e12\u0e40\u0e18\u0e0a\u0e40\u0e19\u008c \u0e40\u0e18\u0097\u0e40\u0e18\u0e12\u0e40\u0e18\u0e07\u0e40\u0e18\u0099\u0e40\u0e19\u008c\u0e40\u0e19\u0082\u0e40\u0e18\u0e0e\u0e40\u0e18\u0e01"
     }, 
     "17": {
-        "name": "Condo", 
-        "parent": 2
+        "english": "Condo", 
+        "parent": 2, 
+        "thai": "\u0e40\u0e18\u0084\u0e40\u0e18\u0e0d\u0e40\u0e18\u0099\u0e40\u0e19\u0082\u0e40\u0e18\u0094\u0e40\u0e18\u0e01\u0e40\u0e18\u0e14\u0e40\u0e19\u0080\u0e40\u0e18\u0099\u0e40\u0e18\u0e15\u0e40\u0e18\u0e02\u0e40\u0e18\u0e01"
     }, 
     "18": {
-        "name": "Apartment", 
-        "parent": 2
+        "english": "Apartment", 
+        "parent": 2, 
+        "thai": "\u0e40\u0e18\u0e0b\u0e40\u0e18\u0e0d\u0e40\u0e18\u009e\u0e40\u0e18\u0e11\u0e40\u0e18\u0081 \u0e40\u0e18\u0e0d\u0e40\u0e18\u009e\u0e40\u0e18\u0e12\u0e40\u0e18\u0e03\u0e40\u0e19\u008c\u0e40\u0e18\u0097\u0e40\u0e19\u0080\u0e40\u0e18\u0e01\u0e40\u0e19\u0089\u0e40\u0e18\u0099\u0e40\u0e18\u0097\u0e40\u0e19\u008c"
     }, 
     "19": {
-        "name": "Land", 
-        "parent": 2
+        "english": "Land", 
+        "parent": 2, 
+        "thai": "\u0e40\u0e18\u0097\u0e40\u0e18\u0e15\u0e40\u0e19\u0088\u0e40\u0e18\u0094\u0e40\u0e18\u0e14\u0e40\u0e18\u0099"
     }, 
     "20": {
-        "name": "Other realestate", 
-        "parent": 2
+        "english": "Other realestate", 
+        "parent": 2, 
+        "thai": "\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e11\u0e40\u0e18\u0087\u0e40\u0e18\u0e0b\u0e40\u0e18\u0e12\u0e40\u0e18\u0e0f \u0e40\u0e18\u0e0d\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0099 \u0e40\u0e19\u0086"
     }, 
     "22": {
-        "name": "Furniture", 
-        "parent": 3
+        "english": "Furniture", 
+        "parent": 3, 
+        "thai": "\u0e40\u0e19\u0080\u0e40\u0e18\u009f\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e03\u0e40\u0e19\u008c\u0e40\u0e18\u0099\u0e40\u0e18\u0e14\u0e40\u0e19\u0080\u0e40\u0e18\u0088\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e03\u0e40\u0e19\u008c"
     }, 
     "23": {
-        "name": "Construction design", 
-        "parent": 3
+        "english": "Construction design", 
+        "parent": 3, 
+        "thai": "\u0e40\u0e18\u0082\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087\u0e40\u0e19\u0081\u0e40\u0e18\u0095\u0e40\u0e19\u0088\u0e40\u0e18\u0087\u0e40\u0e18\u009a\u0e40\u0e19\u0089\u0e40\u0e18\u0e12\u0e40\u0e18\u0099"
     }, 
     "24": {
-        "name": "Home care", 
-        "parent": 45
+        "english": "Home care", 
+        "parent": 45, 
+        "thai": "\u0e40\u0e18\u009a\u0e40\u0e18\u0e03\u0e40\u0e18\u0e14\u0e40\u0e18\u0081\u0e40\u0e18\u0e12\u0e40\u0e18\u0e03\u0e40\u0e18\u009a\u0e40\u0e19\u0089\u0e40\u0e18\u0e12\u0e40\u0e18\u0099\u0e40\u0e19\u0081\u0e40\u0e18\u0e05\u0e40\u0e18\u0e10\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e07\u0e40\u0e18\u0099"
     }, 
     "25": {
-        "name": "Garden", 
-        "parent": 3
+        "english": "Garden", 
+        "parent": 3, 
+        "thai": "\u0e40\u0e18\u0095\u0e40\u0e18\u0081\u0e40\u0e19\u0081\u0e40\u0e18\u0095\u0e40\u0e19\u0088\u0e40\u0e18\u0087\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e07\u0e40\u0e18\u0099"
     }, 
     "26": {
-        "name": "Household appliances", 
-        "parent": 3
+        "english": "Household appliances", 
+        "parent": 3, 
+        "thai": "\u0e40\u0e18\u0082\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087\u0e40\u0e19\u0083\u0e40\u0e18\u008a\u0e40\u0e19\u0089\u0e40\u0e19\u0083\u0e40\u0e18\u0099\u0e40\u0e18\u009a\u0e40\u0e19\u0089\u0e40\u0e18\u0e12\u0e40\u0e18\u0099"
     }, 
     "27": {
-        "name": "Computer "
+        "english": "Computer ", 
+        "thai": "\u0e40\u0e18\u0084\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e01\u0e40\u0e18\u009e\u0e40\u0e18\u0e14\u0e40\u0e18\u0e07\u0e40\u0e19\u0080\u0e40\u0e18\u0095\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e03\u0e40\u0e19\u008c"
     }, 
     "28": {
-        "name": "Camera "
+        "english": "Camera ", 
+        "thai": "\u0e40\u0e18\u0081\u0e40\u0e18\u0e05\u0e40\u0e19\u0089\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087"
     }, 
     "29": {
-        "name": "Mobile Tablet"
+        "english": "Mobile Tablet", 
+        "thai": "\u0e40\u0e18\u0e01\u0e40\u0e18\u0e17\u0e40\u0e18\u0e0d\u0e40\u0e18\u0096\u0e40\u0e18\u0e17\u0e40\u0e18\u0e0d \u0e40\u0e19\u0081\u0e40\u0e18\u0097\u0e40\u0e19\u0087\u0e40\u0e18\u009a\u0e40\u0e19\u0080\u0e40\u0e18\u0e05\u0e40\u0e19\u0087\u0e40\u0e18\u0095"
     }, 
     "31": {
-        "name": "Games"
+        "english": "Games", 
+        "thai": "\u0e40\u0e19\u0080\u0e40\u0e18\u0081\u0e40\u0e18\u0e01\u0e40\u0e18\u0e0a\u0e40\u0e19\u008c"
     }, 
     "32": {
-        "name": "IT service", 
-        "parent": 45
+        "english": "IT service", 
+        "parent": 45, 
+        "thai": "\u0e40\u0e18\u008b\u0e40\u0e19\u0088\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e01\u0e40\u0e19\u0081\u0e40\u0e18\u0e05\u0e40\u0e18\u0e10\u0e40\u0e18\u009a\u0e40\u0e18\u0e03\u0e40\u0e18\u0e14\u0e40\u0e18\u0081\u0e40\u0e18\u0e12\u0e40\u0e18\u0e03\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e14\u0e40\u0e18\u0099\u0e40\u0e18\u0084\u0e40\u0e19\u0089\u0e40\u0e18\u0e12\u0e40\u0e19\u0084\u0e40\u0e18\u0e0d\u0e40\u0e18\u0097\u0e40\u0e18\u0e15"
     }, 
     "33": {
-        "name": "Cloth", 
-        "parent": 5
+        "english": "Cloth", 
+        "parent": 5, 
+        "thai": "\u0e40\u0e19\u0080\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e17\u0e40\u0e19\u0089\u0e40\u0e18\u0e0d\u0e40\u0e18\u009c\u0e40\u0e19\u0089\u0e40\u0e18\u0e12"
     }, 
     "34": {
-        "name": "Costume", 
-        "parent": 5
+        "english": "Costume", 
+        "parent": 5, 
+        "thai": "\u0e40\u0e19\u0080\u0e40\u0e18\u0084\u0e40\u0e18\u0e03\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087\u0e40\u0e19\u0081\u0e40\u0e18\u0095\u0e40\u0e19\u0088\u0e40\u0e18\u0087\u0e40\u0e18\u0081\u0e40\u0e18\u0e12\u0e40\u0e18\u0e02"
     }, 
     "35": {
-        "name": "Jewelry", 
-        "parent": 5
+        "english": "Jewelry", 
+        "parent": 5, 
+        "thai": "\u0e40\u0e19\u0080\u0e40\u0e18\u0084\u0e40\u0e18\u0e03\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087\u0e40\u0e18\u009b\u0e40\u0e18\u0e03\u0e40\u0e18\u0e10\u0e40\u0e18\u0094\u0e40\u0e18\u0e11\u0e40\u0e18\u009a"
     }, 
     "36": {
-        "name": "Health", 
-        "parent": 6
+        "english": "Health", 
+        "parent": 6, 
+        "thai": "\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e01\u0e40\u0e18\u0e18\u0e40\u0e18\u0099\u0e40\u0e19\u0084\u0e40\u0e18\u009e\u0e40\u0e18\u0e03"
     }, 
     "37": {
-        "name": "Cosmetic", 
-        "parent": 6
+        "english": "Cosmetic", 
+        "parent": 6, 
+        "thai": "\u0e40\u0e19\u0080\u0e40\u0e18\u0084\u0e40\u0e18\u0e03\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e13\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e12\u0e40\u0e18\u0087"
     }, 
     "38": {
-        "name": "Beauty", 
-        "parent": 6
+        "english": "Beauty", 
+        "parent": 6, 
+        "thai": "\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e18\u0e40\u0e18\u009b\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0093\u0e40\u0e19\u008c\u0e40\u0e19\u0080\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e03\u0e40\u0e18\u0e14\u0e40\u0e18\u0e01\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e07\u0e40\u0e18\u0e02"
     }, 
     "39": {
-        "name": "Job", 
-        "parent": 7
+        "english": "Job", 
+        "parent": 7, 
+        "thai": "\u0e40\u0e18\u0087\u0e40\u0e18\u0e12\u0e40\u0e18\u0099"
     }, 
     "40": {
-        "name": "Industry", 
-        "parent": 7
+        "english": "Industry", 
+        "parent": 7, 
+        "thai": "\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e18\u0e40\u0e18\u0095\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e12\u0e40\u0e18\u0e0b\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0e03\u0e40\u0e18\u0e01"
     }, 
     "41": {
-        "name": "Franchise", 
-        "parent": 7
+        "english": "Franchise", 
+        "parent": 7, 
+        "thai": "\u0e40\u0e19\u0081\u0e40\u0e18\u009f\u0e40\u0e18\u0e03\u0e40\u0e18\u0099\u0e40\u0e19\u0084\u0e40\u0e18\u008a\u0e40\u0e18\u0e0a\u0e40\u0e19\u008c"
     }, 
     "42": {
-        "name": "Direct Sale", 
-        "parent": 7
+        "english": "Direct Sale", 
+        "parent": 7, 
+        "thai": "\u0e40\u0e18\u0082\u0e40\u0e18\u0e12\u0e40\u0e18\u0e02\u0e40\u0e18\u0095\u0e40\u0e18\u0e03\u0e40\u0e18\u0087"
     }, 
     "43": {
-        "name": "Office equipment", 
-        "parent": 7
+        "english": "Office equipment", 
+        "parent": 7, 
+        "thai": "\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e18\u0e40\u0e18\u009b\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0093\u0e40\u0e19\u008c\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e13\u0e40\u0e18\u0099\u0e40\u0e18\u0e11\u0e40\u0e18\u0081\u0e40\u0e18\u0087\u0e40\u0e18\u0e12\u0e40\u0e18\u0099"
     }, 
     "44": {
-        "name": "Event", 
-        "parent": 45
+        "english": "Event", 
+        "parent": 45, 
+        "thai": "\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e15\u0e40\u0e19\u0080\u0e40\u0e18\u0e07\u0e40\u0e19\u0089\u0e40\u0e18\u0099\u0e40\u0e18\u0097\u0e40\u0e19\u008c"
     }, 
     "45": {
-        "name": "Business service"
+        "english": "Business service", 
+        "thai": "\u0e40\u0e18\u009a\u0e40\u0e18\u0e03\u0e40\u0e18\u0e14\u0e40\u0e18\u0081\u0e40\u0e18\u0e12\u0e40\u0e18\u0e03"
     }, 
     "46": {
-        "name": "Tutor", 
-        "parent": 8
+        "english": "Tutor", 
+        "parent": 8, 
+        "thai": "\u0e40\u0e18\u0081\u0e40\u0e18\u0e07\u0e40\u0e18\u0094\u0e40\u0e18\u0e07\u0e40\u0e18\u0e14\u0e40\u0e18\u008a\u0e40\u0e18\u0e12"
     }, 
     "47": {
-        "name": "Language Tutor", 
-        "parent": 8
+        "english": "Language Tutor", 
+        "parent": 8, 
+        "thai": "\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e0d\u0e40\u0e18\u0099\u0e40\u0e18\u00a0\u0e40\u0e18\u0e12\u0e40\u0e18\u0e09\u0e40\u0e18\u0e12"
     }, 
     "48": {
-        "name": "Training", 
-        "parent": 8
+        "english": "Training", 
+        "parent": 8, 
+        "thai": "\u0e40\u0e18\u0e0d\u0e40\u0e18\u009a\u0e40\u0e18\u0e03\u0e40\u0e18\u0e01"
     }, 
     "49": {
-        "name": "Study abroad", 
-        "parent": 8
+        "english": "Study abroad", 
+        "parent": 8, 
+        "thai": "\u0e40\u0e19\u0080\u0e40\u0e18\u0e03\u0e40\u0e18\u0e15\u0e40\u0e18\u0e02\u0e40\u0e18\u0099\u0e40\u0e18\u0095\u0e40\u0e19\u0088\u0e40\u0e18\u0e0d\u0e40\u0e18\u0095\u0e40\u0e19\u0088\u0e40\u0e18\u0e12\u0e40\u0e18\u0087\u0e40\u0e18\u009b\u0e40\u0e18\u0e03\u0e40\u0e18\u0e10\u0e40\u0e19\u0080\u0e40\u0e18\u0097\u0e40\u0e18\u0e08"
     }, 
     "50": {
-        "name": "Tour thai", 
-        "parent": 9
+        "english": "Tour thai", 
+        "parent": 9, 
+        "thai": "\u0e40\u0e18\u0097\u0e40\u0e18\u0e11\u0e40\u0e18\u0e07\u0e40\u0e18\u0e03\u0e40\u0e19\u008c\u0e40\u0e19\u0083\u0e40\u0e18\u0099\u0e40\u0e18\u009b\u0e40\u0e18\u0e03\u0e40\u0e18\u0e10\u0e40\u0e19\u0080\u0e40\u0e18\u0097\u0e40\u0e18\u0e08"
     }, 
     "51": {
-        "name": "Tour abroad", 
-        "parent": 9
+        "english": "Tour abroad", 
+        "parent": 9, 
+        "thai": "\u0e40\u0e18\u0097\u0e40\u0e18\u0e11\u0e40\u0e18\u0e07\u0e40\u0e18\u0e03\u0e40\u0e19\u008c\u0e40\u0e18\u0095\u0e40\u0e19\u0088\u0e40\u0e18\u0e12\u0e40\u0e18\u0087\u0e40\u0e18\u009b\u0e40\u0e18\u0e03\u0e40\u0e18\u0e10\u0e40\u0e19\u0080\u0e40\u0e18\u0097\u0e40\u0e18\u0e08"
     }, 
     "52": {
-        "name": "Accommodation", 
-        "parent": 9
+        "english": "Accommodation", 
+        "parent": 9, 
+        "thai": "\u0e40\u0e18\u0097\u0e40\u0e18\u0e15\u0e40\u0e19\u0088\u0e40\u0e18\u009e\u0e40\u0e18\u0e11\u0e40\u0e18\u0081"
     }, 
     "54": {
-        "name": "Resaurant", 
-        "parent": 9
+        "english": "Resaurant", 
+        "parent": 9, 
+        "thai": "\u0e40\u0e18\u0e03\u0e40\u0e19\u0089\u0e40\u0e18\u0e12\u0e40\u0e18\u0099\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e12\u0e40\u0e18\u0e0b\u0e40\u0e18\u0e12\u0e40\u0e18\u0e03"
     }, 
     "55": {
-        "name": "Ticket", 
-        "parent": 9
+        "english": "Ticket", 
+        "parent": 9, 
+        "thai": "\u0e40\u0e18\u0095\u0e40\u0e18\u0e11\u0e40\u0e19\u008b\u0e40\u0e18\u0e07\u0e40\u0e19\u0080\u0e40\u0e18\u0094\u0e40\u0e18\u0e14\u0e40\u0e18\u0099\u0e40\u0e18\u0097\u0e40\u0e18\u0e12\u0e40\u0e18\u0087"
     }, 
     "56": {
-        "name": "Travel service", 
-        "parent": 9
+        "english": "Travel service", 
+        "parent": 9, 
+        "thai": "\u0e40\u0e18\u009a\u0e40\u0e18\u0e03\u0e40\u0e18\u0e14\u0e40\u0e18\u0081\u0e40\u0e18\u0e12\u0e40\u0e18\u0e03 \u0e40\u0e19\u0080\u0e40\u0e18\u0094\u0e40\u0e18\u0e14\u0e40\u0e18\u0099\u0e40\u0e18\u0097\u0e40\u0e18\u0e12\u0e40\u0e18\u0087"
     }, 
     "57": {
-        "name": "Amulet"
+        "english": "Amulet", 
+        "thai": "\u0e40\u0e18\u009e\u0e40\u0e18\u0e03\u0e40\u0e18\u0e10\u0e40\u0e19\u0080\u0e40\u0e18\u0084\u0e40\u0e18\u0e03\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087"
     }, 
     "58": {
-        "name": "Movies & Music", 
-        "parent": 10
+        "english": "Movies & Music", 
+        "parent": 10, 
+        "thai": "\u0e40\u0e18\u0e0b\u0e40\u0e18\u0099\u0e40\u0e18\u0e11\u0e40\u0e18\u0087\u0e40\u0e19\u0081\u0e40\u0e18\u0e05\u0e40\u0e18\u0e10\u0e40\u0e19\u0080\u0e40\u0e18\u009e\u0e40\u0e18\u0e05\u0e40\u0e18\u0087"
     }, 
     "59": {
-        "name": "Book", 
-        "parent": 10
+        "english": "Book", 
+        "parent": 10, 
+        "thai": "\u0e40\u0e18\u0e0b\u0e40\u0e18\u0099\u0e40\u0e18\u0e11\u0e40\u0e18\u0087\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e17\u0e40\u0e18\u0e0d"
     }, 
     "60": {
-        "name": "Musical Instrument "
+        "english": "Musical Instrument ", 
+        "thai": "\u0e40\u0e19\u0080\u0e40\u0e18\u0084\u0e40\u0e18\u0e03\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087\u0e40\u0e18\u0094\u0e40\u0e18\u0099\u0e40\u0e18\u0095\u0e40\u0e18\u0e03\u0e40\u0e18\u0e15"
     }, 
     "61": {
-        "name": "Sport"
+        "english": "Sport", 
+        "thai": "\u0e40\u0e18\u0081\u0e40\u0e18\u0e15\u0e40\u0e18\u0e0c\u0e40\u0e18\u0e12"
     }, 
     "62": {
-        "name": "Pet "
+        "english": "Pet ", 
+        "thai": "\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e11\u0e40\u0e18\u0095\u0e40\u0e18\u0e07\u0e40\u0e19\u008c\u0e40\u0e19\u0080\u0e40\u0e18\u0e05\u0e40\u0e18\u0e15\u0e40\u0e19\u0089\u0e40\u0e18\u0e02\u0e40\u0e18\u0087"
     }, 
     "64": {
-        "name": "Toy", 
-        "parent": 10
+        "english": "Toy", 
+        "parent": 10, 
+        "thai": "\u0e40\u0e18\u0082\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087\u0e40\u0e19\u0080\u0e40\u0e18\u0e05\u0e40\u0e19\u0088\u0e40\u0e18\u0099"
     }, 
     "65": {
-        "name": "Giftshop", 
-        "parent": 10
+        "english": "Giftshop", 
+        "parent": 10, 
+        "thai": "\u0e40\u0e18\u0081\u0e40\u0e18\u0e14\u0e40\u0e19\u008a\u0e40\u0e18\u009f\u0e40\u0e18\u008a\u0e40\u0e19\u0087\u0e40\u0e18\u0e0d\u0e40\u0e18\u009b \u0e40\u0e18\u0087\u0e40\u0e18\u0e12\u0e40\u0e18\u0099\u0e40\u0e18\u009d\u0e40\u0e18\u0e15\u0e40\u0e18\u0e01\u0e40\u0e18\u0e17\u0e40\u0e18\u0e0d"
     }, 
     "66": {
-        "name": "Tickets and Vouchers", 
-        "parent": 10
+        "english": "Tickets and Vouchers", 
+        "parent": 10, 
+        "thai": "\u0e40\u0e18\u009a\u0e40\u0e18\u0e11\u0e40\u0e18\u0095\u0e40\u0e18\u0e03\u0e40\u0e19\u0080\u0e40\u0e18\u0082\u0e40\u0e19\u0089\u0e40\u0e18\u0e12\u0e40\u0e18\u008a\u0e40\u0e18\u0e01 \u0e40\u0e18\u0084\u0e40\u0e18\u0e19\u0e40\u0e18\u009b\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087"
     }, 
     "67": {
-        "name": "Other vehicle", 
-        "parent": 1
+        "english": "Other vehicle", 
+        "parent": 1, 
+        "thai": "\u0e40\u0e18\u0e02\u0e40\u0e18\u0e12\u0e40\u0e18\u0099\u0e40\u0e18\u009e\u0e40\u0e18\u0e12\u0e40\u0e18\u0e0b\u0e40\u0e18\u0099\u0e40\u0e18\u0e10\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0099 \u0e40\u0e19\u0086"
     }, 
     "68": {
-        "name": null, 
-        "parent": 12
+        "english": null, 
+        "parent": 12, 
+        "thai": "\u0e40\u0e18\u0e03\u0e40\u0e18\u0096\u0e40\u0e18\u0e01\u0e40\u0e18\u0e0d\u0e40\u0e19\u0080\u0e40\u0e18\u0095\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e03\u0e40\u0e19\u008c\u0e40\u0e19\u0084\u0e40\u0e18\u008b\u0e40\u0e18\u0084\u0e40\u0e19\u008c"
     }, 
     "69": {
-        "name": "Motorcycle part", 
-        "parent": 149
+        "english": "Motorcycle part", 
+        "parent": 149, 
+        "thai": "\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e10\u0e40\u0e19\u0084\u0e40\u0e18\u0e0b\u0e40\u0e18\u0e05\u0e40\u0e19\u0088 \u0e40\u0e18\u0e0d\u0e40\u0e18\u0e18\u0e40\u0e18\u009b\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0093\u0e40\u0e19\u008c\u0e40\u0e18\u0095\u0e40\u0e18\u0081\u0e40\u0e19\u0081\u0e40\u0e18\u0095\u0e40\u0e19\u0088\u0e40\u0e18\u0087"
     }, 
     "70": {
-        "name": "Electronic"
+        "english": "Electronic", 
+        "thai": "\u0e40\u0e19\u0080\u0e40\u0e18\u0084\u0e40\u0e18\u0e03\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087\u0e40\u0e19\u0083\u0e40\u0e18\u008a\u0e40\u0e19\u0089\u0e40\u0e19\u0084\u0e40\u0e18\u009f\u0e40\u0e18\u009f\u0e40\u0e19\u0089\u0e40\u0e18\u0e12"
     }, 
     "71": {
-        "name": "Bed", 
-        "parent": 26
+        "english": "Bed", 
+        "parent": 26, 
+        "thai": "\u0e40\u0e19\u0080\u0e40\u0e18\u0084\u0e40\u0e18\u0e03\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087\u0e40\u0e18\u0099\u0e40\u0e18\u0e0d\u0e40\u0e18\u0099"
     }, 
     "72": {
-        "name": "Kitchen", 
-        "parent": 26
+        "english": "Kitchen", 
+        "parent": 26, 
+        "thai": "\u0e40\u0e19\u0080\u0e40\u0e18\u0084\u0e40\u0e18\u0e03\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087\u0e40\u0e18\u0084\u0e40\u0e18\u0e03\u0e40\u0e18\u0e11\u0e40\u0e18\u0e07"
     }, 
     "73": {
-        "name": "Mom and Baby accessories", 
-        "parent": 26
+        "english": "Mom and Baby accessories", 
+        "parent": 26, 
+        "thai": "\u0e40\u0e18\u0082\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087\u0e40\u0e19\u0083\u0e40\u0e18\u008a\u0e40\u0e19\u0089\u0e40\u0e19\u0081\u0e40\u0e18\u0e01\u0e40\u0e19\u0088\u0e40\u0e19\u0081\u0e40\u0e18\u0e05\u0e40\u0e18\u0e10\u0e40\u0e19\u0080\u0e40\u0e18\u0094\u0e40\u0e19\u0087\u0e40\u0e18\u0081"
     }, 
     "74": {
-        "name": "Other household stuff", 
-        "parent": 26
+        "english": "Other household stuff", 
+        "parent": 26, 
+        "thai": "\u0e40\u0e19\u0080\u0e40\u0e18\u0084\u0e40\u0e18\u0e03\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087\u0e40\u0e19\u0083\u0e40\u0e18\u008a\u0e40\u0e19\u0089\u0e40\u0e19\u0083\u0e40\u0e18\u0099\u0e40\u0e18\u009a\u0e40\u0e19\u0089\u0e40\u0e18\u0e12\u0e40\u0e18\u0099\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0099 \u0e40\u0e19\u0086"
     }, 
     "75": {
-        "name": "Air Conditioner", 
-        "parent": 70
+        "english": "Air Conditioner", 
+        "parent": 70, 
+        "thai": "\u0e40\u0e19\u0081\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e03\u0e40\u0e19\u008c"
     }, 
     "76": {
-        "name": "Refrigerator", 
-        "parent": 70
+        "english": "Refrigerator", 
+        "parent": 70, 
+        "thai": "\u0e40\u0e18\u0095\u0e40\u0e18\u0e19\u0e40\u0e19\u0089\u0e40\u0e19\u0080\u0e40\u0e18\u0e02\u0e40\u0e19\u0087\u0e40\u0e18\u0099"
     }, 
     "77": {
-        "name": "TV and Home theater", 
-        "parent": 70
+        "english": "TV and Home theater", 
+        "parent": 70, 
+        "thai": "\u0e40\u0e18\u0097\u0e40\u0e18\u0e15\u0e40\u0e18\u0e07\u0e40\u0e18\u0e15 \u0e40\u0e19\u0082\u0e40\u0e18\u0e0e\u0e40\u0e18\u0e01\u0e40\u0e19\u0080\u0e40\u0e18\u0098\u0e40\u0e18\u0e15\u0e40\u0e18\u0e02\u0e40\u0e19\u0080\u0e40\u0e18\u0095\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e03\u0e40\u0e19\u008c"
     }, 
     "78": {
-        "name": "Washing machine", 
-        "parent": 70
+        "english": "Washing machine", 
+        "parent": 70, 
+        "thai": "\u0e40\u0e19\u0080\u0e40\u0e18\u0084\u0e40\u0e18\u0e03\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087\u0e40\u0e18\u008b\u0e40\u0e18\u0e11\u0e40\u0e18\u0081\u0e40\u0e18\u009c\u0e40\u0e19\u0089\u0e40\u0e18\u0e12"
     }, 
     "79": {
-        "name": "Cable and Sattlelite", 
-        "parent": 70
+        "english": "Cable and Sattlelite", 
+        "parent": 70, 
+        "thai": "\u0e40\u0e19\u0080\u0e40\u0e18\u0084\u0e40\u0e19\u0080\u0e40\u0e18\u009a\u0e40\u0e18\u0e14\u0e40\u0e19\u0089\u0e40\u0e18\u0e05 \u0e40\u0e18\u0088\u0e40\u0e18\u0e12\u0e40\u0e18\u0099\u0e40\u0e18\u0094\u0e40\u0e18\u0e12\u0e40\u0e18\u0e07\u0e40\u0e19\u0080\u0e40\u0e18\u0097\u0e40\u0e18\u0e15\u0e40\u0e18\u0e02\u0e40\u0e18\u0e01"
     }, 
     "80": {
-        "name": "Other electric", 
-        "parent": 70
+        "english": "Other electric", 
+        "parent": 70, 
+        "thai": "\u0e40\u0e19\u0080\u0e40\u0e18\u0084\u0e40\u0e18\u0e03\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087\u0e40\u0e19\u0083\u0e40\u0e18\u008a\u0e40\u0e19\u0089\u0e40\u0e19\u0084\u0e40\u0e18\u009f\u0e40\u0e18\u009f\u0e40\u0e19\u0089\u0e40\u0e18\u0e12\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0099 \u0e40\u0e19\u0086"
     }, 
     "81": {
-        "name": "PC Desktop", 
-        "parent": 27
+        "english": "PC Desktop", 
+        "parent": 27, 
+        "thai": "\u0e40\u0e18\u0084\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e01\u0e40\u0e18\u009e\u0e40\u0e18\u0e14\u0e40\u0e18\u0e07\u0e40\u0e19\u0080\u0e40\u0e18\u0095\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e03\u0e40\u0e19\u008c\u0e40\u0e18\u0095\u0e40\u0e18\u0e11\u0e40\u0e19\u0089\u0e40\u0e18\u0087\u0e40\u0e19\u0082\u0e40\u0e18\u0095\u0e40\u0e19\u008a\u0e40\u0e18\u0e10"
     }, 
     "82": {
-        "name": "Notebook", 
-        "parent": 27
+        "english": "Notebook", 
+        "parent": 27, 
+        "thai": "\u0e40\u0e19\u0082\u0e40\u0e18\u0099\u0e40\u0e19\u008a\u0e40\u0e18\u0095\u0e40\u0e18\u009a\u0e40\u0e18\u0e18\u0e40\u0e19\u008a\u0e40\u0e18\u0084"
     }, 
     "83": {
-        "name": "Tablet", 
-        "parent": 29
+        "english": "Tablet", 
+        "parent": 29, 
+        "thai": "\u0e40\u0e19\u0081\u0e40\u0e18\u0097\u0e40\u0e19\u0087\u0e40\u0e18\u009a\u0e40\u0e19\u0080\u0e40\u0e18\u0e05\u0e40\u0e19\u0087\u0e40\u0e18\u0095"
     }, 
     "84": {
-        "name": "Printer scanner", 
-        "parent": 27
+        "english": "Printer scanner", 
+        "parent": 27, 
+        "thai": "Printer Scanner"
     }, 
     "85": {
-        "name": "Other it", 
-        "parent": 27
+        "english": "Other it", 
+        "parent": 27, 
+        "thai": "\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e18\u0e40\u0e18\u009b\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0093\u0e40\u0e19\u008c\u0e40\u0e18\u0084\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e01\u0e40\u0e18\u009e\u0e40\u0e18\u0e14\u0e40\u0e18\u0e07\u0e40\u0e19\u0080\u0e40\u0e18\u0095\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e03\u0e40\u0e19\u008c\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0099\u0e40\u0e19\u0086"
     }, 
     "86": {
-        "name": "Digital camera", 
-        "parent": 28
+        "english": "Digital camera", 
+        "parent": 28, 
+        "thai": "\u0e40\u0e18\u0081\u0e40\u0e18\u0e05\u0e40\u0e19\u0089\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087\u0e40\u0e18\u0094\u0e40\u0e18\u0e14\u0e40\u0e18\u0088\u0e40\u0e18\u0e14\u0e40\u0e18\u0095\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e05"
     }, 
     "87": {
-        "name": "Lens", 
-        "parent": 28
+        "english": "Lens", 
+        "parent": 28, 
+        "thai": "\u0e40\u0e19\u0080\u0e40\u0e18\u0e05\u0e40\u0e18\u0099\u0e40\u0e18\u0e0a\u0e40\u0e19\u008c"
     }, 
     "88": {
-        "name": "Camera accessories", 
-        "parent": 28
+        "english": "Camera accessories", 
+        "parent": 28, 
+        "thai": "\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e18\u0e40\u0e18\u009b\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0093\u0e40\u0e19\u008c\u0e40\u0e19\u0080\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e03\u0e40\u0e18\u0e14\u0e40\u0e18\u0e01\u0e40\u0e18\u0081\u0e40\u0e18\u0e05\u0e40\u0e19\u0089\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087 \u0e40\u0e18\u0e0d\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0099 \u0e40\u0e19\u0086"
     }, 
     "89": {
-        "name": "Mobile", 
-        "parent": 29
+        "english": "Mobile", 
+        "parent": 29, 
+        "thai": "\u0e40\u0e19\u0082\u0e40\u0e18\u0097\u0e40\u0e18\u0e03\u0e40\u0e18\u0e08\u0e40\u0e18\u0e11\u0e40\u0e18\u009e\u0e40\u0e18\u0097\u0e40\u0e19\u008c\u0e40\u0e18\u0e01\u0e40\u0e18\u0e17\u0e40\u0e18\u0e0d\u0e40\u0e18\u0096\u0e40\u0e18\u0e17\u0e40\u0e18\u0e0d"
     }, 
     "90": {
-        "name": "Accessories simcard", 
-        "parent": 29
+        "english": "Accessories simcard", 
+        "parent": 29, 
+        "thai": "\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e18\u0e40\u0e18\u009b\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0093\u0e40\u0e19\u008c\u0e40\u0e19\u0080\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e03\u0e40\u0e18\u0e14\u0e40\u0e18\u0e01\u0e40\u0e18\u0e01\u0e40\u0e18\u0e17\u0e40\u0e18\u0e0d\u0e40\u0e18\u0096\u0e40\u0e18\u0e17\u0e40\u0e18\u0e0d \u0e40\u0e19\u0081\u0e40\u0e18\u0097\u0e40\u0e19\u0087\u0e40\u0e18\u009a\u0e40\u0e19\u0080\u0e40\u0e18\u0e05\u0e40\u0e19\u0087\u0e40\u0e18\u0095"
     }, 
     "91": {
-        "name": "Other device", 
-        "parent": 29
+        "english": "Other device", 
+        "parent": 29, 
+        "thai": "\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e18\u0e40\u0e18\u009b\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0093\u0e40\u0e19\u008c\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e12\u0e40\u0e18\u0e03\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0099 \u0e40\u0e19\u0086"
     }, 
     "92": {
-        "name": "Women clothing", 
-        "parent": 33
+        "english": "Women clothing", 
+        "parent": 33, 
+        "thai": "\u0e40\u0e19\u0080\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e17\u0e40\u0e19\u0089\u0e40\u0e18\u0e0d\u0e40\u0e18\u009c\u0e40\u0e19\u0089\u0e40\u0e18\u0e12\u0e40\u0e18\u009c\u0e40\u0e18\u0e19\u0e40\u0e19\u0089\u0e40\u0e18\u0e0b\u0e40\u0e18\u008d\u0e40\u0e18\u0e14\u0e40\u0e18\u0087"
     }, 
     "93": {
-        "name": "Men clothing", 
-        "parent": 33
+        "english": "Men clothing", 
+        "parent": 33, 
+        "thai": "\u0e40\u0e19\u0080\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e17\u0e40\u0e19\u0089\u0e40\u0e18\u0e0d\u0e40\u0e18\u009c\u0e40\u0e19\u0089\u0e40\u0e18\u0e12\u0e40\u0e18\u009c\u0e40\u0e18\u0e19\u0e40\u0e19\u0089\u0e40\u0e18\u008a\u0e40\u0e18\u0e12\u0e40\u0e18\u0e02"
     }, 
     "94": {
-        "name": null, 
-        "parent": 33
+        "english": null, 
+        "parent": 33, 
+        "thai": "\u0e40\u0e19\u0080\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e17\u0e40\u0e19\u0089\u0e40\u0e18\u0e0d\u0e40\u0e18\u009c\u0e40\u0e19\u0089\u0e40\u0e18\u0e12\u0e40\u0e19\u0080\u0e40\u0e18\u0094\u0e40\u0e19\u0087\u0e40\u0e18\u0081"
     }, 
     "95": {
-        "name": "Bags"
+        "english": "Bags", 
+        "thai": "\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0e10\u0e40\u0e19\u0080\u0e40\u0e18\u009b\u0e40\u0e19\u008b\u0e40\u0e18\u0e12"
     }, 
     "96": {
-        "name": "Shoes"
+        "english": "Shoes", 
+        "thai": "\u0e40\u0e18\u0e03\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087\u0e40\u0e19\u0080\u0e40\u0e18\u0097\u0e40\u0e19\u0089\u0e40\u0e18\u0e12"
     }, 
     "97": {
-        "name": "Other costume ", 
-        "parent": 5
+        "english": "Other costume ", 
+        "parent": 5, 
+        "thai": "\u0e40\u0e19\u0080\u0e40\u0e18\u0084\u0e40\u0e18\u0e03\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087\u0e40\u0e19\u0081\u0e40\u0e18\u0095\u0e40\u0e19\u0088\u0e40\u0e18\u0087\u0e40\u0e18\u0081\u0e40\u0e18\u0e12\u0e40\u0e18\u0e02\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0099 \u0e40\u0e19\u0086"
     }, 
     "98": {
-        "name": "Eye glasses", 
-        "parent": 5
+        "english": "Eye glasses", 
+        "parent": 5, 
+        "thai": "\u0e40\u0e19\u0081\u0e40\u0e18\u0e07\u0e40\u0e19\u0088\u0e40\u0e18\u0099\u0e40\u0e18\u0095\u0e40\u0e18\u0e12"
     }, 
     "99": {
-        "name": "Watches"
+        "english": "Watches", 
+        "thai": "\u0e40\u0e18\u0099\u0e40\u0e18\u0e12\u0e40\u0e18\u0e0c\u0e40\u0e18\u0e14\u0e40\u0e18\u0081\u0e40\u0e18\u0e12"
     }, 
     "100": {
-        "name": "Ornament Jewelry", 
-        "parent": 35
+        "english": "Ornament Jewelry", 
+        "parent": 35, 
+        "thai": "\u0e40\u0e19\u0080\u0e40\u0e18\u0084\u0e40\u0e18\u0e03\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087\u0e40\u0e18\u009b\u0e40\u0e18\u0e03\u0e40\u0e18\u0e10\u0e40\u0e18\u0094\u0e40\u0e18\u0e11\u0e40\u0e18\u009a \u0e40\u0e18\u0088\u0e40\u0e18\u0e14\u0e40\u0e18\u0e07\u0e40\u0e19\u0080\u0e40\u0e18\u0e07\u0e40\u0e18\u0e05\u0e40\u0e18\u0e03\u0e40\u0e18\u0e15\u0e40\u0e19\u0088"
     }, 
     "102": {
-        "name": "Media education", 
-        "parent": 8
+        "english": "Media education", 
+        "parent": 8, 
+        "thai": "\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e18\u0e40\u0e18\u009b\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0093\u0e40\u0e19\u008c\u0e40\u0e18\u0081\u0e40\u0e18\u0e12\u0e40\u0e18\u0e03\u0e40\u0e19\u0080\u0e40\u0e18\u0e03\u0e40\u0e18\u0e15\u0e40\u0e18\u0e02\u0e40\u0e18\u0099\u0e40\u0e18\u0081\u0e40\u0e18\u0e12\u0e40\u0e18\u0e03\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e0d\u0e40\u0e18\u0099"
     }, 
     "103": {
-        "name": "Collectible"
+        "english": "Collectible", 
+        "thai": "\u0e40\u0e18\u0082\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e10\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e01"
     }, 
     "104": {
-        "name": "English tutor", 
-        "parent": 47
+        "english": "English tutor", 
+        "parent": 47, 
+        "thai": "\u0e40\u0e18\u00a0\u0e40\u0e18\u0e12\u0e40\u0e18\u0e09\u0e40\u0e18\u0e12\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e11\u0e40\u0e18\u0087\u0e40\u0e18\u0081\u0e40\u0e18\u0e04\u0e40\u0e18\u0e09"
     }, 
     "105": {
-        "name": "Chinese tutor", 
-        "parent": 47
+        "english": "Chinese tutor", 
+        "parent": 47, 
+        "thai": "\u0e40\u0e18\u00a0\u0e40\u0e18\u0e12\u0e40\u0e18\u0e09\u0e40\u0e18\u0e12\u0e40\u0e18\u0088\u0e40\u0e18\u0e15\u0e40\u0e18\u0099"
     }, 
     "106": {
-        "name": "Other tutor", 
-        "parent": 47
+        "english": "Other tutor", 
+        "parent": 47, 
+        "thai": "\u0e40\u0e18\u00a0\u0e40\u0e18\u0e12\u0e40\u0e18\u0e09\u0e40\u0e18\u0e12\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0099 \u0e40\u0e19\u0086"
     }, 
     "107": {
-        "name": "Europe", 
-        "parent": 49
+        "english": "Europe", 
+        "parent": 49, 
+        "thai": "\u0e40\u0e18\u0e02\u0e40\u0e18\u0e18\u0e40\u0e19\u0082\u0e40\u0e18\u0e03\u0e40\u0e18\u009b"
     }, 
     "108": {
-        "name": "Asia", 
-        "parent": 49
+        "english": "Asia", 
+        "parent": 49, 
+        "thai": "\u0e40\u0e19\u0080\u0e40\u0e18\u0e0d\u0e40\u0e19\u0080\u0e40\u0e18\u008a\u0e40\u0e18\u0e15\u0e40\u0e18\u0e02"
     }, 
     "109": {
-        "name": "America", 
-        "parent": 49
+        "english": "America", 
+        "parent": 49, 
+        "thai": "\u0e40\u0e18\u0e0d\u0e40\u0e19\u0080\u0e40\u0e18\u0e01\u0e40\u0e18\u0e03\u0e40\u0e18\u0e14\u0e40\u0e18\u0081\u0e40\u0e18\u0e12"
     }, 
     "110": {
-        "name": "Australia & Newzealand", 
-        "parent": 49
+        "english": "Australia & Newzealand", 
+        "parent": 49, 
+        "thai": "\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e0a\u0e40\u0e19\u0080\u0e40\u0e18\u0095\u0e40\u0e18\u0e03\u0e40\u0e19\u0080\u0e40\u0e18\u0e05\u0e40\u0e18\u0e15\u0e40\u0e18\u0e02 \u0e40\u0e18\u0099\u0e40\u0e18\u0e14\u0e40\u0e18\u0e07\u0e40\u0e18\u008b\u0e40\u0e18\u0e15\u0e40\u0e19\u0081\u0e40\u0e18\u0e05\u0e40\u0e18\u0099\u0e40\u0e18\u0094\u0e40\u0e19\u008c"
     }, 
     "111": {
-        "name": "Other region", 
-        "parent": 49
+        "english": "Other region", 
+        "parent": 49, 
+        "thai": "\u0e40\u0e18\u00a0\u0e40\u0e18\u0e19\u0e40\u0e18\u0e01\u0e40\u0e18\u0e14\u0e40\u0e18\u00a0\u0e40\u0e18\u0e12\u0e40\u0e18\u0084\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0099 \u0e40\u0e19\u0086"
     }, 
     "112": {
-        "name": "Medal", 
-        "parent": 57
+        "english": "Medal", 
+        "parent": 57, 
+        "thai": "\u0e40\u0e18\u009e\u0e40\u0e18\u0e03\u0e40\u0e18\u0e10\u0e40\u0e19\u0080\u0e40\u0e18\u0e0b\u0e40\u0e18\u0e03\u0e40\u0e18\u0e15\u0e40\u0e18\u0e02\u0e40\u0e18\u008d"
     }, 
     "113": {
-        "name": "Statue", 
-        "parent": 57
+        "english": "Statue", 
+        "parent": 57, 
+        "thai": "\u0e40\u0e18\u009e\u0e40\u0e18\u0e03\u0e40\u0e18\u0e10\u0e40\u0e18\u009a\u0e40\u0e18\u0e19\u0e40\u0e18\u008a\u0e40\u0e18\u0e12"
     }, 
     "114": {
-        "name": "Jatukarm", 
-        "parent": 57
+        "english": "Jatukarm", 
+        "parent": 57, 
+        "thai": "\u0e40\u0e18\u0088\u0e40\u0e18\u0095\u0e40\u0e18\u0e18\u0e40\u0e18\u0084\u0e40\u0e18\u0e12\u0e40\u0e18\u0e01\u0e40\u0e18\u0e03\u0e40\u0e18\u0e12\u0e40\u0e18\u0e01\u0e40\u0e19\u0080\u0e40\u0e18\u0097\u0e40\u0e18\u009e"
     }, 
     "115": {
-        "name": "Talisman", 
-        "parent": 57
+        "english": "Talisman", 
+        "parent": 57, 
+        "thai": "\u0e40\u0e19\u0080\u0e40\u0e18\u0084\u0e40\u0e18\u0e03\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087\u0e40\u0e18\u0e03\u0e40\u0e18\u0e12\u0e40\u0e18\u0087 \u0e40\u0e18\u0082\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087\u0e40\u0e18\u0e01\u0e40\u0e18\u0087\u0e40\u0e18\u0084\u0e40\u0e18\u0e05"
     }, 
     "116": {
-        "name": null, 
-        "parent": 57
+        "english": null, 
+        "parent": 57, 
+        "thai": "\u0e40\u0e18\u009e\u0e40\u0e18\u0e03\u0e40\u0e18\u0e10\u0e40\u0e19\u0080\u0e40\u0e18\u0084\u0e40\u0e18\u0e03\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0099 \u0e40\u0e19\u0086"
     }, 
     "117": {
-        "name": "Travel accessories", 
-        "parent": 9
+        "english": "Travel accessories", 
+        "parent": 9, 
+        "thai": "\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e18\u0e40\u0e18\u009b\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0093\u0e40\u0e19\u008c\u0e40\u0e18\u0097\u0e40\u0e19\u0088\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087\u0e40\u0e19\u0080\u0e40\u0e18\u0097\u0e40\u0e18\u0e15\u0e40\u0e19\u0088\u0e40\u0e18\u0e02\u0e40\u0e18\u0e07"
     }, 
     "118": {
-        "name": "Tour Europe", 
-        "parent": 51
+        "english": "Tour Europe", 
+        "parent": 51, 
+        "thai": "\u0e40\u0e18\u0097\u0e40\u0e18\u0e11\u0e40\u0e18\u0e07\u0e40\u0e18\u0e03\u0e40\u0e19\u008c\u0e40\u0e18\u0e02\u0e40\u0e18\u0e18\u0e40\u0e19\u0082\u0e40\u0e18\u0e03\u0e40\u0e18\u009b"
     }, 
     "119": {
-        "name": "Tour Asia", 
-        "parent": 51
+        "english": "Tour Asia", 
+        "parent": 51, 
+        "thai": "\u0e40\u0e18\u0097\u0e40\u0e18\u0e11\u0e40\u0e18\u0e07\u0e40\u0e18\u0e03\u0e40\u0e19\u008c\u0e40\u0e19\u0080\u0e40\u0e18\u0e0d\u0e40\u0e19\u0080\u0e40\u0e18\u008a\u0e40\u0e18\u0e15\u0e40\u0e18\u0e02"
     }, 
     "120": {
-        "name": "Tour America", 
-        "parent": 51
+        "english": "Tour America", 
+        "parent": 51, 
+        "thai": "\u0e40\u0e18\u0097\u0e40\u0e18\u0e11\u0e40\u0e18\u0e07\u0e40\u0e18\u0e03\u0e40\u0e19\u008c\u0e40\u0e18\u0e0d\u0e40\u0e19\u0080\u0e40\u0e18\u0e01\u0e40\u0e18\u0e03\u0e40\u0e18\u0e14\u0e40\u0e18\u0081\u0e40\u0e18\u0e12"
     }, 
     "121": {
-        "name": "Tour australia & newzealand", 
-        "parent": 51
+        "english": "Tour australia & newzealand", 
+        "parent": 51, 
+        "thai": "\u0e40\u0e18\u0097\u0e40\u0e18\u0e11\u0e40\u0e18\u0e07\u0e40\u0e18\u0e03\u0e40\u0e19\u008c\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e0a\u0e40\u0e19\u0080\u0e40\u0e18\u0095\u0e40\u0e18\u0e03\u0e40\u0e19\u0080\u0e40\u0e18\u0e05\u0e40\u0e18\u0e15\u0e40\u0e18\u0e02 \u0e40\u0e18\u0099\u0e40\u0e18\u0e14\u0e40\u0e18\u0e07\u0e40\u0e18\u008b\u0e40\u0e18\u0e15\u0e40\u0e19\u0081\u0e40\u0e18\u0e05\u0e40\u0e18\u0099\u0e40\u0e18\u0094\u0e40\u0e19\u008c"
     }, 
     "122": {
-        "name": "Other region", 
-        "parent": 51
+        "english": "Other region", 
+        "parent": 51, 
+        "thai": "\u0e40\u0e18\u0097\u0e40\u0e18\u0e11\u0e40\u0e18\u0e07\u0e40\u0e18\u0e03\u0e40\u0e19\u008c\u0e40\u0e18\u00a0\u0e40\u0e18\u0e19\u0e40\u0e18\u0e01\u0e40\u0e18\u0e14\u0e40\u0e18\u00a0\u0e40\u0e18\u0e12\u0e40\u0e18\u0084\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0099 \u0e40\u0e19\u0086"
     }, 
     "123": {
-        "name": "Bicycle "
+        "english": "Bicycle ", 
+        "thai": "\u0e40\u0e18\u0088\u0e40\u0e18\u0e11\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0e02\u0e40\u0e18\u0e12\u0e40\u0e18\u0099"
     }, 
     "124": {
-        "name": "Fixed gear", 
-        "parent": 123
+        "english": "Fixed gear", 
+        "parent": 123, 
+        "thai": "\u0e40\u0e18\u0088\u0e40\u0e18\u0e11\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0e02\u0e40\u0e18\u0e12\u0e40\u0e18\u0099\u0e40\u0e18\u009f\u0e40\u0e18\u0e14\u0e40\u0e18\u0081\u0e40\u0e19\u0080\u0e40\u0e18\u0081\u0e40\u0e18\u0e15\u0e40\u0e18\u0e02\u0e40\u0e18\u0e03\u0e40\u0e19\u008c"
     }, 
     "125": {
-        "name": "Other bicycles", 
-        "parent": 123
+        "english": "Other bicycles", 
+        "parent": 123, 
+        "thai": "\u0e40\u0e18\u0088\u0e40\u0e18\u0e11\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0e02\u0e40\u0e18\u0e12\u0e40\u0e18\u0099\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0099\u0e40\u0e19\u0086"
     }, 
     "126": {
-        "name": "Bicycle accessories", 
-        "parent": 123
+        "english": "Bicycle accessories", 
+        "parent": 123, 
+        "thai": "\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e18\u0e40\u0e18\u009b\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0093\u0e40\u0e19\u008c\u0e40\u0e18\u0099\u0e40\u0e18\u0e11\u0e40\u0e18\u0081\u0e40\u0e18\u009b\u0e40\u0e18\u0e11\u0e40\u0e19\u0088\u0e40\u0e18\u0099"
     }, 
     "127": {
-        "name": "Women shoes", 
-        "parent": 96
+        "english": "Women shoes", 
+        "parent": 96, 
+        "thai": "\u0e40\u0e18\u0e03\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087\u0e40\u0e19\u0080\u0e40\u0e18\u0097\u0e40\u0e19\u0089\u0e40\u0e18\u0e12\u0e40\u0e18\u009c\u0e40\u0e18\u0e19\u0e40\u0e19\u0089\u0e40\u0e18\u0e0b\u0e40\u0e18\u008d\u0e40\u0e18\u0e14\u0e40\u0e18\u0087"
     }, 
     "128": {
-        "name": "Men shoes", 
-        "parent": 96
+        "english": "Men shoes", 
+        "parent": 96, 
+        "thai": "\u0e40\u0e18\u0e03\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087\u0e40\u0e19\u0080\u0e40\u0e18\u0097\u0e40\u0e19\u0089\u0e40\u0e18\u0e12\u0e40\u0e18\u009c\u0e40\u0e18\u0e19\u0e40\u0e19\u0089\u0e40\u0e18\u008a\u0e40\u0e18\u0e12\u0e40\u0e18\u0e02"
     }, 
     "129": {
-        "name": "Gemstones", 
-        "parent": 35
+        "english": "Gemstones", 
+        "parent": 35, 
+        "thai": "\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e11\u0e40\u0e18\u008d\u0e40\u0e18\u0e01\u0e40\u0e18\u0093\u0e40\u0e18\u0e15"
     }, 
     "130": {
-        "name": "Mom and Baby"
+        "english": "Mom and Baby", 
+        "thai": "\u0e40\u0e19\u0081\u0e40\u0e18\u0e01\u0e40\u0e19\u0088\u0e40\u0e19\u0081\u0e40\u0e18\u0e05\u0e40\u0e18\u0e10\u0e40\u0e19\u0080\u0e40\u0e18\u0094\u0e40\u0e19\u0087\u0e40\u0e18\u0081"
     }, 
     "131": {
-        "name": "Kids clothing", 
-        "parent": 130
+        "english": "Kids clothing", 
+        "parent": 130, 
+        "thai": "\u0e40\u0e19\u0080\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e17\u0e40\u0e19\u0089\u0e40\u0e18\u0e0d\u0e40\u0e18\u009c\u0e40\u0e19\u0089\u0e40\u0e18\u0e12\u0e40\u0e19\u0080\u0e40\u0e18\u0094\u0e40\u0e19\u0087\u0e40\u0e18\u0081"
     }, 
     "132": {
-        "name": "Mom and Baby accessories", 
-        "parent": 130
+        "english": "Mom and Baby accessories", 
+        "parent": 130, 
+        "thai": "\u0e40\u0e18\u0082\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087\u0e40\u0e19\u0083\u0e40\u0e18\u008a\u0e40\u0e19\u0089\u0e40\u0e19\u0081\u0e40\u0e18\u0e01\u0e40\u0e19\u0088\u0e40\u0e19\u0081\u0e40\u0e18\u0e05\u0e40\u0e18\u0e10\u0e40\u0e19\u0080\u0e40\u0e18\u0094\u0e40\u0e19\u0087\u0e40\u0e18\u0081"
     }, 
     "133": {
-        "name": "Factory warehouse", 
-        "parent": 20
+        "english": "Factory warehouse", 
+        "parent": 20, 
+        "thai": "\u0e40\u0e19\u0082\u0e40\u0e18\u0e03\u0e40\u0e18\u0087\u0e40\u0e18\u0087\u0e40\u0e18\u0e12\u0e40\u0e18\u0099 \u0e40\u0e19\u0082\u0e40\u0e18\u0081\u0e40\u0e18\u0094\u0e40\u0e18\u0e11\u0e40\u0e18\u0087"
     }, 
     "134": {
-        "name": "Commercial building", 
-        "parent": 2
+        "english": "Commercial building", 
+        "parent": 2, 
+        "thai": "\u0e40\u0e18\u0095\u0e40\u0e18\u0e16\u0e40\u0e18\u0081\u0e40\u0e19\u0081\u0e40\u0e18\u0096\u0e40\u0e18\u0e07 \u0e40\u0e18\u0e0d\u0e40\u0e18\u0e12\u0e40\u0e18\u0084\u0e40\u0e18\u0e12\u0e40\u0e18\u0e03\u0e40\u0e18\u009e\u0e40\u0e18\u0e12\u0e40\u0e18\u0093\u0e40\u0e18\u0e14\u0e40\u0e18\u008a\u0e40\u0e18\u0e02\u0e40\u0e19\u008c"
     }, 
     "135": {
-        "name": "Video camera", 
-        "parent": 28
+        "english": "Video camera", 
+        "parent": 28, 
+        "thai": "\u0e40\u0e18\u0081\u0e40\u0e18\u0e05\u0e40\u0e19\u0089\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087\u0e40\u0e18\u0e07\u0e40\u0e18\u0e14\u0e40\u0e18\u0094\u0e40\u0e18\u0e15\u0e40\u0e19\u0082\u0e40\u0e18\u0e0d"
     }, 
     "136": {
-        "name": "Other camera", 
-        "parent": 28
+        "english": "Other camera", 
+        "parent": 28, 
+        "thai": "\u0e40\u0e18\u0081\u0e40\u0e18\u0e05\u0e40\u0e19\u0089\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0099\u0e40\u0e19\u0086"
     }, 
     "137": {
-        "name": "Office Building", 
-        "parent": 20
+        "english": "Office Building", 
+        "parent": 20, 
+        "thai": "\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e13\u0e40\u0e18\u0099\u0e40\u0e18\u0e11\u0e40\u0e18\u0081\u0e40\u0e18\u0087\u0e40\u0e18\u0e12\u0e40\u0e18\u0099"
     }, 
     "138": {
-        "name": "Hotel & Resort", 
-        "parent": 20
+        "english": "Hotel & Resort", 
+        "parent": 20, 
+        "thai": "\u0e40\u0e19\u0082\u0e40\u0e18\u0e03\u0e40\u0e18\u0087\u0e40\u0e19\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0e01 \u0e40\u0e18\u0e03\u0e40\u0e18\u0e15\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e03\u0e40\u0e19\u008c\u0e40\u0e18\u0097"
     }, 
     "139": {
-        "name": "Commercial space", 
-        "parent": 20
+        "english": "Commercial space", 
+        "parent": 20, 
+        "thai": "\u0e40\u0e18\u009e\u0e40\u0e18\u0e17\u0e40\u0e19\u0089\u0e40\u0e18\u0099\u0e40\u0e18\u0097\u0e40\u0e18\u0e15\u0e40\u0e19\u0088\u0e40\u0e18\u0082\u0e40\u0e18\u0e12\u0e40\u0e18\u0e02\u0e40\u0e18\u0082\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087"
     }, 
     "140": {
-        "name": "Baby Toys", 
-        "parent": 130
+        "english": "Baby Toys", 
+        "parent": 130, 
+        "thai": "\u0e40\u0e18\u0082\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087\u0e40\u0e19\u0080\u0e40\u0e18\u0e05\u0e40\u0e19\u0088\u0e40\u0e18\u0099\u0e40\u0e19\u0080\u0e40\u0e18\u0094\u0e40\u0e19\u0087\u0e40\u0e18\u0081"
     }, 
     "141": {
-        "name": "Children shoes", 
-        "parent": 130
+        "english": "Children shoes", 
+        "parent": 130, 
+        "thai": "\u0e40\u0e18\u0e03\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087\u0e40\u0e19\u0080\u0e40\u0e18\u0097\u0e40\u0e19\u0089\u0e40\u0e18\u0e12\u0e40\u0e19\u0080\u0e40\u0e18\u0094\u0e40\u0e19\u0087\u0e40\u0e18\u0081"
     }, 
     "142": {
-        "name": "Maternity wear", 
-        "parent": 130
+        "english": "Maternity wear", 
+        "parent": 130, 
+        "thai": "\u0e40\u0e19\u0080\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e17\u0e40\u0e19\u0089\u0e40\u0e18\u0e0d\u0e40\u0e18\u009c\u0e40\u0e19\u0089\u0e40\u0e18\u0e12\u0e40\u0e18\u0084\u0e40\u0e18\u0099\u0e40\u0e18\u0097\u0e40\u0e19\u0089\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087"
     }, 
     "143": {
-        "name": "Kid strollers", 
-        "parent": 132
+        "english": "Kid strollers", 
+        "parent": 132, 
+        "thai": "\u0e40\u0e18\u0e03\u0e40\u0e18\u0096\u0e40\u0e19\u0080\u0e40\u0e18\u0082\u0e40\u0e19\u0087\u0e40\u0e18\u0099\u0e40\u0e19\u0080\u0e40\u0e18\u0094\u0e40\u0e19\u0087\u0e40\u0e18\u0081"
     }, 
     "144": {
-        "name": "Kid bedding", 
-        "parent": 132
+        "english": "Kid bedding", 
+        "parent": 132, 
+        "thai": "\u0e40\u0e19\u0080\u0e40\u0e18\u0095\u0e40\u0e18\u0e15\u0e40\u0e18\u0e02\u0e40\u0e18\u0087\u0e40\u0e19\u0080\u0e40\u0e18\u0094\u0e40\u0e19\u0087\u0e40\u0e18\u0081"
     }, 
     "145": {
-        "name": "Car seats", 
-        "parent": 132
+        "english": "Car seats", 
+        "parent": 132, 
+        "thai": "\u0e40\u0e18\u0084\u0e40\u0e18\u0e12\u0e40\u0e18\u0e03\u0e40\u0e19\u008c\u0e40\u0e18\u008b\u0e40\u0e18\u0e15\u0e40\u0e18\u0097"
     }, 
     "146": {
-        "name": "Breast pump", 
-        "parent": 132
+        "english": "Breast pump", 
+        "parent": 132, 
+        "thai": "\u0e40\u0e19\u0080\u0e40\u0e18\u0084\u0e40\u0e18\u0e03\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087\u0e40\u0e18\u009b\u0e40\u0e18\u0e11\u0e40\u0e19\u0089\u0e40\u0e18\u0e01\u0e40\u0e18\u0099\u0e40\u0e18\u0e01"
     }, 
     "147": {
-        "name": "Steam sterilizer", 
-        "parent": 132
+        "english": "Steam sterilizer", 
+        "parent": 132, 
+        "thai": "\u0e40\u0e19\u0080\u0e40\u0e18\u0084\u0e40\u0e18\u0e03\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087\u0e40\u0e18\u0099\u0e40\u0e18\u0e16\u0e40\u0e19\u0088\u0e40\u0e18\u0087\u0e40\u0e18\u0082\u0e40\u0e18\u0e07\u0e40\u0e18\u0094\u0e40\u0e18\u0099\u0e40\u0e18\u0e01"
     }, 
     "148": {
-        "name": "Kid stuff", 
-        "parent": 132
+        "english": "Kid stuff", 
+        "parent": 132, 
+        "thai": "\u0e40\u0e18\u0082\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087\u0e40\u0e19\u0083\u0e40\u0e18\u008a\u0e40\u0e19\u0089\u0e40\u0e19\u0081\u0e40\u0e18\u0e01\u0e40\u0e19\u0088\u0e40\u0e19\u0081\u0e40\u0e18\u0e05\u0e40\u0e18\u0e10\u0e40\u0e19\u0080\u0e40\u0e18\u0094\u0e40\u0e19\u0087\u0e40\u0e18\u0081 \u0e40\u0e18\u0e0d\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0099\u0e40\u0e19\u0086"
     }, 
     "149": {
-        "name": "Motorcycle"
+        "english": "Motorcycle", 
+        "thai": "\u0e40\u0e18\u0e01\u0e40\u0e18\u0e0d\u0e40\u0e19\u0080\u0e40\u0e18\u0095\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e03\u0e40\u0e19\u008c\u0e40\u0e19\u0084\u0e40\u0e18\u008b\u0e40\u0e18\u0084\u0e40\u0e19\u008c"
     }, 
     "150": {
-        "name": "Monk Supplies", 
-        "parent": 57
+        "english": "Monk Supplies", 
+        "parent": 57, 
+        "thai": "\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e11\u0e40\u0e18\u0087\u0e40\u0e18\u0086\u0e40\u0e18\u00a0\u0e40\u0e18\u0e11\u0e40\u0e18\u0093\u0e40\u0e18\u0091\u0e40\u0e19\u008c \u0e40\u0e18\u0087\u0e40\u0e18\u0e12\u0e40\u0e18\u0099\u0e40\u0e18\u009e\u0e40\u0e18\u0e14\u0e40\u0e18\u0098\u0e40\u0e18\u0e15"
     }, 
     "151": {
-        "name": "Motorcycle parts", 
-        "parent": 149
+        "english": "Motorcycle parts", 
+        "parent": 149, 
+        "thai": "\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e18\u0e40\u0e18\u009b\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0093\u0e40\u0e19\u008c\u0e40\u0e18\u0095\u0e40\u0e18\u0081\u0e40\u0e19\u0081\u0e40\u0e18\u0095\u0e40\u0e19\u0088\u0e40\u0e18\u0087"
     }, 
     "152": {
-        "name": "Supplementary food", 
-        "parent": 6
+        "english": "Supplementary food", 
+        "parent": 6, 
+        "thai": "\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e12\u0e40\u0e18\u0e0b\u0e40\u0e18\u0e12\u0e40\u0e18\u0e03\u0e40\u0e19\u0080\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e03\u0e40\u0e18\u0e14\u0e40\u0e18\u0e01"
     }, 
     "153": {
-        "name": "Medical device", 
-        "parent": 6
+        "english": "Medical device", 
+        "parent": 6, 
+        "thai": "\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e18\u0e40\u0e18\u009b\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0093\u0e40\u0e19\u008c\u0e40\u0e19\u0080\u0e40\u0e18\u0081\u0e40\u0e18\u0e15\u0e40\u0e19\u0088\u0e40\u0e18\u0e02\u0e40\u0e18\u0e07\u0e40\u0e18\u0081\u0e40\u0e18\u0e11\u0e40\u0e18\u009a\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e18\u0e40\u0e18\u0082\u0e40\u0e18\u00a0\u0e40\u0e18\u0e12\u0e40\u0e18\u009e"
     }, 
     "154": {
-        "name": "Makeup", 
-        "parent": 37
+        "english": "Makeup", 
+        "parent": 37, 
+        "thai": "\u0e40\u0e19\u0081\u0e40\u0e18\u0095\u0e40\u0e19\u0088\u0e40\u0e18\u0087\u0e40\u0e18\u0e0b\u0e40\u0e18\u0099\u0e40\u0e19\u0089\u0e40\u0e18\u0e12"
     }, 
     "155": {
-        "name": "Face care", 
-        "parent": 37
+        "english": "Face care", 
+        "parent": 37, 
+        "thai": "\u0e40\u0e18\u0094\u0e40\u0e18\u0e19\u0e40\u0e19\u0081\u0e40\u0e18\u0e05\u0e40\u0e18\u009c\u0e40\u0e18\u0e14\u0e40\u0e18\u0e07\u0e40\u0e18\u0e0b\u0e40\u0e18\u0099\u0e40\u0e19\u0089\u0e40\u0e18\u0e12"
     }, 
     "156": {
-        "name": "Body care", 
-        "parent": 37
+        "english": "Body care", 
+        "parent": 37, 
+        "thai": "\u0e40\u0e18\u0094\u0e40\u0e18\u0e19\u0e40\u0e19\u0081\u0e40\u0e18\u0e05\u0e40\u0e18\u009c\u0e40\u0e18\u0e14\u0e40\u0e18\u0e07\u0e40\u0e18\u0081\u0e40\u0e18\u0e12\u0e40\u0e18\u0e02"
     }, 
     "157": {
-        "name": "Hair care", 
-        "parent": 37
+        "english": "Hair care", 
+        "parent": 37, 
+        "thai": "\u0e40\u0e18\u0094\u0e40\u0e18\u0e19\u0e40\u0e19\u0081\u0e40\u0e18\u0e05\u0e40\u0e18\u009c\u0e40\u0e18\u0e01"
     }, 
     "158": {
-        "name": "Manicure", 
-        "parent": 37
+        "english": "Manicure", 
+        "parent": 37, 
+        "thai": "\u0e40\u0e18\u0097\u0e40\u0e18\u0e13\u0e40\u0e19\u0080\u0e40\u0e18\u0e05\u0e40\u0e19\u0087\u0e40\u0e18\u009a"
     }, 
     "159": {
-        "name": "Other cosmetic", 
-        "parent": 37
+        "english": "Other cosmetic", 
+        "parent": 37, 
+        "thai": "\u0e40\u0e19\u0080\u0e40\u0e18\u0084\u0e40\u0e18\u0e03\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e13\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e12\u0e40\u0e18\u0087\u0e40\u0e18\u0084\u0e40\u0e19\u008c\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0099 \u0e40\u0e19\u0086"
     }, 
     "160": {
-        "name": "Perfume", 
-        "parent": 6
+        "english": "Perfume", 
+        "parent": 6, 
+        "thai": "\u0e40\u0e18\u0099\u0e40\u0e19\u0089\u0e40\u0e18\u0e13\u0e40\u0e18\u0e0b\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e01"
     }, 
     "161": {
-        "name": "Pra Benjapakee", 
-        "parent": 57
+        "english": "Pra Benjapakee", 
+        "parent": 57, 
+        "thai": "\u0e40\u0e18\u009e\u0e40\u0e18\u0e03\u0e40\u0e18\u0e10\u0e40\u0e19\u0080\u0e40\u0e18\u009a\u0e40\u0e18\u008d\u0e40\u0e18\u0088\u0e40\u0e18\u00a0\u0e40\u0e18\u0e12\u0e40\u0e18\u0084\u0e40\u0e18\u0e15"
     }, 
     "162": {
-        "name": "Pra Kring", 
-        "parent": 57
+        "english": "Pra Kring", 
+        "parent": 57, 
+        "thai": "\u0e40\u0e18\u009e\u0e40\u0e18\u0e03\u0e40\u0e18\u0e10\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0e14\u0e40\u0e19\u0088\u0e40\u0e18\u0087"
     }, 
     "163": {
-        "name": "Pra Kru", 
-        "parent": 57
+        "english": "Pra Kru", 
+        "parent": 57, 
+        "thai": "\u0e40\u0e18\u009e\u0e40\u0e18\u0e03\u0e40\u0e18\u0e10\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0e18"
     }, 
     "164": {
-        "name": "Pra Geji", 
-        "parent": 57
+        "english": "Pra Geji", 
+        "parent": 57, 
+        "thai": "\u0e40\u0e18\u009e\u0e40\u0e18\u0e03\u0e40\u0e18\u0e10\u0e40\u0e19\u0080\u0e40\u0e18\u0081\u0e40\u0e18\u0088\u0e40\u0e18\u0e14"
     }, 
     "165": {
-        "name": "Pra Pidta", 
-        "parent": 57
+        "english": "Pra Pidta", 
+        "parent": 57, 
+        "thai": "\u0e40\u0e18\u009e\u0e40\u0e18\u0e03\u0e40\u0e18\u0e10\u0e40\u0e18\u009b\u0e40\u0e18\u0e14\u0e40\u0e18\u0094\u0e40\u0e18\u0095\u0e40\u0e18\u0e12"
     }, 
     "166": {
-        "name": "Pra Somded Watrakang", 
-        "parent": 161
+        "english": "Pra Somded Watrakang", 
+        "parent": 161, 
+        "thai": "\u0e40\u0e18\u009e\u0e40\u0e18\u0e03\u0e40\u0e18\u0e10\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e01\u0e40\u0e19\u0080\u0e40\u0e18\u0094\u0e40\u0e19\u0087\u0e40\u0e18\u0088\u0e40\u0e18\u0e07\u0e40\u0e18\u0e11\u0e40\u0e18\u0094\u0e40\u0e18\u0e03\u0e40\u0e18\u0e10\u0e40\u0e18\u0086\u0e40\u0e18\u0e11\u0e40\u0e18\u0087"
     }, 
     "167": {
-        "name": "Pra Nangpaya", 
-        "parent": 161
+        "english": "Pra Nangpaya", 
+        "parent": 161, 
+        "thai": "\u0e40\u0e18\u009e\u0e40\u0e18\u0e03\u0e40\u0e18\u0e10\u0e40\u0e18\u0099\u0e40\u0e18\u0e12\u0e40\u0e18\u0087\u0e40\u0e18\u009e\u0e40\u0e18\u008d\u0e40\u0e18\u0e12"
     }, 
     "168": {
-        "name": "Pra Sumkor", 
-        "parent": 161
+        "english": "Pra Sumkor", 
+        "parent": 161, 
+        "thai": "\u0e40\u0e18\u009e\u0e40\u0e18\u0e03\u0e40\u0e18\u0e10\u0e40\u0e18\u008b\u0e40\u0e18\u0e18\u0e40\u0e19\u0089\u0e40\u0e18\u0e01\u0e40\u0e18\u0081\u0e40\u0e18\u0e0d"
     }, 
     "169": {
-        "name": "Pra Pongsuphan", 
-        "parent": 161
+        "english": "Pra Pongsuphan", 
+        "parent": 161, 
+        "thai": "\u0e40\u0e18\u009e\u0e40\u0e18\u0e03\u0e40\u0e18\u0e10\u0e40\u0e18\u009c\u0e40\u0e18\u0087\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e18\u0e40\u0e18\u009e\u0e40\u0e18\u0e03\u0e40\u0e18\u0e03\u0e40\u0e18\u0093"
     }, 
     "170": {
-        "name": "Pra Rod", 
-        "parent": 161
+        "english": "Pra Rod", 
+        "parent": 161, 
+        "thai": "\u0e40\u0e18\u009e\u0e40\u0e18\u0e03\u0e40\u0e18\u0e10\u0e40\u0e18\u0e03\u0e40\u0e18\u0e0d\u0e40\u0e18\u0094"
     }, 
     "171": {
-        "name": "Luang Pu-toud", 
-        "parent": 164
+        "english": "Luang Pu-toud", 
+        "parent": 164, 
+        "thai": "\u0e40\u0e18\u0e0b\u0e40\u0e18\u0e05\u0e40\u0e18\u0e07\u0e40\u0e18\u0087\u0e40\u0e18\u009b\u0e40\u0e18\u0e19\u0e40\u0e19\u0088\u0e40\u0e18\u0097\u0e40\u0e18\u0e07\u0e40\u0e18\u0094"
     }, 
     "172": {
-        "name": "Luang Pu-fhun", 
-        "parent": 164
+        "english": "Luang Pu-fhun", 
+        "parent": 164, 
+        "thai": "\u0e40\u0e18\u0e0b\u0e40\u0e18\u0e05\u0e40\u0e18\u0e07\u0e40\u0e18\u0087\u0e40\u0e18\u009b\u0e40\u0e18\u0e19\u0e40\u0e19\u0088\u0e40\u0e18\u009d\u0e40\u0e18\u0e11\u0e40\u0e19\u0089\u0e40\u0e18\u0099"
     }, 
     "173": {
-        "name": "Luang Phor-koon", 
-        "parent": 164
+        "english": "Luang Phor-koon", 
+        "parent": 164, 
+        "thai": "\u0e40\u0e18\u0e0b\u0e40\u0e18\u0e05\u0e40\u0e18\u0e07\u0e40\u0e18\u0087\u0e40\u0e18\u009e\u0e40\u0e19\u0088\u0e40\u0e18\u0e0d\u0e40\u0e18\u0084\u0e40\u0e18\u0e19\u0e40\u0e18\u0093"
     }, 
     "174": {
-        "name": "Luang Phor-tho", 
-        "parent": 164
+        "english": "Luang Phor-tho", 
+        "parent": 164, 
+        "thai": "\u0e40\u0e18\u0e0b\u0e40\u0e18\u0e05\u0e40\u0e18\u0e07\u0e40\u0e18\u0087\u0e40\u0e18\u009e\u0e40\u0e19\u0088\u0e40\u0e18\u0e0d\u0e40\u0e19\u0082\u0e40\u0e18\u0095"
     }, 
     "175": {
-        "name": "Others Pra-keji", 
-        "parent": 164
+        "english": "Others Pra-keji", 
+        "parent": 164, 
+        "thai": "\u0e40\u0e18\u009e\u0e40\u0e18\u0e03\u0e40\u0e18\u0e10\u0e40\u0e19\u0080\u0e40\u0e18\u0081\u0e40\u0e18\u0088\u0e40\u0e18\u0e14\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0099\u0e40\u0e19\u0086"
     }, 
     "176": {
-        "name": "Game console", 
-        "parent": 31
+        "english": "Game console", 
+        "parent": 31, 
+        "thai": "\u0e40\u0e19\u0080\u0e40\u0e18\u0084\u0e40\u0e18\u0e03\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087\u0e40\u0e19\u0080\u0e40\u0e18\u0081\u0e40\u0e18\u0e01\u0e40\u0e18\u0e0a\u0e40\u0e19\u008c"
     }, 
     "177": {
-        "name": "Game cd", 
-        "parent": 31
+        "english": "Game cd", 
+        "parent": 31, 
+        "thai": "\u0e40\u0e19\u0081\u0e40\u0e18\u009c\u0e40\u0e19\u0088\u0e40\u0e18\u0099\u0e40\u0e19\u0080\u0e40\u0e18\u0081\u0e40\u0e18\u0e01\u0e40\u0e18\u0e0a\u0e40\u0e19\u008c"
     }, 
     "178": {
-        "name": "Shoulder bags", 
-        "parent": 95
+        "english": "Shoulder bags", 
+        "parent": 95, 
+        "thai": "\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0e10\u0e40\u0e19\u0080\u0e40\u0e18\u009b\u0e40\u0e19\u008b\u0e40\u0e18\u0e12\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e10\u0e40\u0e18\u009e\u0e40\u0e18\u0e12\u0e40\u0e18\u0e02"
     }, 
     "179": {
-        "name": "Handbags", 
-        "parent": 95
+        "english": "Handbags", 
+        "parent": 95, 
+        "thai": "\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0e10\u0e40\u0e19\u0080\u0e40\u0e18\u009b\u0e40\u0e19\u008b\u0e40\u0e18\u0e12\u0e40\u0e18\u0096\u0e40\u0e18\u0e17\u0e40\u0e18\u0e0d"
     }, 
     "180": {
-        "name": "Wallets", 
-        "parent": 95
+        "english": "Wallets", 
+        "parent": 95, 
+        "thai": "\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0e10\u0e40\u0e19\u0080\u0e40\u0e18\u009b\u0e40\u0e19\u008b\u0e40\u0e18\u0e12\u0e40\u0e18\u0e0a\u0e40\u0e18\u0095\u0e40\u0e18\u0e12\u0e40\u0e18\u0087\u0e40\u0e18\u0084\u0e40\u0e19\u008c"
     }, 
     "181": {
-        "name": "Travel Bags", 
-        "parent": 95
+        "english": "Travel Bags", 
+        "parent": 95, 
+        "thai": "\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0e10\u0e40\u0e19\u0080\u0e40\u0e18\u009b\u0e40\u0e19\u008b\u0e40\u0e18\u0e12\u0e40\u0e19\u0080\u0e40\u0e18\u009b\u0e40\u0e19\u0089 \u0e40\u0e19\u0080\u0e40\u0e18\u0094\u0e40\u0e18\u0e14\u0e40\u0e18\u0099\u0e40\u0e18\u0097\u0e40\u0e18\u0e12\u0e40\u0e18\u0087"
     }, 
     "182": {
-        "name": "Other Bags", 
-        "parent": 95
+        "english": "Other Bags", 
+        "parent": 95, 
+        "thai": "\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0e10\u0e40\u0e19\u0080\u0e40\u0e18\u009b\u0e40\u0e19\u008b\u0e40\u0e18\u0e12\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0099\u0e40\u0e19\u0086"
     }, 
     "183": {
-        "name": "Women watches", 
-        "parent": 99
+        "english": "Women watches", 
+        "parent": 99, 
+        "thai": "\u0e40\u0e18\u0099\u0e40\u0e18\u0e12\u0e40\u0e18\u0e0c\u0e40\u0e18\u0e14\u0e40\u0e18\u0081\u0e40\u0e18\u0e12\u0e40\u0e18\u009c\u0e40\u0e18\u0e19\u0e40\u0e19\u0089\u0e40\u0e18\u0e0b\u0e40\u0e18\u008d\u0e40\u0e18\u0e14\u0e40\u0e18\u0087"
     }, 
     "184": {
-        "name": "Animal Service", 
-        "parent": 45
+        "english": "Animal Service", 
+        "parent": 45, 
+        "thai": "\u0e40\u0e18\u009a\u0e40\u0e18\u0e03\u0e40\u0e18\u0e14\u0e40\u0e18\u0081\u0e40\u0e18\u0e12\u0e40\u0e18\u0e03\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e13\u0e40\u0e18\u0e0b\u0e40\u0e18\u0e03\u0e40\u0e18\u0e11\u0e40\u0e18\u009a\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e11\u0e40\u0e18\u0095\u0e40\u0e18\u0e07\u0e40\u0e19\u008c\u0e40\u0e19\u0080\u0e40\u0e18\u0e05\u0e40\u0e18\u0e15\u0e40\u0e19\u0089\u0e40\u0e18\u0e02\u0e40\u0e18\u0087"
     }, 
     "185": {
-        "name": "Men watches", 
-        "parent": 99
+        "english": "Men watches", 
+        "parent": 99, 
+        "thai": "\u0e40\u0e18\u0099\u0e40\u0e18\u0e12\u0e40\u0e18\u0e0c\u0e40\u0e18\u0e14\u0e40\u0e18\u0081\u0e40\u0e18\u0e12\u0e40\u0e18\u009c\u0e40\u0e18\u0e19\u0e40\u0e19\u0089\u0e40\u0e18\u008a\u0e40\u0e18\u0e12\u0e40\u0e18\u0e02"
     }, 
     "186": {
-        "name": "Construction materials", 
-        "parent": 3
+        "english": "Construction materials", 
+        "parent": 3, 
+        "thai": "\u0e40\u0e18\u0e07\u0e40\u0e18\u0e11\u0e40\u0e18\u0e0a\u0e40\u0e18\u0094\u0e40\u0e18\u0e18\u0e40\u0e18\u0081\u0e40\u0e19\u0088\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e03\u0e40\u0e19\u0089\u0e40\u0e18\u0e12\u0e40\u0e18\u0087"
     }, 
     "187": {
-        "name": "Table", 
-        "parent": 22
+        "english": "Table", 
+        "parent": 22, 
+        "thai": "\u0e40\u0e19\u0082\u0e40\u0e18\u0095\u0e40\u0e19\u008a\u0e40\u0e18\u0e10"
     }, 
     "188": {
-        "name": "Cabinet", 
-        "parent": 22
+        "english": "Cabinet", 
+        "parent": 22, 
+        "thai": "\u0e40\u0e18\u0095\u0e40\u0e18\u0e19\u0e40\u0e19\u0089"
     }, 
     "189": {
-        "name": "Bed", 
-        "parent": 22
+        "english": "Bed", 
+        "parent": 22, 
+        "thai": "\u0e40\u0e19\u0080\u0e40\u0e18\u0095\u0e40\u0e18\u0e15\u0e40\u0e18\u0e02\u0e40\u0e18\u0087"
     }, 
     "190": {
-        "name": "Chair", 
-        "parent": 22
+        "english": "Chair", 
+        "parent": 22, 
+        "thai": "\u0e40\u0e19\u0080\u0e40\u0e18\u0081\u0e40\u0e19\u0089\u0e40\u0e18\u0e12\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e15\u0e40\u0e19\u0089"
     }, 
     "191": {
-        "name": "Sofa", 
-        "parent": 22
+        "english": "Sofa", 
+        "parent": 22, 
+        "thai": "\u0e40\u0e19\u0082\u0e40\u0e18\u008b\u0e40\u0e18\u009f\u0e40\u0e18\u0e12"
     }, 
     "192": {
-        "name": "Carpet curtain", 
-        "parent": 22
+        "english": "Carpet curtain", 
+        "parent": 22, 
+        "thai": "\u0e40\u0e18\u0e01\u0e40\u0e19\u0088\u0e40\u0e18\u0e12\u0e40\u0e18\u0099 \u0e40\u0e18\u009e\u0e40\u0e18\u0e03\u0e40\u0e18\u0e01"
     }, 
     "193": {
-        "name": "Rack", 
-        "parent": 22
+        "english": "Rack", 
+        "parent": 22, 
+        "thai": "\u0e40\u0e18\u008a\u0e40\u0e18\u0e11\u0e40\u0e19\u0089\u0e40\u0e18\u0099\u0e40\u0e18\u0e07\u0e40\u0e18\u0e12\u0e40\u0e18\u0087\u0e40\u0e18\u0082\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087"
     }, 
     "194": {
-        "name": "Other furniture", 
-        "parent": 22
+        "english": "Other furniture", 
+        "parent": 22, 
+        "thai": "\u0e40\u0e19\u0080\u0e40\u0e18\u009f\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e03\u0e40\u0e19\u008c\u0e40\u0e18\u0099\u0e40\u0e18\u0e14\u0e40\u0e19\u0080\u0e40\u0e18\u0088\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e03\u0e40\u0e19\u008c\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0099 \u0e40\u0e19\u0086"
     }, 
     "195": {
-        "name": "Outdoor furniture", 
-        "parent": 25
+        "english": "Outdoor furniture", 
+        "parent": 25, 
+        "thai": "\u0e40\u0e19\u0080\u0e40\u0e18\u009f\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e03\u0e40\u0e19\u008c\u0e40\u0e18\u0099\u0e40\u0e18\u0e14\u0e40\u0e19\u0080\u0e40\u0e18\u0088\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e03\u0e40\u0e19\u008c\u0e40\u0e18\u0e0a\u0e40\u0e18\u0099\u0e40\u0e18\u0e12\u0e40\u0e18\u0e01"
     }, 
     "196": {
-        "name": "Plants flower", 
-        "parent": 25
+        "english": "Plants flower", 
+        "parent": 25, 
+        "thai": "\u0e40\u0e18\u0095\u0e40\u0e19\u0089\u0e40\u0e18\u0099\u0e40\u0e19\u0084\u0e40\u0e18\u0e01\u0e40\u0e19\u0089"
     }, 
     "197": {
-        "name": "Gardening", 
-        "parent": 25
+        "english": "Gardening", 
+        "parent": 25, 
+        "thai": "\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e18\u0e40\u0e18\u009b\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0093\u0e40\u0e19\u008c\u0e40\u0e18\u0097\u0e40\u0e18\u0e13\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e07\u0e40\u0e18\u0099"
     }, 
     "198": {
-        "name": "Road bike", 
-        "parent": 123
+        "english": "Road bike", 
+        "parent": 123, 
+        "thai": "\u0e40\u0e18\u0088\u0e40\u0e18\u0e11\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0e02\u0e40\u0e18\u0e12\u0e40\u0e18\u0099\u0e40\u0e19\u0080\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e17\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e0b\u0e40\u0e18\u0e01\u0e40\u0e18\u0e0d\u0e40\u0e18\u009a"
     }, 
     "199": {
-        "name": "Mountain bike", 
-        "parent": 123
+        "english": "Mountain bike", 
+        "parent": 123, 
+        "thai": "\u0e40\u0e18\u0088\u0e40\u0e18\u0e11\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0e02\u0e40\u0e18\u0e12\u0e40\u0e18\u0099\u0e40\u0e19\u0080\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e17\u0e40\u0e18\u0e0d\u0e40\u0e18\u00a0\u0e40\u0e18\u0e19\u0e40\u0e19\u0080\u0e40\u0e18\u0082\u0e40\u0e18\u0e12"
     }, 
     "200": {
-        "name": "Hybrid bike", 
-        "parent": 123
+        "english": "Hybrid bike", 
+        "parent": 123, 
+        "thai": "\u0e40\u0e18\u0088\u0e40\u0e18\u0e11\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0e02\u0e40\u0e18\u0e12\u0e40\u0e18\u0099\u0e40\u0e19\u0084\u0e40\u0e18\u0e0e\u0e40\u0e18\u009a\u0e40\u0e18\u0e03\u0e40\u0e18\u0e14\u0e40\u0e18\u0094"
     }, 
     "201": {
-        "name": "BMX bike", 
-        "parent": 123
+        "english": "BMX bike", 
+        "parent": 123, 
+        "thai": "\u0e40\u0e18\u0088\u0e40\u0e18\u0e11\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0e02\u0e40\u0e18\u0e12\u0e40\u0e18\u0099 BMX"
     }, 
     "202": {
-        "name": "Touring bike", 
-        "parent": 123
+        "english": "Touring bike", 
+        "parent": 123, 
+        "thai": "\u0e40\u0e18\u0088\u0e40\u0e18\u0e11\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0e02\u0e40\u0e18\u0e12\u0e40\u0e18\u0099\u0e40\u0e18\u0097\u0e40\u0e18\u0e11\u0e40\u0e18\u0e07\u0e40\u0e18\u0e03\u0e40\u0e19\u008c\u0e40\u0e18\u0e03\u0e40\u0e18\u0e14\u0e40\u0e19\u0088\u0e40\u0e18\u0087"
     }, 
     "203": {
-        "name": "Folding bike", 
-        "parent": 123
+        "english": "Folding bike", 
+        "parent": 123, 
+        "thai": "\u0e40\u0e18\u0088\u0e40\u0e18\u0e11\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0e02\u0e40\u0e18\u0e12\u0e40\u0e18\u0099\u0e40\u0e18\u009e\u0e40\u0e18\u0e11\u0e40\u0e18\u009a"
     }, 
     "204": {
-        "name": "Utility bike", 
-        "parent": 123
+        "english": "Utility bike", 
+        "parent": 123, 
+        "thai": "\u0e40\u0e18\u0088\u0e40\u0e18\u0e11\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0e02\u0e40\u0e18\u0e12\u0e40\u0e18\u0099\u0e40\u0e19\u0081\u0e40\u0e18\u0e01\u0e40\u0e19\u0088\u0e40\u0e18\u009a\u0e40\u0e19\u0089\u0e40\u0e18\u0e12\u0e40\u0e18\u0099"
     }, 
     "205": {
-        "name": "Classic bike", 
-        "parent": 123
+        "english": "Classic bike", 
+        "parent": 123, 
+        "thai": "\u0e40\u0e18\u0088\u0e40\u0e18\u0e11\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0e02\u0e40\u0e18\u0e12\u0e40\u0e18\u0099\u0e40\u0e19\u0082\u0e40\u0e18\u009a\u0e40\u0e18\u0e03\u0e40\u0e18\u0e12\u0e40\u0e18\u0093"
     }, 
     "206": {
-        "name": "Electric bike", 
-        "parent": 123
+        "english": "Electric bike", 
+        "parent": 123, 
+        "thai": "\u0e40\u0e18\u0088\u0e40\u0e18\u0e11\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0e02\u0e40\u0e18\u0e12\u0e40\u0e18\u0099\u0e40\u0e19\u0084\u0e40\u0e18\u009f\u0e40\u0e18\u009f\u0e40\u0e19\u0089\u0e40\u0e18\u0e12"
     }, 
     "207": {
-        "name": "Part accessories bike", 
-        "parent": 123
+        "english": "Part accessories bike", 
+        "parent": 123, 
+        "thai": "\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e10\u0e40\u0e19\u0084\u0e40\u0e18\u0e0b\u0e40\u0e18\u0e05\u0e40\u0e19\u0088 \u0e40\u0e19\u0081\u0e40\u0e18\u0e05\u0e40\u0e18\u0e10\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e18\u0e40\u0e18\u009b\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0093\u0e40\u0e19\u008c\u0e40\u0e18\u0095\u0e40\u0e18\u0081\u0e40\u0e19\u0081\u0e40\u0e18\u0095\u0e40\u0e19\u0088\u0e40\u0e18\u0087"
     }, 
     "208": {
-        "name": "Guitar", 
-        "parent": 60
+        "english": "Guitar", 
+        "parent": 60, 
+        "thai": "\u0e40\u0e18\u0081\u0e40\u0e18\u0e15\u0e40\u0e18\u0095\u0e40\u0e19\u0089\u0e40\u0e18\u0e12\u0e40\u0e18\u0e03\u0e40\u0e19\u008c"
     }, 
     "209": {
-        "name": "Ukulele", 
-        "parent": 60
+        "english": "Ukulele", 
+        "parent": 60, 
+        "thai": "\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e19\u0e40\u0e18\u0084\u0e40\u0e18\u0e19\u0e40\u0e19\u0080\u0e40\u0e18\u0e05\u0e40\u0e19\u0080\u0e40\u0e18\u0e05\u0e40\u0e19\u0088"
     }, 
     "210": {
-        "name": "Piano", 
-        "parent": 60
+        "english": "Piano", 
+        "parent": 60, 
+        "thai": "\u0e40\u0e19\u0080\u0e40\u0e18\u009b\u0e40\u0e18\u0e15\u0e40\u0e18\u0e02\u0e40\u0e19\u0082\u0e40\u0e18\u0099"
     }, 
     "211": {
-        "name": "Keyboard", 
-        "parent": 60
+        "english": "Keyboard", 
+        "parent": 60, 
+        "thai": "\u0e40\u0e18\u0084\u0e40\u0e18\u0e15\u0e40\u0e18\u0e02\u0e40\u0e19\u008c\u0e40\u0e18\u009a\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e03\u0e40\u0e19\u008c\u0e40\u0e18\u0094"
     }, 
     "212": {
-        "name": "Drum", 
-        "parent": 60
+        "english": "Drum", 
+        "parent": 60, 
+        "thai": "\u0e40\u0e18\u0081\u0e40\u0e18\u0e05\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087"
     }, 
     "213": {
-        "name": "Thai music instrument", 
-        "parent": 60
+        "english": "Thai music instrument", 
+        "parent": 60, 
+        "thai": "\u0e40\u0e19\u0080\u0e40\u0e18\u0084\u0e40\u0e18\u0e03\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087\u0e40\u0e18\u0094\u0e40\u0e18\u0099\u0e40\u0e18\u0095\u0e40\u0e18\u0e03\u0e40\u0e18\u0e15\u0e40\u0e19\u0084\u0e40\u0e18\u0097\u0e40\u0e18\u0e02"
     }, 
     "214": {
-        "name": "Other music instrument", 
-        "parent": 60
+        "english": "Other music instrument", 
+        "parent": 60, 
+        "thai": "\u0e40\u0e19\u0080\u0e40\u0e18\u0084\u0e40\u0e18\u0e03\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087\u0e40\u0e18\u0094\u0e40\u0e18\u0099\u0e40\u0e18\u0095\u0e40\u0e18\u0e03\u0e40\u0e18\u0e15\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0099 \u0e40\u0e19\u0086"
     }, 
     "215": {
-        "name": "Accessories music instrument", 
-        "parent": 60
+        "english": "Accessories music instrument", 
+        "parent": 60, 
+        "thai": "\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e18\u0e40\u0e18\u009b\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0093\u0e40\u0e19\u008c\u0e40\u0e19\u0080\u0e40\u0e18\u0084\u0e40\u0e18\u0e03\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087\u0e40\u0e18\u0094\u0e40\u0e18\u0099\u0e40\u0e18\u0095\u0e40\u0e18\u0e03\u0e40\u0e18\u0e15"
     }, 
     "216": {
-        "name": "Exercise machine", 
-        "parent": 61
+        "english": "Exercise machine", 
+        "parent": 61, 
+        "thai": "\u0e40\u0e19\u0080\u0e40\u0e18\u0084\u0e40\u0e18\u0e03\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e0d\u0e40\u0e18\u0081\u0e40\u0e18\u0081\u0e40\u0e18\u0e13\u0e40\u0e18\u0e05\u0e40\u0e18\u0e11\u0e40\u0e18\u0087\u0e40\u0e18\u0081\u0e40\u0e18\u0e12\u0e40\u0e18\u0e02"
     }, 
     "217": {
-        "name": "Sport equipment", 
-        "parent": 61
+        "english": "Sport equipment", 
+        "parent": 61, 
+        "thai": "\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e18\u0e40\u0e18\u009b\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0093\u0e40\u0e19\u008c\u0e40\u0e18\u0081\u0e40\u0e18\u0e15\u0e40\u0e18\u0e0c\u0e40\u0e18\u0e12"
     }, 
     "218": {
-        "name": "Sportwear", 
-        "parent": 61
+        "english": "Sportwear", 
+        "parent": 61, 
+        "thai": "\u0e40\u0e18\u008a\u0e40\u0e18\u0e18\u0e40\u0e18\u0094\u0e40\u0e18\u0081\u0e40\u0e18\u0e15\u0e40\u0e18\u0e0c\u0e40\u0e18\u0e12"
     }, 
     "219": {
-        "name": "Sportshoes", 
-        "parent": 61
+        "english": "Sportshoes", 
+        "parent": 61, 
+        "thai": "\u0e40\u0e18\u0e03\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087\u0e40\u0e19\u0080\u0e40\u0e18\u0097\u0e40\u0e19\u0089\u0e40\u0e18\u0e12\u0e40\u0e18\u0081\u0e40\u0e18\u0e15\u0e40\u0e18\u0e0c\u0e40\u0e18\u0e12"
     }, 
     "220": {
-        "name": "Dog", 
-        "parent": 62
+        "english": "Dog", 
+        "parent": 62, 
+        "thai": "\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e18\u0e40\u0e18\u0099\u0e40\u0e18\u0e11\u0e40\u0e18\u0082"
     }, 
     "221": {
-        "name": "Cat", 
-        "parent": 62
+        "english": "Cat", 
+        "parent": 62, 
+        "thai": "\u0e40\u0e19\u0081\u0e40\u0e18\u0e01\u0e40\u0e18\u0e07"
     }, 
     "222": {
-        "name": "Fish", 
-        "parent": 62
+        "english": "Fish", 
+        "parent": 62, 
+        "thai": "\u0e40\u0e18\u009b\u0e40\u0e18\u0e05\u0e40\u0e18\u0e12"
     }, 
     "223": {
-        "name": "Mouse", 
-        "parent": 62
+        "english": "Mouse", 
+        "parent": 62, 
+        "thai": "\u0e40\u0e18\u0e0b\u0e40\u0e18\u0099\u0e40\u0e18\u0e19"
     }, 
     "224": {
-        "name": "Bird", 
-        "parent": 62
+        "english": "Bird", 
+        "parent": 62, 
+        "thai": "\u0e40\u0e18\u0099\u0e40\u0e18\u0081"
     }, 
     "225": {
-        "name": "Chicken", 
-        "parent": 62
+        "english": "Chicken", 
+        "parent": 62, 
+        "thai": "\u0e40\u0e19\u0084\u0e40\u0e18\u0081\u0e40\u0e19\u0088"
     }, 
     "226": {
-        "name": "Rabbit", 
-        "parent": 62
+        "english": "Rabbit", 
+        "parent": 62, 
+        "thai": "\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0e10\u0e40\u0e18\u0095\u0e40\u0e19\u0088\u0e40\u0e18\u0e12\u0e40\u0e18\u0e02"
     }, 
     "227": {
-        "name": "Other Pets", 
-        "parent": 62
+        "english": "Other Pets", 
+        "parent": 62, 
+        "thai": "\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e11\u0e40\u0e18\u0095\u0e40\u0e18\u0e07\u0e40\u0e19\u008c\u0e40\u0e19\u0080\u0e40\u0e18\u0e05\u0e40\u0e18\u0e15\u0e40\u0e19\u0089\u0e40\u0e18\u0e02\u0e40\u0e18\u0087\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0099\u0e40\u0e19\u0086"
     }, 
     "228": {
-        "name": "Pet accessories", 
-        "parent": 62
+        "english": "Pet accessories", 
+        "parent": 62, 
+        "thai": "\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e18\u0e40\u0e18\u009b\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0093\u0e40\u0e19\u008c\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e13\u0e40\u0e18\u0e0b\u0e40\u0e18\u0e03\u0e40\u0e18\u0e11\u0e40\u0e18\u009a\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e11\u0e40\u0e18\u0095\u0e40\u0e18\u0e07\u0e40\u0e19\u008c\u0e40\u0e19\u0080\u0e40\u0e18\u0e05\u0e40\u0e18\u0e15\u0e40\u0e19\u0089\u0e40\u0e18\u0e02\u0e40\u0e18\u0087"
     }, 
     "229": {
-        "name": "Pet food", 
-        "parent": 62
+        "english": "Pet food", 
+        "parent": 62, 
+        "thai": "\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e12\u0e40\u0e18\u0e0b\u0e40\u0e18\u0e12\u0e40\u0e18\u0e03\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e11\u0e40\u0e18\u0095\u0e40\u0e18\u0e07\u0e40\u0e19\u008c"
     }, 
     "230": {
-        "name": "Sport ticket", 
-        "parent": 66
+        "english": "Sport ticket", 
+        "parent": 66, 
+        "thai": "\u0e40\u0e18\u009a\u0e40\u0e18\u0e11\u0e40\u0e18\u0095\u0e40\u0e18\u0e03\u0e40\u0e18\u008a\u0e40\u0e18\u0e01\u0e40\u0e18\u0081\u0e40\u0e18\u0e15\u0e40\u0e18\u0e0c\u0e40\u0e18\u0e12"
     }, 
     "231": {
-        "name": "Concert ticket", 
-        "parent": 66
+        "english": "Concert ticket", 
+        "parent": 66, 
+        "thai": "\u0e40\u0e18\u009a\u0e40\u0e18\u0e11\u0e40\u0e18\u0095\u0e40\u0e18\u0e03\u0e40\u0e18\u0084\u0e40\u0e18\u0e0d\u0e40\u0e18\u0099\u0e40\u0e19\u0080\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e14\u0e40\u0e18\u0e03\u0e40\u0e19\u008c\u0e40\u0e18\u0095"
     }, 
     "232": {
-        "name": "Show ticket", 
-        "parent": 66
+        "english": "Show ticket", 
+        "parent": 66, 
+        "thai": "\u0e40\u0e18\u009a\u0e40\u0e18\u0e11\u0e40\u0e18\u0095\u0e40\u0e18\u0e03\u0e40\u0e18\u008a\u0e40\u0e18\u0e01\u0e40\u0e18\u0081\u0e40\u0e18\u0e12\u0e40\u0e18\u0e03\u0e40\u0e19\u0081\u0e40\u0e18\u0e0a\u0e40\u0e18\u0094\u0e40\u0e18\u0087"
     }, 
     "233": {
-        "name": "Coupon voucher", 
-        "parent": 66
+        "english": "Coupon voucher", 
+        "parent": 66, 
+        "thai": "\u0e40\u0e18\u0084\u0e40\u0e18\u0e19\u0e40\u0e18\u009b\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087 voucher"
     }, 
     "234": {
-        "name": "Other ticket", 
-        "parent": 66
+        "english": "Other ticket", 
+        "parent": 66, 
+        "thai": "\u0e40\u0e18\u009a\u0e40\u0e18\u0e11\u0e40\u0e18\u0095\u0e40\u0e18\u0e03\u0e40\u0e19\u0080\u0e40\u0e18\u0082\u0e40\u0e19\u0089\u0e40\u0e18\u0e12\u0e40\u0e18\u008a\u0e40\u0e18\u0e01 \u0e40\u0e18\u0e0d\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0099\u0e40\u0e19\u0086"
     }, 
     "235": {
-        "name": "Stamp", 
-        "parent": 103
+        "english": "Stamp", 
+        "parent": 103, 
+        "thai": "\u0e40\u0e18\u0e0a\u0e40\u0e19\u0081\u0e40\u0e18\u0095\u0e40\u0e18\u0e01\u0e40\u0e18\u009b\u0e40\u0e19\u008c"
     }, 
     "236": {
-        "name": "Coin and Note", 
-        "parent": 103
+        "english": "Coin and Note", 
+        "parent": 103, 
+        "thai": "\u0e40\u0e19\u0080\u0e40\u0e18\u0e0b\u0e40\u0e18\u0e03\u0e40\u0e18\u0e15\u0e40\u0e18\u0e02\u0e40\u0e18\u008d \u0e40\u0e18\u0098\u0e40\u0e18\u0099\u0e40\u0e18\u009a\u0e40\u0e18\u0e11\u0e40\u0e18\u0095\u0e40\u0e18\u0e03"
     }, 
     "237": {
-        "name": "Antique vintage", 
-        "parent": 103
+        "english": "Antique vintage", 
+        "parent": 103, 
+        "thai": "\u0e40\u0e18\u0082\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087\u0e40\u0e19\u0080\u0e40\u0e18\u0081\u0e40\u0e19\u0088\u0e40\u0e18\u0e12 \u0e40\u0e18\u0082\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087\u0e40\u0e19\u0082\u0e40\u0e18\u009a\u0e40\u0e18\u0e03\u0e40\u0e18\u0e12\u0e40\u0e18\u0093"
     }, 
     "238": {
-        "name": "Art model", 
-        "parent": 103
+        "english": "Art model", 
+        "parent": 103, 
+        "thai": "\u0e40\u0e18\u0087\u0e40\u0e18\u0e12\u0e40\u0e18\u0099\u0e40\u0e18\u0e08\u0e40\u0e18\u0e14\u0e40\u0e18\u0e05\u0e40\u0e18\u009b\u0e40\u0e18\u0e10 \u0e40\u0e19\u0082\u0e40\u0e18\u0e01\u0e40\u0e19\u0080\u0e40\u0e18\u0094\u0e40\u0e18\u0e05"
     }, 
     "239": {
-        "name": "Others collectible", 
-        "parent": 103
+        "english": "Others collectible", 
+        "parent": 103, 
+        "thai": "\u0e40\u0e18\u0082\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e10\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e01\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0099\u0e40\u0e19\u0086"
     }, 
     "240": {
-        "name": "Pickup truck", 
-        "parent": 1
+        "english": "Pickup truck", 
+        "parent": 1, 
+        "thai": "\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0e10\u0e40\u0e18\u009a\u0e40\u0e18\u0e10"
     }, 
     "241": {
-        "name": "Riding accessories", 
-        "parent": 149
+        "english": "Riding accessories", 
+        "parent": 149, 
+        "thai": "\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e18\u0e40\u0e18\u009b\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0093\u0e40\u0e19\u008c\u0e40\u0e18\u0082\u0e40\u0e18\u0e11\u0e40\u0e18\u009a\u0e40\u0e18\u0082\u0e40\u0e18\u0e15\u0e40\u0e19\u0088"
     }, 
     "242": {
-        "name": "Agriculture", 
-        "parent": 7
+        "english": "Agriculture", 
+        "parent": 7, 
+        "thai": "\u0e40\u0e19\u0080\u0e40\u0e18\u0081\u0e40\u0e18\u0e09\u0e40\u0e18\u0095\u0e40\u0e18\u0e03\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0e03\u0e40\u0e18\u0e01"
     }, 
     "243": {
-        "name": "Food", 
-        "parent": 7
+        "english": "Food", 
+        "parent": 7, 
+        "thai": "\u0e40\u0e18\u0098\u0e40\u0e18\u0e18\u0e40\u0e18\u0e03\u0e40\u0e18\u0081\u0e40\u0e18\u0e14\u0e40\u0e18\u0088\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e12\u0e40\u0e18\u0e0b\u0e40\u0e18\u0e12\u0e40\u0e18\u0e03"
     }, 
     "244": {
-        "name": "Business for sale", 
-        "parent": 7
+        "english": "Business for sale", 
+        "parent": 7, 
+        "thai": "\u0e40\u0e18\u0082\u0e40\u0e18\u0e12\u0e40\u0e18\u0e02 \u0e40\u0e19\u0080\u0e40\u0e18\u008b\u0e40\u0e19\u0089\u0e40\u0e18\u0087\u0e40\u0e18\u0081\u0e40\u0e18\u0e14\u0e40\u0e18\u0088\u0e40\u0e18\u0081\u0e40\u0e18\u0e12\u0e40\u0e18\u0e03"
     }, 
     "245": {
-        "name": "Others business", 
-        "parent": 7
+        "english": "Others business", 
+        "parent": 7, 
+        "thai": "\u0e40\u0e18\u0098\u0e40\u0e18\u0e18\u0e40\u0e18\u0e03\u0e40\u0e18\u0081\u0e40\u0e18\u0e14\u0e40\u0e18\u0088\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0099\u0e40\u0e19\u0086"
     }, 
     "246": {
-        "name": "Decoration design", 
-        "parent": 24
+        "english": "Decoration design", 
+        "parent": 24, 
+        "thai": "\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e0d\u0e40\u0e18\u0081\u0e40\u0e19\u0081\u0e40\u0e18\u009a\u0e40\u0e18\u009a \u0e40\u0e18\u0095\u0e40\u0e18\u0081\u0e40\u0e19\u0081\u0e40\u0e18\u0095\u0e40\u0e19\u0088\u0e40\u0e18\u0087"
     }, 
     "247": {
-        "name": "Carpet curtain", 
-        "parent": 24
+        "english": "Carpet curtain", 
+        "parent": 24, 
+        "thai": "\u0e40\u0e18\u0095\u0e40\u0e18\u0e14\u0e40\u0e18\u0094\u0e40\u0e18\u0095\u0e40\u0e18\u0e11\u0e40\u0e19\u0089\u0e40\u0e18\u0087\u0e40\u0e18\u009c\u0e40\u0e19\u0089\u0e40\u0e18\u0e12\u0e40\u0e18\u0e01\u0e40\u0e19\u0088\u0e40\u0e18\u0e12\u0e40\u0e18\u0099"
     }, 
     "248": {
-        "name": "Electrical plumbing", 
-        "parent": 24
+        "english": "Electrical plumbing", 
+        "parent": 24, 
+        "thai": "\u0e40\u0e19\u0084\u0e40\u0e18\u009f\u0e40\u0e18\u009f\u0e40\u0e19\u0089\u0e40\u0e18\u0e12 \u0e40\u0e18\u009b\u0e40\u0e18\u0e03\u0e40\u0e18\u0e10\u0e40\u0e18\u009b\u0e40\u0e18\u0e12"
     }, 
     "249": {
-        "name": "Air cleaning", 
-        "parent": 24
+        "english": "Air cleaning", 
+        "parent": 24, 
+        "thai": "\u0e40\u0e18\u0e05\u0e40\u0e19\u0089\u0e40\u0e18\u0e12\u0e40\u0e18\u0087\u0e40\u0e19\u0081\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e03\u0e40\u0e19\u008c"
     }, 
     "250": {
-        "name": "Construction repair", 
-        "parent": 24
+        "english": "Construction repair", 
+        "parent": 24, 
+        "thai": "\u0e40\u0e18\u0e03\u0e40\u0e18\u0e11\u0e40\u0e18\u009a\u0e40\u0e19\u0080\u0e40\u0e18\u0e0b\u0e40\u0e18\u0e01\u0e40\u0e18\u0e12"
     }, 
     "251": {
-        "name": "Landscaping services", 
-        "parent": 24
+        "english": "Landscaping services", 
+        "parent": 24, 
+        "thai": "\u0e40\u0e18\u0095\u0e40\u0e18\u0081\u0e40\u0e19\u0081\u0e40\u0e18\u0095\u0e40\u0e19\u0088\u0e40\u0e18\u0087\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e07\u0e40\u0e18\u0099"
     }, 
     "252": {
-        "name": "Security service", 
-        "parent": 24
+        "english": "Security service", 
+        "parent": 24, 
+        "thai": "\u0e40\u0e18\u0e03\u0e40\u0e18\u0e11\u0e40\u0e18\u0081\u0e40\u0e18\u0e09\u0e40\u0e18\u0e12\u0e40\u0e18\u0084\u0e40\u0e18\u0e07\u0e40\u0e18\u0e12\u0e40\u0e18\u0e01\u0e40\u0e18\u009b\u0e40\u0e18\u0e05\u0e40\u0e18\u0e0d\u0e40\u0e18\u0094\u0e40\u0e18\u00a0\u0e40\u0e18\u0e11\u0e40\u0e18\u0e02"
     }, 
     "253": {
-        "name": "Termites", 
-        "parent": 24
+        "english": "Termites", 
+        "parent": 24, 
+        "thai": "\u0e40\u0e18\u0081\u0e40\u0e18\u0e13\u0e40\u0e18\u0088\u0e40\u0e18\u0e11\u0e40\u0e18\u0094\u0e40\u0e18\u009b\u0e40\u0e18\u0e05\u0e40\u0e18\u0e07\u0e40\u0e18\u0081"
     }, 
     "254": {
-        "name": "Other home service", 
-        "parent": 24
+        "english": "Other home service", 
+        "parent": 24, 
+        "thai": "\u0e40\u0e18\u009a\u0e40\u0e18\u0e03\u0e40\u0e18\u0e14\u0e40\u0e18\u0081\u0e40\u0e18\u0e12\u0e40\u0e18\u0e03\u0e40\u0e19\u0080\u0e40\u0e18\u0081\u0e40\u0e18\u0e15\u0e40\u0e19\u0088\u0e40\u0e18\u0e02\u0e40\u0e18\u0e07\u0e40\u0e18\u0081\u0e40\u0e18\u0e11\u0e40\u0e18\u009a\u0e40\u0e18\u009a\u0e40\u0e19\u0089\u0e40\u0e18\u0e12\u0e40\u0e18\u0099\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0099 \u0e40\u0e19\u0086"
     }, 
     "255": {
-        "name": "Fashion Service", 
-        "parent": 45
+        "english": "Fashion Service", 
+        "parent": 45, 
+        "thai": "\u0e40\u0e18\u008b\u0e40\u0e19\u0088\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e01\u0e40\u0e19\u0081\u0e40\u0e18\u0e05\u0e40\u0e18\u0e10\u0e40\u0e18\u009a\u0e40\u0e18\u0e03\u0e40\u0e18\u0e14\u0e40\u0e18\u0081\u0e40\u0e18\u0e12\u0e40\u0e18\u0e03\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e14\u0e40\u0e18\u0099\u0e40\u0e18\u0084\u0e40\u0e19\u0089\u0e40\u0e18\u0e12\u0e40\u0e19\u0081\u0e40\u0e18\u009f\u0e40\u0e18\u008a\u0e40\u0e18\u0e11\u0e40\u0e19\u0088\u0e40\u0e18\u0099"
     }, 
     "256": {
-        "name": "Beauty Service", 
-        "parent": 45
+        "english": "Beauty Service", 
+        "parent": 45, 
+        "thai": "\u0e40\u0e18\u009a\u0e40\u0e18\u0e03\u0e40\u0e18\u0e14\u0e40\u0e18\u0081\u0e40\u0e18\u0e12\u0e40\u0e18\u0e03\u0e40\u0e18\u0094\u0e40\u0e19\u0089\u0e40\u0e18\u0e12\u0e40\u0e18\u0099\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e18\u0e40\u0e18\u0082\u0e40\u0e18\u00a0\u0e40\u0e18\u0e12\u0e40\u0e18\u009e\u0e40\u0e19\u0081\u0e40\u0e18\u0e05\u0e40\u0e18\u0e10\u0e40\u0e18\u0084\u0e40\u0e18\u0e07\u0e40\u0e18\u0e12\u0e40\u0e18\u0e01\u0e40\u0e18\u0087\u0e40\u0e18\u0e12\u0e40\u0e18\u0e01"
     }, 
     "257": {
-        "name": "Nursery", 
-        "parent": 45
+        "english": "Nursery", 
+        "parent": 45, 
+        "thai": "\u0e40\u0e18\u009a\u0e40\u0e18\u0e03\u0e40\u0e18\u0e14\u0e40\u0e18\u0081\u0e40\u0e18\u0e12\u0e40\u0e18\u0e03\u0e40\u0e19\u0080\u0e40\u0e18\u0081\u0e40\u0e18\u0e15\u0e40\u0e19\u0088\u0e40\u0e18\u0e02\u0e40\u0e18\u0e07\u0e40\u0e18\u0081\u0e40\u0e18\u0e11\u0e40\u0e18\u009a\u0e40\u0e19\u0081\u0e40\u0e18\u0e01\u0e40\u0e19\u0088\u0e40\u0e19\u0081\u0e40\u0e18\u0e05\u0e40\u0e18\u0e10\u0e40\u0e19\u0080\u0e40\u0e18\u0094\u0e40\u0e19\u0087\u0e40\u0e18\u0081"
     }, 
     "258": {
-        "name": "Accounting lawyer translation", 
-        "parent": 45
+        "english": "Accounting lawyer translation", 
+        "parent": 45, 
+        "thai": "\u0e40\u0e18\u009a\u0e40\u0e18\u0e11\u0e40\u0e18\u008d\u0e40\u0e18\u008a\u0e40\u0e18\u0e15 \u0e40\u0e18\u0081\u0e40\u0e18\u008e\u0e40\u0e18\u0e0b\u0e40\u0e18\u0e01\u0e40\u0e18\u0e12\u0e40\u0e18\u0e02"
     }, 
     "259": {
-        "name": "Finance insurance", 
-        "parent": 45
+        "english": "Finance insurance", 
+        "parent": 45, 
+        "thai": "\u0e40\u0e18\u009b\u0e40\u0e18\u0e03\u0e40\u0e18\u0e10\u0e40\u0e18\u0081\u0e40\u0e18\u0e11\u0e40\u0e18\u0099\u0e40\u0e18\u00a0\u0e40\u0e18\u0e11\u0e40\u0e18\u0e02"
     }, 
     "260": {
-        "name": "Logistics messenger", 
-        "parent": 45
+        "english": "Logistics messenger", 
+        "parent": 45, 
+        "thai": "\u0e40\u0e18\u0082\u0e40\u0e18\u0099\u0e40\u0e18\u0e0a\u0e40\u0e19\u0088\u0e40\u0e18\u0087 \u0e40\u0e18\u008a\u0e40\u0e18\u0e14\u0e40\u0e18\u009b\u0e40\u0e18\u009b\u0e40\u0e18\u0e14\u0e40\u0e19\u0089\u0e40\u0e18\u0087"
     }, 
     "261": {
-        "name": "Horoscope", 
-        "parent": 45
+        "english": "Horoscope", 
+        "parent": 45, 
+        "thai": "\u0e40\u0e18\u0094\u0e40\u0e18\u0e19\u0e40\u0e18\u0094\u0e40\u0e18\u0e07\u0e40\u0e18\u0087"
     }, 
     "262": {
-        "name": "Other service", 
-        "parent": 45
+        "english": "Other service", 
+        "parent": 45, 
+        "thai": "\u0e40\u0e18\u009a\u0e40\u0e18\u0e03\u0e40\u0e18\u0e14\u0e40\u0e18\u0081\u0e40\u0e18\u0e12\u0e40\u0e18\u0e03\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0099 \u0e40\u0e19\u0086"
     }, 
     "263": {
-        "name": "Sim card", 
-        "parent": 90
+        "english": "Sim card", 
+        "parent": 90, 
+        "thai": "\u0e40\u0e18\u008b\u0e40\u0e18\u0e14\u0e40\u0e18\u0e01\u0e40\u0e18\u0081\u0e40\u0e18\u0e12\u0e40\u0e18\u0e03\u0e40\u0e19\u008c\u0e40\u0e18\u0094"
     }, 
     "264": {
-        "name": "Mobile cases", 
-        "parent": 90
+        "english": "Mobile cases", 
+        "parent": 90, 
+        "thai": "\u0e40\u0e19\u0080\u0e40\u0e18\u0084\u0e40\u0e18\u0e0a"
     }, 
     "265": {
-        "name": "Batteries charger", 
-        "parent": 90
+        "english": "Batteries charger", 
+        "parent": 90, 
+        "thai": "\u0e40\u0e19\u0081\u0e40\u0e18\u009a\u0e40\u0e18\u0095\u0e40\u0e19\u0080\u0e40\u0e18\u0095\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e03\u0e40\u0e18\u0e15\u0e40\u0e19\u0088 \u0e40\u0e18\u0e0a\u0e40\u0e18\u0e12\u0e40\u0e18\u0e02\u0e40\u0e18\u008a\u0e40\u0e18\u0e12\u0e40\u0e18\u0e03\u0e40\u0e19\u008c\u0e40\u0e18\u0088"
     }, 
     "266": {
-        "name": "Headsets", 
-        "parent": 90
+        "english": "Headsets", 
+        "parent": 90, 
+        "thai": "\u0e40\u0e18\u0e0b\u0e40\u0e18\u0e19\u0e40\u0e18\u009f\u0e40\u0e18\u0e11\u0e40\u0e18\u0087"
     }, 
     "267": {
-        "name": "Screen protectors", 
-        "parent": 90
+        "english": "Screen protectors", 
+        "parent": 90, 
+        "thai": "\u0e40\u0e18\u009f\u0e40\u0e18\u0e14\u0e40\u0e18\u0e05\u0e40\u0e19\u008c\u0e40\u0e18\u0e01\u0e40\u0e18\u0081\u0e40\u0e18\u0e11\u0e40\u0e18\u0099\u0e40\u0e18\u0e03\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e02"
     }, 
     "268": {
-        "name": "Speakers", 
-        "parent": 90
+        "english": "Speakers", 
+        "parent": 90, 
+        "thai": "\u0e40\u0e18\u0e05\u0e40\u0e18\u0e13\u0e40\u0e19\u0082\u0e40\u0e18\u009e\u0e40\u0e18\u0087"
     }, 
     "269": {
-        "name": "Mobile accessories", 
-        "parent": 90
+        "english": "Mobile accessories", 
+        "parent": 90, 
+        "thai": "\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e18\u0e40\u0e18\u009b\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0093\u0e40\u0e19\u008c\u0e40\u0e19\u0080\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e03\u0e40\u0e18\u0e14\u0e40\u0e18\u0e01\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0099\u0e40\u0e19\u0086"
     }, 
     "270": {
-        "name": null
+        "english": null, 
+        "thai": "\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e10\u0e40\u0e19\u0084\u0e40\u0e18\u0e0b\u0e40\u0e18\u0e05\u0e40\u0e19\u0088\u0e40\u0e18\u0e03\u0e40\u0e18\u0096 \u0e40\u0e18\u009b\u0e40\u0e18\u0e03\u0e40\u0e18\u0e10\u0e40\u0e18\u0094\u0e40\u0e18\u0e11\u0e40\u0e18\u009a\u0e40\u0e18\u0e02\u0e40\u0e18\u0099\u0e40\u0e18\u0095\u0e40\u0e19\u008c"
     }, 
     "271": {
-        "name": null, 
-        "parent": 270
+        "english": null, 
+        "parent": 270, 
+        "thai": "\u0e40\u0e18\u0e05\u0e40\u0e19\u0089\u0e40\u0e18\u0e0d\u0e40\u0e19\u0081\u0e40\u0e18\u0e01\u0e40\u0e19\u0087\u0e40\u0e18\u0081"
     }, 
     "272": {
-        "name": null, 
-        "parent": 270
+        "english": null, 
+        "parent": 270, 
+        "thai": "\u0e40\u0e18\u0e02\u0e40\u0e18\u0e12\u0e40\u0e18\u0087\u0e40\u0e18\u0e03\u0e40\u0e18\u0096\u0e40\u0e18\u0e02\u0e40\u0e18\u0099\u0e40\u0e18\u0095\u0e40\u0e19\u008c"
     }, 
     "273": {
-        "name": null, 
-        "parent": 270
+        "english": null, 
+        "parent": 270, 
+        "thai": "\u0e40\u0e19\u0084\u0e40\u0e18\u009f\u0e40\u0e18\u0e0b\u0e40\u0e18\u0099\u0e40\u0e19\u0089\u0e40\u0e18\u0e12 \u0e40\u0e19\u0084\u0e40\u0e18\u009f\u0e40\u0e18\u0097\u0e40\u0e19\u0089\u0e40\u0e18\u0e12\u0e40\u0e18\u0e02"
     }, 
     "274": {
-        "name": null, 
-        "parent": 270
+        "english": null, 
+        "parent": 270, 
+        "thai": "\u0e40\u0e19\u0082\u0e40\u0e18\u008a\u0e40\u0e19\u008a\u0e40\u0e18\u0084"
     }, 
     "275": {
-        "name": null, 
-        "parent": 270
+        "english": null, 
+        "parent": 270, 
+        "thai": "\u0e40\u0e18\u0e0a\u0e40\u0e18\u009b\u0e40\u0e18\u0e03\u0e40\u0e18\u0e14\u0e40\u0e18\u0087"
     }, 
     "276": {
-        "name": null, 
-        "parent": 270
+        "english": null, 
+        "parent": 270, 
+        "thai": "\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e18\u0e40\u0e18\u009b\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0093\u0e40\u0e19\u008c\u0e40\u0e19\u0080\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e03\u0e40\u0e18\u0e14\u0e40\u0e18\u0e01\u0e40\u0e19\u0083\u0e40\u0e18\u0099\u0e40\u0e18\u0e03\u0e40\u0e18\u0096\u0e40\u0e18\u0e02\u0e40\u0e18\u0099\u0e40\u0e18\u0095\u0e40\u0e19\u008c"
     }, 
     "277": {
-        "name": null, 
-        "parent": 270
+        "english": null, 
+        "parent": 270, 
+        "thai": "\u0e40\u0e19\u0080\u0e40\u0e18\u0084\u0e40\u0e18\u0e03\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087\u0e40\u0e19\u0080\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e15\u0e40\u0e18\u0e02\u0e40\u0e18\u0087"
     }, 
     "278": {
-        "name": null, 
-        "parent": 270
+        "english": null, 
+        "parent": 270, 
+        "thai": "\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e10\u0e40\u0e19\u0084\u0e40\u0e18\u0e0b\u0e40\u0e18\u0e05\u0e40\u0e19\u0088 \u0e40\u0e18\u009b\u0e40\u0e18\u0e03\u0e40\u0e18\u0e10\u0e40\u0e18\u0094\u0e40\u0e18\u0e11\u0e40\u0e18\u009a\u0e40\u0e18\u0e02\u0e40\u0e18\u0099\u0e40\u0e18\u0095\u0e40\u0e19\u008c\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0099\u0e40\u0e19\u0086"
     }, 
     "279": {
-        "name": null, 
-        "parent": 95
+        "english": null, 
+        "parent": 95, 
+        "thai": "\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e18\u0e40\u0e18\u009b\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0093\u0e40\u0e19\u008c\u0e40\u0e19\u0081\u0e40\u0e18\u0e05\u0e40\u0e18\u0e10\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e10\u0e40\u0e19\u0084\u0e40\u0e18\u0e0b\u0e40\u0e18\u0e05\u0e40\u0e19\u0088\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0e10\u0e40\u0e19\u0080\u0e40\u0e18\u009b\u0e40\u0e19\u008b\u0e40\u0e18\u0e12"
     }, 
     "280": {
-        "name": null, 
-        "parent": 279
+        "english": null, 
+        "parent": 279, 
+        "thai": "\u0e40\u0e18\u0097\u0e40\u0e18\u0e15\u0e40\u0e19\u0088\u0e40\u0e18\u0e0b\u0e40\u0e18\u0e18\u0e40\u0e19\u0089\u0e40\u0e18\u0e01\u0e40\u0e18\u0e0b\u0e40\u0e18\u0e19\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0e10\u0e40\u0e19\u0080\u0e40\u0e18\u009b\u0e40\u0e19\u008b\u0e40\u0e18\u0e12"
     }, 
     "281": {
-        "name": null, 
-        "parent": 279
+        "english": null, 
+        "parent": 279, 
+        "thai": "\u0e40\u0e18\u0097\u0e40\u0e18\u0e15\u0e40\u0e19\u0088\u0e40\u0e18\u0088\u0e40\u0e18\u0e11\u0e40\u0e18\u0094\u0e40\u0e18\u0e03\u0e40\u0e18\u0e10\u0e40\u0e19\u0080\u0e40\u0e18\u009a\u0e40\u0e18\u0e15\u0e40\u0e18\u0e02\u0e40\u0e18\u009a\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0e10\u0e40\u0e19\u0080\u0e40\u0e18\u009b\u0e40\u0e19\u008b\u0e40\u0e18\u0e12"
     }, 
     "282": {
-        "name": null, 
-        "parent": 279
+        "english": null, 
+        "parent": 279, 
+        "thai": "\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e18\u0e40\u0e18\u009b\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0093\u0e40\u0e19\u008c \u0e40\u0e18\u0e0d\u0e40\u0e18\u0e10\u0e40\u0e19\u0084\u0e40\u0e18\u0e0b\u0e40\u0e18\u0e05\u0e40\u0e19\u0088\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0e10\u0e40\u0e19\u0080\u0e40\u0e18\u009b\u0e40\u0e19\u008b\u0e40\u0e18\u0e12\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0099\u0e40\u0e19\u0086"
     }, 
     "283": {
-        "name": null
+        "english": null, 
+        "thai": "\u0e40\u0e19\u0081\u0e40\u0e18\u009a\u0e40\u0e19\u0088\u0e40\u0e18\u0087\u0e40\u0e18\u009b\u0e40\u0e18\u0e11\u0e40\u0e18\u0099"
     }, 
     "284": {
-        "name": null, 
-        "parent": 283
+        "english": null, 
+        "parent": 283, 
+        "thai": "\u0e40\u0e19\u0081\u0e40\u0e18\u009a\u0e40\u0e19\u0088\u0e40\u0e18\u0087\u0e40\u0e18\u009b\u0e40\u0e18\u0e11\u0e40\u0e18\u0099\u0e40\u0e19\u0080\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e17\u0e40\u0e19\u0089\u0e40\u0e18\u0e0d\u0e40\u0e18\u009c\u0e40\u0e19\u0089\u0e40\u0e18\u0e12"
     }, 
     "285": {
-        "name": null, 
-        "parent": 283
+        "english": null, 
+        "parent": 283, 
+        "thai": "\u0e40\u0e19\u0081\u0e40\u0e18\u009a\u0e40\u0e19\u0088\u0e40\u0e18\u0087\u0e40\u0e18\u009b\u0e40\u0e18\u0e11\u0e40\u0e18\u0099\u0e40\u0e19\u0080\u0e40\u0e18\u0084\u0e40\u0e18\u0e03\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087\u0e40\u0e19\u0083\u0e40\u0e18\u008a\u0e40\u0e19\u0089\u0e40\u0e19\u0084\u0e40\u0e18\u009f\u0e40\u0e18\u009f\u0e40\u0e19\u0089\u0e40\u0e18\u0e12"
     }, 
     "286": {
-        "name": null, 
-        "parent": 283
+        "english": null, 
+        "parent": 283, 
+        "thai": "\u0e40\u0e19\u0081\u0e40\u0e18\u009a\u0e40\u0e19\u0088\u0e40\u0e18\u0087\u0e40\u0e18\u009b\u0e40\u0e18\u0e11\u0e40\u0e18\u0099\u0e40\u0e19\u0080\u0e40\u0e18\u009f\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e03\u0e40\u0e19\u008c\u0e40\u0e18\u0099\u0e40\u0e18\u0e14\u0e40\u0e19\u0080\u0e40\u0e18\u0088\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e03\u0e40\u0e19\u008c"
     }, 
     "287": {
-        "name": null, 
-        "parent": 283
+        "english": null, 
+        "parent": 283, 
+        "thai": "\u0e40\u0e19\u0081\u0e40\u0e18\u009a\u0e40\u0e19\u0088\u0e40\u0e18\u0087\u0e40\u0e18\u009b\u0e40\u0e18\u0e11\u0e40\u0e18\u0099\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0099 \u0e40\u0e19\u0086"
     }, 
     "288": {
-        "name": null, 
-        "parent": 283
+        "english": null, 
+        "parent": 283, 
+        "thai": "\u0e40\u0e18\u0084\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e01\u0e40\u0e18\u009e\u0e40\u0e18\u0e14\u0e40\u0e18\u0e07\u0e40\u0e19\u0080\u0e40\u0e18\u0095\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e03\u0e40\u0e19\u008c"
     }, 
     "289": {
-        "name": null, 
-        "parent": 283
+        "english": null, 
+        "parent": 283, 
+        "thai": "\u0e40\u0e19\u0081\u0e40\u0e18\u0e01\u0e40\u0e19\u0088\u0e40\u0e19\u0081\u0e40\u0e18\u0e05\u0e40\u0e18\u0e10\u0e40\u0e19\u0080\u0e40\u0e18\u0094\u0e40\u0e19\u0087\u0e40\u0e18\u0081"
     }, 
     "290": {
-        "name": null, 
-        "parent": 283
+        "english": null, 
+        "parent": 283, 
+        "thai": "\u0e40\u0e18\u0081\u0e40\u0e18\u0e05\u0e40\u0e19\u0089\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087"
     }, 
     "291": {
-        "name": null, 
-        "parent": 283
+        "english": null, 
+        "parent": 283, 
+        "thai": "\u0e40\u0e18\u0088\u0e40\u0e18\u0e11\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0e02\u0e40\u0e18\u0e12\u0e40\u0e18\u0099"
     }, 
     "292": {
-        "name": null, 
-        "parent": 59
+        "english": null, 
+        "parent": 59, 
+        "thai": "\u0e40\u0e18\u0081\u0e40\u0e18\u0e12\u0e40\u0e18\u0e03\u0e40\u0e19\u008c\u0e40\u0e18\u0095\u0e40\u0e18\u0e19\u0e40\u0e18\u0099"
     }, 
     "293": {
-        "name": null, 
-        "parent": 59
+        "english": null, 
+        "parent": 59, 
+        "thai": "\u0e40\u0e18\u0099\u0e40\u0e18\u0e14\u0e40\u0e18\u0095\u0e40\u0e18\u0e02\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e12\u0e40\u0e18\u0e03"
     }, 
     "294": {
-        "name": null, 
-        "parent": 59
+        "english": null, 
+        "parent": 59, 
+        "thai": "\u0e40\u0e18\u0099\u0e40\u0e18\u0e14\u0e40\u0e18\u0e02\u0e40\u0e18\u0e12\u0e40\u0e18\u0e02"
     }, 
     "295": {
-        "name": null, 
-        "parent": 59
+        "english": null, 
+        "parent": 59, 
+        "thai": "\u0e40\u0e18\u0e0b\u0e40\u0e18\u0099\u0e40\u0e18\u0e11\u0e40\u0e18\u0087\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e17\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0099\u0e40\u0e19\u0086"
     }, 
     "296": {
-        "name": null, 
-        "parent": 3
+        "english": null, 
+        "parent": 3, 
+        "thai": "\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e18\u0e40\u0e18\u009b\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0093\u0e40\u0e19\u008c\u0e40\u0e19\u0081\u0e40\u0e18\u0e05\u0e40\u0e18\u0e10\u0e40\u0e19\u0080\u0e40\u0e18\u0084\u0e40\u0e18\u0e03\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087\u0e40\u0e18\u0e01\u0e40\u0e18\u0e17\u0e40\u0e18\u0e0d\u0e40\u0e18\u008a\u0e40\u0e19\u0088\u0e40\u0e18\u0e12\u0e40\u0e18\u0087"
     }, 
     "297": {
-        "name": null, 
-        "parent": 8
+        "english": null, 
+        "parent": 8, 
+        "thai": "\u0e40\u0e18\u0e0b\u0e40\u0e18\u0099\u0e40\u0e18\u0e11\u0e40\u0e18\u0087\u0e40\u0e18\u0e0a\u0e40\u0e18\u0e17\u0e40\u0e18\u0e0d\u0e40\u0e19\u0080\u0e40\u0e18\u0e03\u0e40\u0e18\u0e15\u0e40\u0e18\u0e02\u0e40\u0e18\u0099"
     }, 
     "298": {
-        "name": null, 
-        "parent": 96
+        "english": null, 
+        "parent": 96, 
+        "thai": "\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e18\u0e40\u0e18\u009b\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0093\u0e40\u0e19\u008c\u0e40\u0e19\u0081\u0e40\u0e18\u0e05\u0e40\u0e18\u0e10\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e10\u0e40\u0e19\u0084\u0e40\u0e18\u0e0b\u0e40\u0e18\u0e05\u0e40\u0e19\u0088\u0e40\u0e18\u0e03\u0e40\u0e18\u0e0d\u0e40\u0e18\u0087\u0e40\u0e19\u0080\u0e40\u0e18\u0097\u0e40\u0e19\u0089\u0e40\u0e18\u0e12"
     }, 
     "299": {
-        "name": null, 
-        "parent": 99
+        "english": null, 
+        "parent": 99, 
+        "thai": "\u0e40\u0e18\u0099\u0e40\u0e18\u0e12\u0e40\u0e18\u0e0c\u0e40\u0e18\u0e14\u0e40\u0e18\u0081\u0e40\u0e18\u0e12\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e17\u0e40\u0e19\u0088\u0e40\u0e18\u0099\u0e40\u0e19\u0086"
     }, 
     "300": {
-        "name": null, 
-        "parent": 99
+        "english": null, 
+        "parent": 99, 
+        "thai": "\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e18\u0e40\u0e18\u009b\u0e40\u0e18\u0081\u0e40\u0e18\u0e03\u0e40\u0e18\u0093\u0e40\u0e19\u008c\u0e40\u0e19\u0081\u0e40\u0e18\u0e05\u0e40\u0e18\u0e10\u0e40\u0e18\u0e0d\u0e40\u0e18\u0e10\u0e40\u0e19\u0084\u0e40\u0e18\u0e0b\u0e40\u0e18\u0e05\u0e40\u0e19\u0088\u0e40\u0e18\u0099\u0e40\u0e18\u0e12\u0e40\u0e18\u0e0c\u0e40\u0e18\u0e14\u0e40\u0e18\u0081\u0e40\u0e18\u0e12"
     }
 }

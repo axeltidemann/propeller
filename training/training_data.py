@@ -16,6 +16,7 @@ import time
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),'../misc')))
 import gc
+from collections import defaultdict
 
 import numpy as np
 import pandas as pd
@@ -27,17 +28,22 @@ from sklearn.utils import shuffle
 
 from utils import pretty_float as pf
 
-def states(h5_files, use_dask=False, dask_chunksize=8*1024, separator='_'):
-    
+def states(h5_files, num_images, use_dask=False, dask_chunksize=8*1024, separator='_'):
     h5_lengths = {}
+    h5_widths = defaultdict(int)
     for h5 in h5_files:
+        width = 0
         with pd.HDFStore(h5) as store:
-            storer = store.get_storer('data')
-            width = storer.ncols
+            for key in sorted(store.keys())[:num_images]:
+                storer = store.get_storer(key)
+                h5_widths[h5] += storer.ncols
             
             h5_lengths[h5] = storer.nrows
 
+    assert len(set(h5_widths.values())) == 1, 'Not the same amount of columns in the input data.'
+
     length = sum(h5_lengths.values())
+    width = h5_widths.values()[0]
     
     if use_dask:
         datasets = [ h5py.File(fn)['/data/table'] for fn in h5_files ]
@@ -54,7 +60,10 @@ def states(h5_files, use_dask=False, dask_chunksize=8*1024, separator='_'):
         if use_dask:
             Y.append(np.ones((h5_lengths[h5],))*i)
         else:
-            X[start_index:end_index] = pd.read_hdf(h5)
+            with pd.HDFStore(h5) as store:
+                keys = sorted(store.keys())[:num_images]
+
+            X[start_index:end_index] = np.hstack([ pd.read_hdf(h5, key) for key in keys ])
             Y[start_index:end_index] = i            
 
         start_index = end_index
@@ -139,6 +148,12 @@ class DataSet:
             self._X, self._Y = self.load()
             self._num_examples = self._X.shape[0]
 
+        # Not thread safe when running with queues for loading data.
+        # rng_state = np.random.get_state()
+        # np.random.shuffle(self._X)
+        # np.random.set_state(rng_state)
+        # np.random.shuffle(self._Y)
+
         self._X, self._Y = shuffle(self._X, self._Y)
         
     def next_batch(self, batch_size):
@@ -183,17 +198,17 @@ class DataSet:
         return self._Y
 
         
-def read_data(train_folder, test_folder, use_dask, in_memory, dask_chunksize):
+def read_data(train_folder, test_folder, num_images, use_dask, in_memory, dask_chunksize):
 
     class DataSets:
         pass
 
     h5_train = sorted(glob.glob('{}/*'.format(train_folder)))
     assert len(h5_train), 'The HDF5 folder is empty.'
-    train, output_filter = states(h5_train, use_dask, dask_chunksize)
+    train, output_filter = states(h5_train, num_images, use_dask, dask_chunksize)
 
     h5_test = sorted(glob.glob('{}/*'.format(test_folder)))
-    test, _ = states(h5_test, False, dask_chunksize) # We assume testing data can fit in memory.
+    test, _ = states(h5_test, num_images, False, dask_chunksize) # We assume testing data can fit in memory.
 
     data_sets = DataSets()
 

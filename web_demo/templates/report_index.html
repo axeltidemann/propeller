@@ -6,37 +6,29 @@
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
 <p>
-<b>Overall sub category accuracy: {{ accuracy|round(1) }}%, top category accuracy: {{ top_level_accuracy|round(1) }}%</b>
+<b>Overall sub category accuracy: {{ (100*accuracy)|round(1) }}%, top {{k|int}} accuracy: {{ (100*top_k_accuracy)|round(1) }}%</b>
 <p/>
 
 <p>
-Each sub category was populated with 10000 images, some had less, with 1000 images the absolute minimum. For each sub category, 8000 was added to the training set,
-2000 was added to the test set. Some
-sub categories had less than 10000 images, for these the train/test divide was also 80%/20%. This explains why some of the categories below are tested on less
-than 2000 images. <i>Sub category accuracy</i> reflects how many of the images in the test set of that category was correctly classified. <i>Top category accuracy</i> shows
-how many of the wrongly classified pictures within the same category were still within the same top category (i.e. the same parent category). For instance, the sub categories
- "{{ candidate }}" and "{{ friend }}" have the same parent category "{{ parent }}". Click on each category to learn more of the classifier performance.
+<i>Sub category accuracy</i> reflects how many of the ads in the test set of that category was correctly classified. <i>Top {{ k|int }} category accuracy</i> shows
+how often the predicted category was within the <b>top {{k|int}}</b> of predicted categories. There are {{ categories|length }} categories in total.
 </p>
-<p>
-There were {{ categories|length }} categories with more than 1000 images.
-There were {{ train_sum }} pictures in the training set, {{ test_sum }} in the testing set.
-<p/>
 
 <table>
   <tr>
-    <th>Sub category</th><th width=100>Train images</th><th width=100>Test images</th><th width=100>Sub category accuracy</th><th width=100>Top category accuracy</th>
+    <th>Sub category</th><th width=100>Train ads</th><th width=100>Test ads</th><th width=100>Sub category accuracy</th><th width=100>Top {{ k|int }} accuracy</th>
   </tr>
-  {% for number, category, accuracy, top_level_accuracy, train_count, test_count in categories %}
+  {% for number, category, accuracy, top_k_accuracy, train_count, test_count in categories %}
   <tr>
     <td><a href={{ url_for('report_category', site=site, number=number) }}>{{ category }}</a></td>
-    <td>{{ train_count }}</td>
-    <td>{{ test_count }}</td>
-    <td>{{ accuracy|round(1)}}%</td>
-    <td>{{ top_level_accuracy|round(1)}}%</td>
+    <td>{{ train_count|int }}</td>
+    <td>{{ test_count|int }}</td>
+    <td>{{ (100*accuracy)|round(1)}}%</td>
+    <td>{{ (100*top_k_accuracy)|round(1)}}%</td>
   </tr>
 {% endfor %}
   <tr>
-    <td><b>Sum</b></td><td><b>{{ train_sum }}</b></td><td colspan=3><b>{{ test_sum }}</b></td>
+    <td><b>Sum</b></td><td><b>{{ train_sum|int }}</b></td><td colspan=3><b>{{ test_sum|int }}</b></td>
   </tr>
 </table>
 {% endblock %}

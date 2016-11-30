@@ -2,7 +2,8 @@
 
 '''
 Reads the canonical JSON file that has everything in it (in list form), 
-convert to the JSON hierarchy. This is used for display of statistics and reports,
+convert to the JSON hierarchy in both thai and english.
+This is used for display of statistics and reports,
 not for output of the neural network.
 '''
 
@@ -22,9 +23,9 @@ args = parser.parse_args()
 categories = {}
 for cat in json.load(open(args.json_file), encoding='iso8859_11', strict=False):
     if cat['parent_id']:
-        categories[cat['cate_id']] = {'name': cat['title_eng'], 'parent': cat['parent_id']}
+        categories[cat['cate_id']] = {'english': cat['title_eng'], 'parent': cat['parent_id'], 'thai': cat['cate_name']}
     else:
-        categories[cat['cate_id']] = {'name': cat['title_eng']}
+        categories[cat['cate_id']] = {'english': cat['title_eng'], 'thai': cat['cate_name']}
 
 with open(args.out_filename, 'w') as _file:
     json.dump(categories, _file, sort_keys=True, indent=4)
