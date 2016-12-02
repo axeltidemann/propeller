@@ -8,10 +8,10 @@ import json
 
 import pandas as pd
 import numpy as np
-import ipdb
 
 def combine(category):
     with pd.HDFStore(args.mapping, mode='r') as store:
+        print 'Processing {}'.format(category)
 
         one_hot = json.load(open(args.one_hot_encoding))
         
@@ -95,9 +95,5 @@ if __name__ == '__main__':
     with pd.HDFStore(args.mapping, mode='r') as store:
         keys = store.keys()
 
-    combine(keys[0])
-
-    assert False
-        
     pool = mp.Pool()
     pool.map(combine, keys)
