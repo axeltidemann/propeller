@@ -3,30 +3,36 @@
 import argparse
 import os
 import multiprocessing as mp
-from functools import partial
 
 import pandas as pd
 
-def h5_split(h5, ratio, train_target, test_target):
+def h5_split(h5):
 
     with pd.HDFStore(h5, mode='r') as in_store:
         keys = sorted(in_store.keys())
 
-    train_store = pd.HDFStore(os.path.join(args.train_target, os.path.basename(h5)),
-                              mode='w', complevel=9, complib='blosc')
+        train_store = pd.HDFStore(os.path.join(args.train_target, os.path.basename(h5)),
+                                  mode='w', complevel=9, complib='blosc')
 
-    test_store = pd.HDFStore(os.path.join(args.test_target, os.path.basename(h5)),
-                             mode='w', complevel=9, complib='blosc')
-        
-    for key in keys:
-        data = pd.read_hdf(h5, key)
-        train_store.append(key, data.iloc[0:int(len(data)*ratio)])
-        test_store.append(key, data.iloc[int(len(data)*ratio):])
+        test_store = pd.HDFStore(os.path.join(args.test_target, os.path.basename(h5)),
+                                 mode='w', complevel=9, complib='blosc')
+
+        if len(keys) == 1:
+            data = in_store[keys[0]]
+
+            train_store.append('data', data[:int(len(data)*args.ratio)])
+            test_store.append('data', data[int(len(data)*args.ratio):])
+        else:
+            for key in keys[:int(len(keys)*args.ratio)]: 
+                train_store.append(key, in_store[key])
+
+            for key in keys[int(len(keys)*args.ratio):]:
+                test_store.append(key, in_store[key])
 
     train_store.close()
     test_store.close()
         
-    print '{} split into {} and {}'.format(h5, train_target, test_target)
+    print '{} split into {} and {}'.format(h5, args.train_target, args.test_target)
 
 
 if __name__ == '__main__':
@@ -49,7 +55,6 @@ if __name__ == '__main__':
         default=.8,
         type=float)
     args = parser.parse_args()
-
-    par_split = partial(h5_split, ratio=args.ratio, train_target=args.train_target, test_target=args.test_target)
+    
     pool = mp.Pool()
-    pool.map(par_split, args.source)
+    pool.map(h5_split, args.source)
