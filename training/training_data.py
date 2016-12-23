@@ -35,7 +35,7 @@ def states(h5_files, num_images, use_dask=False, dask_chunksize=8*1024, separato
         width = 0
         with pd.HDFStore(h5) as store:
             for key in sorted(store.keys())[:num_images]:
-                storer = store.get_storer(key)
+                storer = store.get_storer('visual') # HERE!
                 h5_widths[h5] += storer.ncols
             
             h5_lengths[h5] = storer.nrows
@@ -63,6 +63,7 @@ def states(h5_files, num_images, use_dask=False, dask_chunksize=8*1024, separato
             with pd.HDFStore(h5) as store:
                 keys = sorted(store.keys())[:num_images]
 
+            keys = ['visual'] # HERE! 
             X[start_index:end_index] = np.hstack([ pd.read_hdf(h5, key) for key in keys ])
             Y[start_index:end_index] = i            
 

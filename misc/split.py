@@ -17,11 +17,12 @@ def h5_split(h5):
         test_store = pd.HDFStore(os.path.join(args.test_target, os.path.basename(h5)),
                                  mode='w', complevel=9, complib='blosc')
 
-        if len(keys) == 1:
-            data = in_store[keys[0]]
+        if len(keys) in [1,2]:
+            for k in keys:
+                data = in_store[k]
 
-            train_store.append('data', data[:int(len(data)*args.ratio)])
-            test_store.append('data', data[int(len(data)*args.ratio):])
+                train_store.append(k, data[:int(len(data)*args.ratio)])
+                test_store.append(k, data[int(len(data)*args.ratio):])
         else:
             for key in keys[:int(len(keys)*args.ratio)]: 
                 train_store.append(key, in_store[key])
@@ -37,11 +38,11 @@ def h5_split(h5):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='''
-    Splits HDF5 state folders into a training and testing split.
+    Splits HDF5 files into a training and testing split.
     ''', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument(
         'source',
-        help='''HDF5 file(s) for categories.''',
+        help='HDF5 file(s) for categories.',
         nargs='+')
     parser.add_argument(
         'train_target',

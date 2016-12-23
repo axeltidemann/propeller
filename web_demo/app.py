@@ -653,17 +653,17 @@ global_data = {}
 for i in range(1,10):
     global_data['kaidee_{}_images'.format(i)] = { 'report': 
        '/mnt/kaidee/ads/reports/transfer_classifier_epochs_100_batch_2048_learning_rate_0.0001_images_{}_dense_dropout_0.5_hidden_size_2048.pb_report.h5'.format(i),
-       'mapping': '/mnt/kaidee/ads/mapping.h5',
+       'mapping': '/mnt/kaidee/ads/img/mapping.h5',
        'prefix': '/home/ubuntu/workspace/downloads' }
 
     global_data['kaidee_trained_on_top90_curated_using_{}_images'.format(i)] = { 'report':
        '/mnt/kaidee/single_images/reports/dense_trained_on_top90_curated_using_images_{}.h5'.format(i),
-       'mapping': '/mnt/kaidee/ads/mapping.h5',
+       'mapping': '/mnt/kaidee/ads/img/mapping.h5',
        'prefix': '/home/ubuntu/workspace/downloads' }
 
     global_data['kaidee_trained_on_top90_using_{}_images'.format(i)] = { 'report':
        '/mnt/kaidee/single_images/reports/trained_on_top_90_images_{}.h5'.format(i),
-       'mapping': '/mnt/kaidee/ads/mapping.h5',
+       'mapping': '/mnt/kaidee/ads/img/mapping.h5',
        'prefix': '/home/ubuntu/workspace/downloads' }
     
     

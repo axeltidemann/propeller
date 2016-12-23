@@ -19,12 +19,10 @@ from keras.layers.embeddings import Embedding
 import pandas as pd
 import tensorflow as tf
 
-parser = argparse.ArgumentParser(description='''
-Classifies sequences of graphemes into categories
-''', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument(
     'train_data',
-    help='Folder with encoded textual descriptions')
+    help='Folder with encoded titles + image features for training')
 parser.add_argument(
     'test_data')
 parser.add_argument(
@@ -36,36 +34,28 @@ parser.add_argument(
     type=int,
     default=100)
 parser.add_argument(
-    '--lstm_size',
-    type=int,
-    default=64)
-parser.add_argument(
     '--hidden_size',
     type=int,
-    default=128)
-parser.add_argument(
-    '--conv_size',
-    type=int,
-    default=32)
+    default=2048)
 parser.add_argument(
     '--embedding_size',
     type=int,
     default=100)
 parser.add_argument(
+    '--conv_size',
+    type=int,
+    default=32)
+parser.add_argument(
     '--filter_length',
     type=int,
     default=3)
 parser.add_argument(
-    '--dropout',
-    type=float,
-    default=.5)
-parser.add_argument(
-    '--checkpoint_dir',
-    default='checkpoints/')
-parser.add_argument(
     '--filename',
     help='What to call the checkpoint files.',
     default=datetime.datetime.now().strftime("%Y-%m-%d_%H-%M"))
+parser.add_argument(
+    '--checkpoint_dir',
+    default='checkpoints/')
 args = parser.parse_args()
 
 if not os.path.exists(args.checkpoint_dir):
@@ -73,55 +63,23 @@ if not os.path.exists(args.checkpoint_dir):
 
 def get_data(folder):
     text = []
+    visual = []
     target = []
-
-    folder_list = sorted(glob.glob('{}/*'.format(folder)))
-
-    for i,h5 in enumerate(folder_list):
-        text.append(pd.read_hdf(h5))
+    for i,h5 in enumerate(sorted(glob.glob('{}/*'.format(folder)))):
+        text.append(pd.read_hdf(h5, 'text'))
+        visual.append(pd.read_hdf(h5, 'visual'))
         target.extend([i]*len(text[-1]))
 
     text = np.vstack(text)
+    visual = np.vstack(visual)
     target = np.vstack(target)
 
-    # The dimensionality of the input is a single integer, so we simply
-    # expand the final dimension
-    # text = np.expand_dims(text, -1)
-        
-    return text, target
-    
-    
-# def get_data(folder, target_category):
-#     text = []
-#     target = []
-
-#     folder_list = sorted(glob.glob('{}/*'.format(folder)))
-
-#     data = pd.read_hdf(folder_list[target_category])
-#     samples = len(data)/len(folder_list)
-    
-#     text.append(data)
-#     target.extend([1]*len(data))
-    
-#     for i,h5 in enumerate(folder_list):
-#         if i != target_category:
-#             data = pd.read_hdf(h5).values
-#             np.random.shuffle(data)
-#             text.append(data[:samples])
-#             target.extend([0]*samples)
-
-#     text = np.vstack(text)
-#     target = np.vstack(target)
-
-#     # There is only one row pr sample, so we expand the dimension.
-#     text = np.expand_dims(text, 1)
-        
-#     return text, target
+    return text, visual, target
 
 t0 = time.time()
 
-text_train, target_train = get_data(args.train_data)
-text_test, target_test = get_data(args.test_data)
+text_train, visual_train, target_train = get_data(args.train_data)
+text_test, visual_test, target_test = get_data(args.test_data)
 
 print 'Loading data took {} seconds'.format(time.time()-t0)
 
@@ -141,9 +99,9 @@ def embedding_shape(input_shape):
 filter_widths = range(1,7)
 nb_filters_coeff = 25
     
-inputs = Input(shape=(text_train.shape[1],))
+text_inputs = Input(shape=(text_train.shape[1],))
 
-e = Lambda(embedding, output_shape=embedding_shape)(inputs)
+e = Lambda(embedding, output_shape=embedding_shape)(text_inputs)
 
 filters = []
 for fw in filter_widths:
@@ -151,12 +109,14 @@ for fw in filter_widths:
     x = GlobalMaxPooling1D()(x)
     filters.append(x)
 
-merge = merge(filters, mode='concat')
+visual_inputs = Input(shape=(visual_train.shape[1],))
+    
+merge = merge(filters + [ visual_inputs ], mode='concat')
 x = Dense(args.hidden_size, activation='relu')(merge)
 x = BatchNormalization()(x)
 predictions = Dense(nb_classes, activation='softmax')(x)
 
-model = Model(input=inputs, output=predictions)
+model = Model(input=[text_inputs, visual_inputs], output=predictions)
 
 model.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 print(model.summary())
@@ -164,5 +124,8 @@ print(model.summary())
 check_cb = keras.callbacks.ModelCheckpoint(args.checkpoint_dir+args.filename+'.{epoch:02d}-{val_loss:.2f}.hdf5', monitor='val_loss',
                                            verbose=0, save_best_only=True, mode='min')
 
-model.fit(text_train, target_train, nb_epoch=args.epochs, batch_size=args.batch_size,
-          validation_data=(text_test, target_test), callbacks=[check_cb])
+model.fit([ text_train, visual_train ], target_train,
+          nb_epoch=args.epochs,
+          batch_size=args.batch_size,
+          validation_data=([ text_test, visual_test ], target_test),
+          callbacks=[check_cb])

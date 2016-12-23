@@ -4,9 +4,11 @@ import os
 import argparse
 import csv
 import json
+from collections import Counter
+import multiprocessing as mp
 
 import numpy as np
-
+import regex
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument(
@@ -14,26 +16,45 @@ parser.add_argument(
     help='CSV file(s) with ad ids, title and description',
     nargs='+')
 parser.add_argument(
-    '--decoding',
-    help='How to decode the letters', 
-    default='thai')
-parser.add_argument(
     '--mapping_filename',
     help='Filename of the JSON mapping file', 
-    default='letters_mapping.json')
+    default='grapheme_mapping.json')
 args = parser.parse_args()
 
-letters = set([])
-lengths = []
-for _file in args.csv:
+def encode(x):
+    return unicode(x[1:-1], 'utf-8').lower()
+
+def traverse(_file):
+
+    letters = set([])
+    lengths = []
+    grapheme_counter = Counter()
+
     print 'Opening {}'.format(_file)
     with open(_file, 'rb') as csvfile:
         reader = csv.reader(csvfile)
         for ad_id, title, description in reader:
-            title = title[1:-1].decode(args.decoding, errors='ignore')
-            description = description[1:-1].decode(args.decoding, errors='ignore')
-            letters = letters.union(title + description)
-            lengths.append(len(title) + len(description))
+            title = encode(title)
+            description = encode(description)
+            graphemes = regex.findall(u'\\X', title+description)
+            letters = letters.union(graphemes)
+            grapheme_counter.update(graphemes)
+            lengths.append(len(graphemes))
+
+    return letters, lengths, grapheme_counter
+
+
+pool = mp.Pool()
+results = pool.map(traverse, args.csv)
+
+letters = set([])
+lengths = []
+grapheme_counter = Counter()
+
+for lt, ln, gc in results:
+    letters.union(lt)
+    lengths.extend(ln)
+    grapheme_counter.update(gc)
             
 mapping = { c: i for i,c in enumerate(letters) }
 mapping_inverse = { i: c for i,c in enumerate(letters) }
@@ -43,5 +64,8 @@ with open(args.mapping_filename, 'w') as _file:
     
 with open('{}_inverse'.format(args.mapping_filename), 'w') as _file:
     json.dump(mapping_inverse, _file, sort_keys=True, indent=4)
+
+with open('{}_counter'.format(args.mapping_filename), 'w') as _file:
+    json.dump(grapheme_counter, _file, sort_keys=True, indent=4)
     
 print 'Encoding lengths: mean: {}, median: {}, std: {}, max: {}, min: {}'.format(np.mean(lengths), np.median(lengths), np.std(lengths), max(lengths), min(lengths))
