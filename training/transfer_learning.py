@@ -202,11 +202,6 @@ if __name__ == '__main__':
         'test_states',
         help='Folder with Inception states for testing')
     parser.add_argument(
-        '--num_images',
-        help='How many images per ad to use for classification.',
-        type=int,
-        default=1)
-    parser.add_argument(
         '--learning_rate',
         help='Learning rate',
         type=float,
@@ -286,10 +281,10 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    data = read_data(args.train_states, args.test_states, args.num_images, args.use_dask, args.in_memory, args.dask_chunksize)
+    data = read_data(args.train_states, args.test_states,  args.use_dask, args.in_memory, args.dask_chunksize)
 
-    model_name = ('''transfer_classifier_epochs_{}_batch_{}_learning_rate_{}_images_{}'''.format(
-        args.epochs, args.batch_size, args.learning_rate, args.num_images))
+    model_name = ('''transfer_classifier_epochs_{}_batch_{}_learning_rate_{}_'''.format(
+        args.epochs, args.batch_size, args.learning_rate))
     
     if args.network == 'perceptron':
         model_name = '{}_perceptron.pb'.format(model_name)

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 # Copyright 2016 Telenor ASA, Author: Axel Tidemann
 
 import os
@@ -14,32 +16,36 @@ import regex
 def encode(x):
     return unicode(x[1:-1], 'utf-8').lower()
 
+def grapheme_map(X):
+    return [ graphemes_index[c] for c in regex.findall(u'\\X', X) if c in graphemes_index ]
+    
 def save_text(category):
 
-    if args.with_description:
-        titles = pd.read_csv(category,
-                             header=None, names=['ad_id', 'title', 'description'], index_col=[0],
-                             converters={'title': encode, 'description': encode })
-    else:
-        titles = pd.read_csv(category,
-                             header=None, names=['ad_id', 'title'], index_col=[0],
-                             converters={'title': encode })
-        
+    titles = pd.read_csv(category,
+                         header=None, names=['ad_id', 'title', 'description'], index_col=[0],
+                         converters={'title': encode, 'description': encode })
 
+
+    if not len(titles):
+        print 'No data in {}'.format(category)
+        return False
+    
     index = []
     encodings = []
     for row in titles.itertuples():
-        
-        encoded = [ graphemes_index[c] for c in regex.findall(u'\\X', row.title) if c in graphemes_index ]
+        encoded = grapheme_map(row.title)
 
         if args.with_description:
-            encoded += [ graphemes_index[' '] ] + [ graphemes_index[c] for c in regex.findall(u'\\X', row.description) if c in graphemes_index ]
+            encoded += [ graphemes_index[' '] ] + grapheme_map(row.description)
 
+        # Filter out words with latin characters less than 3?
+            
         if len(encoded) > 1:
             index.append(row.Index)
             encodings.append(encoded)
 
-    stats = [ np.mean(encoded, axis=0), np.median(encoded, axis=0), np.std(encoded, axis=0) ]
+    encoding_lengths = map(len, encodings)
+    stats = [ np.mean(encoding_lengths, axis=0), np.median(encoding_lengths, axis=0), np.std(encoding_lengths, axis=0) ]
     
     encodings = sequence.pad_sequences(encodings, maxlen=args.seq_len, truncating='post', padding='post')
     encodings = np.vstack(encodings)
@@ -79,7 +85,7 @@ if __name__ == '__main__':
         default=100)
     parser.add_argument(
         '--top_k',
-        help='Top K graphemes to use, based on counts of the graphemes',
+        help='Top K graphemes to use, based on counts of the graphemes - excluding latin characters',
         type=int,
         default=200) # Top 200 graphemes account for 95% of the data
     parser.add_argument(
@@ -97,7 +103,7 @@ if __name__ == '__main__':
         del grapheme_counts[str(i)]
 
     # Special characters
-    unwanted = ['(', ')', '.', '*', '_', '-', '%', '@', '=', ';', '"', ':', '!', '<', '>', '&', '+', '/']
+    unwanted = ['(', ')', '.', '*', '_', '-', '%', '@', '=', ';', '"', ':', '!', '<', '>', '&', '+', '/', u'…']
     for u in unwanted:
         del grapheme_counts[u]
 
@@ -114,7 +120,8 @@ if __name__ == '__main__':
 
     pool = mp.Pool()
     results = pool.map(save_text, args.csv)
-
+    results = filter(lambda x: isinstance(x, list), results)
+    
     print 'Graphemes used for encoding:',
     for g in graphemes:
         print g,

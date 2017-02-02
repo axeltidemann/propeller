@@ -28,16 +28,14 @@ from sklearn.utils import shuffle
 
 from utils import pretty_float as pf
 
-def states(h5_files, num_images, use_dask=False, dask_chunksize=8*1024, separator='_'):
+def states(h5_files, use_dask=False, dask_chunksize=8*1024, separator='_'):
     h5_lengths = {}
-    h5_widths = defaultdict(int)
+    h5_widths = {}
     for h5 in h5_files:
         width = 0
         with pd.HDFStore(h5) as store:
-            for key in sorted(store.keys())[:num_images]:
-                storer = store.get_storer('visual') # HERE!
-                h5_widths[h5] += storer.ncols
-            
+            storer = store.get_storer('visual')
+            h5_widths[h5] = storer.ncols
             h5_lengths[h5] = storer.nrows
 
     assert len(set(h5_widths.values())) == 1, 'Not the same amount of columns in the input data.'
@@ -46,7 +44,7 @@ def states(h5_files, num_images, use_dask=False, dask_chunksize=8*1024, separato
     width = h5_widths.values()[0]
     
     if use_dask:
-        datasets = [ h5py.File(fn)['/data/table'] for fn in h5_files ]
+        datasets = [ h5py.File(fn)['/visual/table'] for fn in h5_files ]
         X = [ da.from_array(data, chunks=dask_chunksize) for data in datasets ]
         Y = []
     else:
@@ -60,11 +58,7 @@ def states(h5_files, num_images, use_dask=False, dask_chunksize=8*1024, separato
         if use_dask:
             Y.append(np.ones((h5_lengths[h5],))*i)
         else:
-            with pd.HDFStore(h5) as store:
-                keys = sorted(store.keys())[:num_images]
-
-            keys = ['visual'] # HERE! 
-            X[start_index:end_index] = np.hstack([ pd.read_hdf(h5, key) for key in keys ])
+            X[start_index:end_index] = pd.read_hdf(h5, 'visual')
             Y[start_index:end_index] = i            
 
         start_index = end_index
@@ -199,17 +193,17 @@ class DataSet:
         return self._Y
 
         
-def read_data(train_folder, test_folder, num_images, use_dask, in_memory, dask_chunksize):
+def read_data(train_folder, test_folder, use_dask, in_memory, dask_chunksize):
 
     class DataSets:
         pass
 
     h5_train = sorted(glob.glob('{}/*'.format(train_folder)))
     assert len(h5_train), 'The HDF5 folder is empty.'
-    train, output_filter = states(h5_train, num_images, use_dask, dask_chunksize)
+    train, output_filter = states(h5_train, use_dask, dask_chunksize)
 
     h5_test = sorted(glob.glob('{}/*'.format(test_folder)))
-    test, _ = states(h5_test, num_images, False, dask_chunksize) # We assume testing data can fit in memory.
+    test, _ = states(h5_test, False, dask_chunksize) # We assume testing data can fit in memory.
 
     data_sets = DataSets()
 

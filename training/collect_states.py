@@ -39,8 +39,8 @@ def save_states(q, gpu, target, limit, mem_ratio, model_dir, seed=0, chunksize=1
                 break
 
             images = glob.glob('{}/*'.format(source))
-            random.seed(seed)
-            random.shuffle(images)
+            # random.seed(seed)
+            # random.shuffle(images)
             if limit > 0:
                 images = images[:limit]
 

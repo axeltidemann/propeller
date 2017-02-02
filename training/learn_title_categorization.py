@@ -34,7 +34,7 @@ parser.add_argument(
 parser.add_argument(
     '--epochs',
     type=int,
-    default=100)
+    default=10)
 parser.add_argument(
     '--lstm_size',
     type=int,
@@ -42,7 +42,7 @@ parser.add_argument(
 parser.add_argument(
     '--hidden_size',
     type=int,
-    default=128)
+    default=2048)
 parser.add_argument(
     '--conv_size',
     type=int,
@@ -78,45 +78,13 @@ def get_data(folder):
     folder_list = sorted(glob.glob('{}/*'.format(folder)))
 
     for i,h5 in enumerate(folder_list):
-        text.append(pd.read_hdf(h5))
+        text.append(pd.read_hdf(h5))#, 'text'))
         target.extend([i]*len(text[-1]))
 
     text = np.vstack(text)
     target = np.vstack(target)
-
-    # The dimensionality of the input is a single integer, so we simply
-    # expand the final dimension
-    # text = np.expand_dims(text, -1)
         
     return text, target
-    
-    
-# def get_data(folder, target_category):
-#     text = []
-#     target = []
-
-#     folder_list = sorted(glob.glob('{}/*'.format(folder)))
-
-#     data = pd.read_hdf(folder_list[target_category])
-#     samples = len(data)/len(folder_list)
-    
-#     text.append(data)
-#     target.extend([1]*len(data))
-    
-#     for i,h5 in enumerate(folder_list):
-#         if i != target_category:
-#             data = pd.read_hdf(h5).values
-#             np.random.shuffle(data)
-#             text.append(data[:samples])
-#             target.extend([0]*samples)
-
-#     text = np.vstack(text)
-#     target = np.vstack(target)
-
-#     # There is only one row pr sample, so we expand the dimension.
-#     text = np.expand_dims(text, 1)
-        
-#     return text, target
 
 t0 = time.time()
 
@@ -138,20 +106,24 @@ def embedding(x):
 def embedding_shape(input_shape):
     return input_shape[0], input_shape[1], params.shape[1]
 
-filter_widths = range(1,7)
-nb_filters_coeff = 25
+filter_widths = range(1,11)
+nb_filters_coeff = 50
     
 inputs = Input(shape=(text_train.shape[1],))
 
 e = Lambda(embedding, output_shape=embedding_shape)(inputs)
 
+# e = Embedding(np.max(text_train)+1, 75, input_length=text_train.shape[1])(inputs)
+
 filters = []
 for fw in filter_widths:
-    x = Convolution1D(nb_filters_coeff*fw, fw, activation='relu')(e)
+    x = Convolution1D(min(200, nb_filters_coeff*fw), fw, activation='tanh')(e)
     x = GlobalMaxPooling1D()(x)
     filters.append(x)
 
 merge = merge(filters, mode='concat')
+merge = BatchNormalization()(merge)
+
 x = Dense(args.hidden_size, activation='relu')(merge)
 x = BatchNormalization()(x)
 predictions = Dense(nb_classes, activation='softmax')(x)

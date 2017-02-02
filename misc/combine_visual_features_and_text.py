@@ -9,76 +9,105 @@ import pandas as pd
 import numpy as np
 
 def combine(category):
-    with pd.HDFStore(args.mapping, mode='r') as store:
 
-        mapping = store[category]
-        entries = mapping.count(axis=1)
-        features = pd.read_hdf('{}{}.h5'.format(args.visual_files, category))
+    visual_features = pd.read_hdf(category)
+    text = pd.read_hdf(os.path.join(args.text_files, os.path.basename(category)))
+    
+    all_text = []
+    all_images = []
+    all_index = []
+    
+    for row in visual_features.itertuples():
+        ad_id,_ = os.path.splitext(os.path.basename(row[0]))
+        ad_id = int(ad_id)
+        ad_text = text.query('index == @ad_id')
+
+        if len(ad_text):
+            all_text.append(ad_text)
+            all_images.append(row[1:])
+            all_index.append(ad_id)
+        else:
+            print '{}: {} lacked text, skipping'.format(category, ad_id)
+
+    h5name = os.path.join(args.store_location, os.path.basename(category))
+
+    with pd.HDFStore(h5name, mode='w', complevel=9, complib='blosc') as out_store:
+        text_df = pd.DataFrame(data=np.vstack(all_text), index=all_index, columns=text.columns)
+        out_store.append('text', text_df)
         
-        out = '{}: {} entries in mapping file, number of images processed: {}.'.format(category, len(mapping), len(features))
-        out += ' mean {}, median {}, std {} images per ad.'.format(np.mean(entries), np.median(entries), np.std(entries))
+        image_df = pd.DataFrame(data=np.vstack(all_images), index=all_index, columns=visual_features.columns)
+        out_store.append('visual', image_df)
 
-        text = pd.read_hdf('{}{}.h5'.format(args.text_files, category))
+    print '{}: {} rows combined'.format(category, len(all_text))
 
-        present = np.mean([ row[0] in text.index for row in mapping.itertuples() ])
-
-        if present < .5:
-            print '{}: {}% data, skipping'.format(category, 100*present)
-            return False
-
-        fail = 0
-        h5name = '{}{}.h5'.format(args.store_location, category)
-
-        all_text = []
-        all_images = []
-        all_index = []
-
-        for row in mapping.itertuples():
-            images = []
-            ad_id = row[0]
-            for fname in row[1:]: # Maybe try out with just first picture also
-                if pd.notnull(fname):
-                    image_query = '{}{}/{}'.format(args.prefix, category, fname)
-                    ad_image = features.query('index == @image_query')
-                    if len(ad_image):
-                        images.append(ad_image)
-
-            ad_text = text.query('index == @ad_id')
-
-            if len(images) and len(ad_text):
-                for i, image in enumerate(images):
-                    all_images.append(image)
-                    all_text.append(ad_text)
-                    all_index.append('{}_{}'.format(ad_id, i))
-
-            else:
-                print '{}: {} lacked title or image, skipping'.format(category, ad_id)
-                fail += 1
-
-        with pd.HDFStore(h5name, mode='w', complevel=9, complib='blosc') as out_store:
-            text_df = pd.DataFrame(data=np.vstack(all_text), index=all_index, columns=text.columns)
-            out_store.append('text', text_df)
+    
         
-            image_df = pd.DataFrame(data=np.vstack(all_images), index=all_index, columns=features.columns)
-            out_store.append('visual', image_df)
+    
+    # with pd.HDFStore(args.mapping, mode='r') as store:
 
-        out += '\n\tThere were {} failed reads'.format(fail)
-        print out
+    #     mapping = store[category]
+    #     entries = mapping.count(axis=1)
+    #     features = pd.read_hdf('{}{}.h5'.format(args.visual_files, category))
+        
+    #     out = '{}: {} entries in mapping file, number of images processed: {}.'.format(category, len(mapping), len(features))
+    #     out += ' mean {}, median {}, std {} images per ad.'.format(np.mean(entries), np.median(entries), np.std(entries))
+
+    #     text = pd.read_hdf('{}{}.h5'.format(args.text_files, category))
+
+    #     fail = 0
+    #     h5name = '{}{}.h5'.format(args.store_location, category)
+
+    #     all_text = []
+    #     all_images = []
+    #     all_index = []
+
+    #     for row in mapping.itertuples():
+    #         images = []
+    #         ad_id = row[0]
+    #         for fname in [row[1]] if args.first_image_only else row[1:]:
+    #             if pd.notnull(fname):
+    #                 image_query = '{}{}/{}'.format(args.prefix, category, fname)
+    #                 ad_image = features.query('index == @image_query')
+    #                 if len(ad_image):
+    #                     images.append(ad_image)
+
+    #         ad_text = text.query('index == @ad_id')
+
+    #         if len(images) and len(ad_text):
+    #             for i, image in enumerate(images):
+    #                 all_images.append(image)
+    #                 all_text.append(ad_text)
+    #                 all_index.append('{}_{}'.format(ad_id, i))
+
+    #         else:
+    #             if args.verbose:
+    #                 print '{}: {} lacked title or image, skipping'.format(category, ad_id)
+    #             fail += 1
+
+    #     with pd.HDFStore(h5name, mode='w', complevel=9, complib='blosc') as out_store:
+    #         text_df = pd.DataFrame(data=np.vstack(all_text), index=all_index, columns=text.columns)
+    #         out_store.append('text', text_df)
+        
+    #         image_df = pd.DataFrame(data=np.vstack(all_images), index=all_index, columns=features.columns)
+    #         out_store.append('visual', image_df)
+
+    #     out += '\n\tThere were {} failed reads, which is {}%'.format(fail, 100.*fail/(len(all_images)+fail))
+    #     print out
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='''
-    Concatenates feature vectors into HDF5 files, to be used by the rest
-    of the training framework.
+    Combines visual features and text encodings into HDF5 files.
     ''', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument(
-        'mapping',
-        help='Mapping file from ad id to image filenames')
+    # parser.add_argument(
+    #     'mapping',
+    #     help='Mapping file from ad id to image filenames')
     parser.add_argument(
         'visual_files',
-        help='Folder with HDF5 files that contain the visual features')
+        help='HDF5 files that contain the visual features',
+        nargs='+')
     parser.add_argument(
         'text_files',
-        help='HDF5 files with encoded text for each ad id')
+        help='Path to folder with HDF5 files with encoded text for each ad id')
     parser.add_argument(
         'store_location',
         help='Where to store the HDF5 files')
@@ -86,10 +115,19 @@ if __name__ == '__main__':
         '--prefix',
         help='Prefix of the paths in the feature HDF5 index', 
         default='/home/ubuntu/workspace/downloads')
+    parser.add_argument(
+        '--verbose',
+        help='Prints out which ads lacked title or images',
+        action='store_true')
+    parser.add_argument(
+        '--first_image_only',
+        help='Only include first image of each ad',
+        action='store_true')
+
     args = parser.parse_args()
 
-    with pd.HDFStore(args.mapping, mode='r') as store:
-        keys = store.keys()
-
+    # with pd.HDFStore(args.mapping, mode='r') as store:
+    #     keys = store.keys()
+    
     pool = mp.Pool()
-    pool.map(combine, keys)
+    pool.map(combine, args.visual_files)

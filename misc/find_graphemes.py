@@ -10,14 +10,17 @@ import multiprocessing as mp
 import numpy as np
 import regex
 
-parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser = argparse.ArgumentParser(description='''
+    Reads files with ad ids, titles and descriptions, and finds
+    all the unique graphemes in them. Saves counts and inverse mappings as well.
+    ''', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument(
     'csv',
     help='CSV file(s) with ad ids, title and description',
     nargs='+')
 parser.add_argument(
     '--mapping_filename',
-    help='Filename of the JSON mapping file', 
+    help='Filename of the JSON mapping file. _inverse and _counter will be appended to this filename.', 
     default='grapheme_mapping.json')
 args = parser.parse_args()
 
