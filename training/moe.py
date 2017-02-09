@@ -140,11 +140,13 @@ experts = []
 for _ in range(args.n_experts):
 
     if args.mixture_mode == 'single':
+        # this is really an ensemble
+        
         # text experts
-        filters = merge(text_filters(), mode='concat')
-        filters = BatchNormalization()(filters)
+        _text_filters = merge(text_filters(), mode='concat')
+        _text_filters = BatchNormalization()(_text_filters)
 
-        x = Dense(args.text_expert_hidden_size, activation='relu')(filters)
+        x = Dense(args.text_expert_hidden_size, activation='relu')(_text_filters)
         x = BatchNormalization()(x)
 
         experts.append(Dense(n_classes, activation='softmax')(x))
@@ -163,7 +165,7 @@ for _ in range(args.n_experts):
 
         experts.append(Dense(n_classes, activation='softmax')(x))
         
-    if args.mixture_mode == 'fusion':
+    elif args.mixture_mode == 'fusion':
 
         #lstm = Bidirectional(LSTM(args.text_expert_hidden_size/2, unroll=True, dropout_U=.5))(one_hot)
         #x = merge(text_filters() + [ lstm, visual_inputs ], mode='concat')
@@ -177,7 +179,7 @@ for _ in range(args.n_experts):
         experts.append(Dense(n_classes, activation='softmax')(x))
 
 # gating network
-multi_modal = merge([text_inputs, visual_inputs], mode='concat')
+multi_modal = merge(text_filters() + [ visual_inputs ], mode='concat')
 x = BatchNormalization()(multi_modal)
 x = Dense(args.hidden_size, activation='relu')(x)
 x = BatchNormalization()(x)
