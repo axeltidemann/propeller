@@ -1,4 +1,4 @@
-# Copyright 2016 Telenor ASA, Author: Axel Tidemann
+# Copyright 2017 Telenor ASA, Author: Axel Tidemann
 
 import argparse
 import json
@@ -58,8 +58,8 @@ parser.add_argument(
     default='checkpoints/')
 parser.add_argument(
     '--mixture_mode',
-    help='fusion or single',
-    default='fusion')
+    help='ensemble or moe',
+    default='moe')
 parser.add_argument(
     '--loss',
     help='simple or complex MOE loss function',
@@ -71,7 +71,7 @@ parser.add_argument(
 args = parser.parse_args()
 
 assert args.loss in ['simple', 'complex']
-assert args.mixture_mode in ['fusion', 'single']
+assert args.mixture_mode in ['ensemble', 'moe']
 
 if not os.path.exists(args.checkpoint_dir):
     os.makedirs(args.checkpoint_dir)
@@ -139,14 +139,12 @@ experts = []
 
 for _ in range(args.n_experts):
 
-    if args.mixture_mode == 'single':
-        # this is really an ensemble
-        
+    if args.mixture_mode == 'ensemble':
         # text experts
         _text_filters = merge(text_filters(), mode='concat')
-        _text_filters = BatchNormalization()(_text_filters)
+        x = BatchNormalization()(_text_filters)
 
-        x = Dense(args.text_expert_hidden_size, activation='relu')(_text_filters)
+        x = Dense(args.text_expert_hidden_size, activation='relu')(x)
         x = BatchNormalization()(x)
 
         experts.append(Dense(n_classes, activation='softmax')(x))
@@ -165,7 +163,7 @@ for _ in range(args.n_experts):
 
         experts.append(Dense(n_classes, activation='softmax')(x))
         
-    elif args.mixture_mode == 'fusion':
+    elif args.mixture_mode == 'moe':
 
         #lstm = Bidirectional(LSTM(args.text_expert_hidden_size/2, unroll=True, dropout_U=.5))(one_hot)
         #x = merge(text_filters() + [ lstm, visual_inputs ], mode='concat')
