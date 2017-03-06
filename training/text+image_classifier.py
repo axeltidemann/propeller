@@ -87,19 +87,12 @@ print 'Loading data took {} seconds'.format(time.time()-t0)
 
 nb_classes = len(np.unique(target_train))
 
-
 vocab_size = np.max(text_train)
 params = np.eye(vocab_size+1, dtype=np.float32)
 
 # 0 is the padding number, space is 1. However, space is an important character in thai.
-# We don't need to confuse the convolution unnecessary
+# We don't need to confuse the convolution unnecessarily.
 params[0][0] = 0 
-
-# def one_hot_embedding(x):
-#     return tf.nn.embedding_lookup(params, tf.to_int32(x))
-
-# def one_hot_embedding_shape(input_shape):
-#     return input_shape[0], input_shape[1], params.shape[1]
 
 filter_widths = range(1,7)
 nb_filters_coeff = 25
@@ -111,8 +104,6 @@ text_inputs = Input(shape=(text_train.shape[1],))
 visual_inputs = Input(shape=(visual_train.shape[1],))
 
 one_hot = Embedding(vocab_size+1, vocab_size+1, weights=[params], trainable=False)(text_inputs)
-
-#one_hot = Lambda(one_hot_embedding, output_shape=one_hot_embedding_shape)(text_inputs)
 
 if args.embedding == 'cnn':
 

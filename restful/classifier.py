@@ -58,7 +58,8 @@ def classify_images(cuda_device, mapping, sqs_queue, mem_ratio, model_dir, class
                                'classification':
                                [ { 'category': mapping[str(node_id)], 'probability': float(predictions[node_id]) }
                                  for node_id in top_k ],
-                               'computation_time': int(1000*(endtime-starttime)) }
+                               'computation_time': int(1000*(endtime-starttime)),
+                               'visual_features': np.squeeze(hidden_layer) }
 
                 except Exception as e:
                     result = { 'status': 'error',
