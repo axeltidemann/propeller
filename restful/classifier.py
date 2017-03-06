@@ -16,26 +16,27 @@ import multiprocessing as mp
 from six.moves import urllib
 import tensorflow as tf
 from tensorflow.python.platform import gfile
-from tensorflow.python.client import device_lib # Undocumented, subject to change
 import numpy as np
 import redis
 import boto3
 
 DATA_URL = 'http://download.tensorflow.org/models/image/imagenet/inception-2015-12-05.tgz'
 
-def classify_images(cuda_device, mapping, sqs_queue, mem_ratio, model_dir, classifier, redis_server, redis_port, redis_prefix, num_top_predictions):
+def classify_images(cuda_device): 
     sqs = boto3.resource('sqs')
-    queue = sqs.get_queue_by_name(QueueName=sqs_queue)
-    r_server = redis.StrictRedis(redis_server, redis_port)
-    os.environ['CUDA_VISIBLE_DEVICES'] = str(gpu)
+    queue = sqs.get_queue_by_name(QueueName=args.sqs_queue)
+    r_server = redis.StrictRedis(args.redis_server, args.redis_port)
+    os.environ['CUDA_VISIBLE_DEVICES'] = str(cuda_device)
     print('Using CUDA device {}'.format(cuda_device))
-    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=mem_ratio)
 
-    with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
-        load_graph(os.path.join(model_dir, 'classify_image_graph_def.pb'))
+    config = tf.ConfigProto()
+    config.gpu_options.per_process_gpu_memory_fraction = args.memory_scale_relative_to_threads/args.threads
+
+    with tf.Session(config=config) as sess: 
+        load_graph(os.path.join(args.model_dir, 'classify_image_graph_def.pb'))
         inception_next_last_layer = sess.graph.get_tensor_by_name('pool_3:0')
 
-        load_graph(classifier)
+        load_graph(args.classifier)
         transfer_predictor = sess.graph.get_tensor_by_name('output:0')
 
         while True:
@@ -49,32 +50,33 @@ def classify_images(cuda_device, mapping, sqs_queue, mem_ratio, model_dir, class
                     hidden_layer = sess.run(inception_next_last_layer,
                                             {'DecodeJpeg/contents:0': image_data})
 
-                    predictions = sess.run(transfer_predictor, {'input:0': np.atleast_2d(np.squeeze(hidden_layer)) })
+                    hidden_layer_squeezed = np.squeeze(hidden_layer)
+                    predictions = sess.run(transfer_predictor, {'input:0': np.atleast_2d(hidden_layer_squeezed) })
                     predictions = np.squeeze(predictions)
-                    top_k = predictions.argsort()[-num_top_predictions:][::-1]
+                    top_k = predictions.argsort()[-args.num_top_predictions:][::-1]
                     endtime = time.time()
 
                     result = { 'status': 'done',
                                'classification':
                                [ { 'category': mapping[str(node_id)], 'probability': float(predictions[node_id]) }
                                  for node_id in top_k ],
-                               'computation_time': int(1000*(endtime-starttime)),
-                               'visual_features': np.squeeze(hidden_layer) }
+                               'computation_time': int(1000*(endtime-starttime)) }
+
+                    if args.return_visual_features:
+                        result['visual_features'] = hidden_layer_squeezed.tolist()
 
                 except Exception as e:
                     result = { 'status': 'error',
                                'message': str(e) }
                 
 
-                result = json.dumps(result)
-                r_server.lpush('{}{}'.format(redis_prefix, message.message_id), result)
+                result_json = json.dumps(result)
+                r_server.lpush('{}{}'.format(args.redis_prefix, message.message_id), result_json)
                 message.delete()
+                
+                if args.return_visual_features:
+                    del result['visual_features'] # To avoid cluttering the output 
                 print(result)
-
-# http://stackoverflow.com/questions/38559755/how-to-get-current-available-gpus-in-tensorflow
-def get_available_gpus():
-    local_device_protos = device_lib.list_local_devices()
-    return len([x.name for x in local_device_protos if x.device_type == 'GPU'])
 
     
 def load_graph(path):
@@ -142,7 +144,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--gpus',
         help='How many GPUs to use',
-        default=get_available_gpus(),
+        default=1,
         type=int)
     parser.add_argument(
         '--threads',
@@ -154,6 +156,11 @@ if __name__ == '__main__':
         help='How much relative memory to scale for each thread',
         default=.9,
         type=float)
+    parser.add_argument(
+        '--return_visual_features',
+        help='Whether to return visual features, a 2048 floating point vector',
+        action='store_true')
+
     args = parser.parse_args()
 
     print('TensorFlow version {}. Starting {} threads on {} GPU cores, total of {} workers.'.format(tf.__version__,
@@ -167,6 +174,5 @@ if __name__ == '__main__':
 
     for gpu in range(args.gpus):
         for _ in range(args.threads):
-            mp.Process(target=classify_images, args=(gpu, mapping, args.sqs_queue, args.memory_scale_relative_to_threads/args.threads,
-                                                     args.model_dir, args.classifier, args.redis_server, args.redis_port,
-                                                     args.redis_prefix, args.num_top_predictions)).start()
+            mp.Process(target=classify_images, args=(gpu,)).start()
+    
