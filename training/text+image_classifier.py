@@ -38,10 +38,6 @@ parser.add_argument(
     type=int,
     default=2048)
 parser.add_argument(
-    '--conv_size',
-    type=int,
-    default=32)
-parser.add_argument(
     '--seq_len',
     help='Length of sequences. The sequences are typically longer than what might be needed.',
     type=int,
@@ -57,6 +53,10 @@ parser.add_argument(
     '--embedding',
     help='cnn or lstm',
     default='cnn')
+parser.add_argument(
+    '--save_model',
+    help='Filename of saved model',
+    default=False)
 args = parser.parse_args()
 
 if not os.path.exists(args.checkpoint_dir):
@@ -109,26 +109,21 @@ if args.embedding == 'cnn':
 
     filters = []
     for fw in filter_widths:
-        #x = Convolution1D(min(200, nb_filters_coeff*fw), fw, activation='tanh')(one_hot)
-        x = Convolution1D(nb_filters_coeff*fw, fw, activation='relu')(one_hot)
+        x = Convolution1D(nb_filters_coeff*fw, fw, activation='tanh')(one_hot)
         x = GlobalMaxPooling1D()(x)
         filters.append(x)
 
     merge = merge(filters + [ visual_inputs ], mode='concat')
-    
-    #merge = merge(filters, mode='concat')
+
+elif args.embedding == 'lstm':
 
     # # 15*35 new sequences to feed into LSTM
     # trunc = Reshape((15,35), input_shape=(525,))(filters)
     # lstm = Bidirectional(LSTM(args.hidden_size/2, unroll=True, dropout_U=.5))(trunc)
 
-    # merge = merge([lstm, visual_inputs], mode='concat')
-
-elif args.embedding == 'lstm':
-
     # accuracy 81% after 10 epochs, batch size 32, hidden 512
     merge = Bidirectional(LSTM(args.hidden_size/2, unroll=True, dropout_U=.5))(one_hot)
-    #merge = merge([lstm, visual_inputs ], mode='concat')
+    merge = merge([lstm, visual_inputs ], mode='concat')
     
 merge = BatchNormalization()(merge)
 
@@ -145,11 +140,11 @@ print(model.summary())
 check_cb = keras.callbacks.ModelCheckpoint(args.checkpoint_dir+args.filename+'.{epoch:02d}-{val_loss:.2f}.hdf5', monitor='val_loss',
                                            verbose=0, save_best_only=True, mode='min')
 
-# Should not be necessary
-keras.backend.get_session().run(tf.global_variables_initializer())
-
 model.fit([ text_train, visual_train ], target_train,
           nb_epoch=args.epochs,
           batch_size=args.batch_size,
-          validation_data=([ text_test, visual_test ], target_test))
-#          callbacks=[check_cb])
+          validation_data=([ text_test, visual_test ], target_test),
+          callbacks=[check_cb])
+
+if args.save_model:
+    model.save(args.save_model)

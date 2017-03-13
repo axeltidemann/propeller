@@ -239,7 +239,7 @@ def report_index(site):
         category_numbers = set([ category.split('/')[1] for category in keys ])
         data = pd.concat([ store['{}/stats'.format(key)] for key in category_numbers ], axis=1)
 
-        test_len, train_len, accuracy, top_k_accuracy, k, _ = data.values
+        test_len, train_len, accuracy, top_k_accuracy, k = data.values
 
         assert len(set(k)) == 1, 'Varying k values should not be possible'
         
@@ -283,7 +283,7 @@ def report_category(site, number):
         correct = store['{}/correct'.format(number)]
         wrong = store['{}/wrong/out'.format(number)]
 
-        test_len, train_len, accuracy, top_k_accuracy, k, num_images = stats.values
+        test_len, train_len, accuracy, top_k_accuracy, k = stats.values
 
         category = stats.columns[0]
         
@@ -375,7 +375,7 @@ def report_category(site, number):
                                  top_k_accuracy=top_k_accuracy,
                                  k=k,
                                  site=site,
-                                 num_images=num_images)
+                                 num_images=1)
 
 ################################### Images ###########################################
 
@@ -670,6 +670,7 @@ for i in range(1,10):
 global_data['kaidee_single_image'] = { 'report': '/mnt/kaidee/single_images/images_1_dense.pb_report.h5' }
 global_data['kaidee_single_image_top90'] = { 'report': '/mnt/kaidee/single_images/reports/dense_top90_report.h5' }
 global_data['kaidee_single_image_top90_curated'] = { 'report': '/mnt/kaidee/single_images/reports/dense_top90_curated_report.h5' }
+global_data['kaidee_images_and_text_top90_curated'] = { 'report': '/mnt/kaidee/10K_ads_with_first_image/img+title/classifiers/classic_report.h5'}
 
 red = redis.StrictRedis(args.redis_server, args.redis_port)
 red_db_1 = redis.StrictRedis(args.redis_server, args.redis_port, db=1)
