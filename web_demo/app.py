@@ -264,13 +264,21 @@ def _ad_images(index, mapping, prefix, number):
         paths.append(filenames)
     return paths
 
-    
+def _to_text(encoding, numbers):
+    text = []
+
+    for row in numbers:
+        text.append(''.join([ encoding[i] for i in row.split(',') ]))
+
+    return text
+
 @app.route('/report/<site>/<number>')
 @requires_auth
 def report_category(site, number):
 
     report = global_data[site]['report']
-
+    encoding = json.load(open(global_data[site]['encoding']))
+    
     try: 
         prefix = global_data[site]['prefix']
         mapping = { number: pd.read_hdf(global_data[site]['mapping'], number) }
@@ -293,15 +301,17 @@ def report_category(site, number):
             correct_paths = _ad_images(correct.index, mapping, prefix, [number]*len(correct))
         except:
             correct_paths = [ [c] for c in correct.index ]
-        
+
+        correct_title = _to_text(encoding, correct.text)
+            
         plotly_data.append(go.Scatter(
             x=np.linspace(0,100, num=len(correct)),
             y=correct.score,
             mode='lines',
             name='Correct',
             hoverinfo='name+y',
-            text=[ json.dumps({ 'paths': paths, 'prediction': category })
-                       for paths in correct_paths ]))
+            text=[ json.dumps({ 'paths': paths, 'prediction': category, 'text': title })
+                       for paths, title in zip(correct_paths, correct_title ) ]))
 
         category_map_names = {}
         for c in set(wrong.category):
@@ -314,14 +324,16 @@ def report_category(site, number):
         except:
             wrong_paths = [ [c] for c in wrong.index ]
 
+        wrong_title = _to_text(encoding, wrong.text)
+            
         plotly_data.append(go.Scatter(
             x=np.linspace(0,100, num=len(wrong)),
             y=wrong.score,
             mode='lines',
             name='Wrong',
             hoverinfo='name+y',
-            text=[ json.dumps({ 'paths': paths, 'prediction': prediction })
-                   for paths, prediction in zip(wrong_paths, wrong_categories)]))
+            text=[ json.dumps({ 'paths': paths, 'prediction': prediction, 'text': title })
+                   for paths, prediction, title in zip(wrong_paths, wrong_categories, wrong_title )]))
 
         layout = go.Layout(hovermode='closest', title='Performance of correct vs wrong classified pictures', xaxis={'title': '%'}, yaxis={'title': 'score'})
 
@@ -348,8 +360,9 @@ def report_category(site, number):
             except:
                 pass
 
-    wrong_out = sorted(zip(wrong.index, wrong_paths, wrong_categories, wrong.score), key=lambda x: x[-1], reverse=True)
+    wrong_out = sorted(zip(wrong.index, wrong_paths, wrong_categories, wrong_title, wrong.score), key=lambda x: x[-1], reverse=True)
 
+    # These try/exceptions are ripe for removal.
     try:
         wrong_in_paths = _ad_images(wrong_as_this.index, mapping, prefix, wrong_as_this.category)
 
@@ -358,8 +371,10 @@ def report_category(site, number):
 
         
     wrong_in_categories = [ category_map_names[c] for c in wrong_as_this.category ]
+
+    wrong_as_this_title = _to_text(encoding, wrong_as_this.text)
     
-    wrong_in = sorted(zip(wrong_as_this.index, wrong_in_paths, wrong_in_categories, wrong_as_this.score),
+    wrong_in = sorted(zip(wrong_as_this.index, wrong_in_paths, wrong_in_categories, wrong_as_this_title, wrong_as_this.score),
                       key=lambda x: x[-1], reverse=True)
 
     
@@ -670,7 +685,7 @@ for i in range(1,10):
 global_data['kaidee_single_image'] = { 'report': '/mnt/kaidee/single_images/images_1_dense.pb_report.h5' }
 global_data['kaidee_single_image_top90'] = { 'report': '/mnt/kaidee/single_images/reports/dense_top90_report.h5' }
 global_data['kaidee_single_image_top90_curated'] = { 'report': '/mnt/kaidee/single_images/reports/dense_top90_curated_report.h5' }
-global_data['kaidee_images_and_text_top90_curated'] = { 'report': '/mnt/kaidee/10K_ads_with_first_image/img+title/classifiers/classic_report.h5'}
+global_data['kaidee_images_and_text_top90_curated'] = { 'report': '/mnt/kaidee/10K_ads_with_first_image/img+title/classifiers/classic_report.h5', 'encoding': '/mnt/kaidee/ads_with_first_image/index_to_grapheme.json' }
 
 red = redis.StrictRedis(args.redis_server, args.redis_port)
 red_db_1 = redis.StrictRedis(args.redis_server, args.redis_port, db=1)

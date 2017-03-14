@@ -18,7 +18,34 @@ def encode(x):
 
 def grapheme_map(X):
     return [ graphemes_index[c] for c in regex.findall(u'\\X', X) if c in graphemes_index ]
+
+def create_grapheme_index(grapheme_counts, top_k):
+    grapheme_counts = json.load(open(grapheme_counts))
+
+    # Filtering out stuff:
     
+    # Numbers
+    for i in range(10):
+        del grapheme_counts[str(i)]
+
+    # Special characters
+    unwanted = ['(', ')', '.', '*', '_', '-', '%', '@', '=', ';', '"', ':', '!', '<', '>', '&', '+', '/', u'…']
+    for u in unwanted:
+        del grapheme_counts[u]
+
+    # Any roman characters (we will add these later)
+    for c in ascii_lowercase:
+        del grapheme_counts[c]
+
+    graphemes, _ = zip(*sorted(grapheme_counts.items(),
+                               key=lambda x: x[1], reverse=True))
+
+    graphemes = list(graphemes[:top_k]) + [c for c in ascii_lowercase]
+    
+    graphemes_index = { g: i+1 for i,g in enumerate(graphemes) } # Zero is used for padding.
+
+    return graphemes_index
+
 def save_text(category):
 
     titles = pd.read_csv(category,
@@ -94,30 +121,8 @@ if __name__ == '__main__':
         action='store_true')
     args = parser.parse_args()
 
-    grapheme_counts = json.load(open(args.grapheme_counts))
-
-    # Filtering out stuff:
+    graphemes_index = create_grapheme_index(args.grapheme_counts, args.top_k)
     
-    # Numbers
-    for i in range(10):
-        del grapheme_counts[str(i)]
-
-    # Special characters
-    unwanted = ['(', ')', '.', '*', '_', '-', '%', '@', '=', ';', '"', ':', '!', '<', '>', '&', '+', '/', u'…']
-    for u in unwanted:
-        del grapheme_counts[u]
-
-    # Any roman characters (we will add these later)
-    for c in ascii_lowercase:
-        del grapheme_counts[c]
-
-    graphemes, _ = zip(*sorted(grapheme_counts.items(),
-                               key=lambda x: x[1], reverse=True))
-
-    graphemes = list(graphemes[:args.top_k]) + [c for c in ascii_lowercase]
-    
-    graphemes_index = { g: i+1 for i,g in enumerate(graphemes) } # Zero is used for padding.
-
     pool = mp.Pool()
     results = pool.map(save_text, args.csv)
     results = filter(lambda x: isinstance(x, list), results)

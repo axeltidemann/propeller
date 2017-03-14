@@ -39,9 +39,10 @@ max-width: 200px;
 	  Hover over each image to see what category it was predicted to be, and with what score. Images that do not
 	  seem to fit in this category but in the <i>predicted</i> category indicates that the original label was wrong.
 	  <br/>
-	  {% for ad_id, paths, cat, score in wrong_out %}
+	  {% for ad_id, paths, cat, text, score in wrong_out %}
 	  <hr>
-	      Predicted to be <b>{{ cat }}</b> with score <b>{{ score|round(2) }}</b> <br/>
+	  <b>Ad title:</b> {{ text }} <br/>
+	  Predicted to be <b>{{ cat }}</b> with score <b>{{ score|round(2) }}</b> <br/>
 	      {% for path in paths[:(num_images|int)] %}
            	  <a href=/static{{ path }}><img class="lazy" data-original=/static{{ path }} title="Predicted to be '{{ cat }}' with score {{ score|round(2) }}"></a>
 	      {% endfor %}
@@ -52,8 +53,9 @@ max-width: 200px;
 	  here seem to belong to this category, it is an indication that the classifier was indeed predicting the right category, but that there were
 	  noisy labels in the other categories. <br/>
 	  
-	  {% for ad_id, paths, cat, score in wrong_in %}
+	  {% for ad_id, paths, cat, text, score in wrong_in %}
 	  <hr>
+	  <b>Ad title:</b> {{ text }} <br/>
 	  Predicted to be <b>{{ category }}</b> with score <b>{{ score|round(2) }}</b>, originally in <b>{{ cat }}</b> <br/>
 	     {% for path in paths[:(num_images|int)] %}
 	         <a href=/static{{ path }}><img class="lazy" data-original=/static{{ path }}
@@ -80,7 +82,7 @@ max-width: 200px;
            {% for i in range(num_images) %}
            hoverImage{{ i }}.src="/static"+info.paths[{{ i }}];
            {% endfor %}
-           hoverInfo.innerHTML = d.data.name+'ly classified as <b>' + info.prediction +'</b>, score <b>' + d.y.toPrecision(3) + '</b>';
+           hoverInfo.innerHTML = '<b>Ad title:</b> ' + info.text + '<br/>' + d.data.name+'ly classified as <b>' + info.prediction +'</b>, score <b>' + d.y.toPrecision(3) + '</b>';
         });
     });
 </script>
