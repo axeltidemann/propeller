@@ -392,6 +392,45 @@ def report_category(site, number):
                                  site=site,
                                  num_images=1)
 
+################################### Classifieds #####################################
+
+# This is needed to "fool" the Chrome pre-render mode, because it won't pre-render the same URL.
+@app.route('/classifieds/<int:dummy>')
+@requires_auth
+def pass_it_on(dummy):
+    return classify_random()
+
+@app.route('/classifieds')
+@requires_auth
+def classify_random():
+
+    site = 'kaidee_images_and_text_top90_curated'
+    t0 = time.time()
+    report = global_data[site]['report']
+    with pd.HDFStore(report, 'r') as store:
+        category = random.choice(store.keys())
+        category = category.split('/')[1]
+
+        stats = store['{}/stats'.format(category)]
+        
+        test_len, train_len, accuracy, top_k_accuracy, k = stats.values
+
+        correct = np.random.random() < accuracy
+        
+        pick = 'correct' if correct else 'wrong/out'
+        pick = '{}/{}'.format(category, pick)
+
+        ad = store[pick].sample()
+        
+        encoding = json.load(open(global_data[site]['encoding']))
+        print 'Loading data in {} seconds'.format(np.around(time.time()-t0, decimals=2))
+
+        title = _to_text(encoding, ad.text)
+
+    return flask.render_template('display_ad.html', path=ad.index[0], title=title[0], correct=correct, category=stats.columns[0])
+
+
+
 ################################### Images ###########################################
 
 @app.route('/images')

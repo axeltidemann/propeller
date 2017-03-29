@@ -1,0 +1,46 @@
+{% extends "layout.html" %}
+
+{% block header %}Ad title: {{ title }} {% endblock %}
+
+{% block content %}
+
+<div id="google_translate_element"></div><script type="text/javascript">
+  function googleTranslateElementInit() {
+  new google.translate.TranslateElement({pageLanguage: 'th', layout: google.translate.TranslateElement.InlineLayout.SIMPLE, multilanguagePage: true}, 'google_translate_element');
+  }
+  </script><script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+<TABLE>
+  <TR>
+    <TD>
+      <IMG SRC="/static{{ path }}">
+    </TD>
+    <TD>
+      <CENTER>
+	<div style="font-size: large;">
+	  {% if correct %}
+	  <IMG SRC="/static/yes.jpg">
+	  <br/>
+	  Correctly
+	  {% else %}
+	  <IMG SRC="/static/no.jpg">
+	  <br/>
+	  Wrongly
+	  {% endif %}
+	  classified as <b>{{ category }}</b>
+	</div>
+
+	<br/>
+	
+	{% set dummy = range(1, 1001) | random %}
+	<link href="/classifieds/{{ dummy }}" rel="prerender">
+	<a href="/classifieds/{{ dummy }}" style="font-size: large;">Next ad</a>
+	
+      </CENTER>
+    </TD>
+  </TR>
+</TABLE>
+<br/>
+
+
+{% endblock %}
