@@ -162,7 +162,7 @@ def experts_merge(branches):
     _experts = branches[1:]
 
     # First value is batch size. A bit confusing.
-    output_shape = K.shape(_experts[0])[1]
+    output_shape = K.int_shape(_experts[0])[1]
     out = K.zeros(shape=(output_shape,))
 
     for i,e in enumerate(_experts):

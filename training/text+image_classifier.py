@@ -1,23 +1,20 @@
 # Copyright 2016 Telenor ASA, Author: Axel Tidemann
 
 import argparse
-import json
 import time
 import glob
 import datetime
-import os
 
 import numpy as np
 import keras
 from keras.models import Sequential, Model
 from keras.layers.wrappers import Bidirectional
-from keras.layers import Dense, LSTM, merge, BatchNormalization, Lambda, Input
-from keras.layers.core import Flatten, Reshape
+from keras.layers import Dense, LSTM, merge, Input
 from keras.layers.convolutional import Convolution1D
-from keras.layers.pooling import MaxPooling1D, GlobalMaxPooling1D
+from keras.layers.pooling import GlobalMaxPooling1D
 from keras.layers.embeddings import Embedding
+from keras.layers.advanced_activations import ELU
 import pandas as pd
-import tensorflow as tf
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument(
@@ -36,31 +33,25 @@ parser.add_argument(
 parser.add_argument(
     '--hidden_size',
     type=int,
-    default=2048)
+    default=128)
+parser.add_argument(
+    '--lstm_size',
+    type=int,
+    default=128)
 parser.add_argument(
     '--seq_len',
     help='Length of sequences. The sequences are typically longer than what might be needed.',
     type=int,
     default=50)
 parser.add_argument(
-    '--filename',
-    help='What to call the checkpoint files.',
-    default=datetime.datetime.now().strftime("%Y-%m-%d_%H-%M"))
-parser.add_argument(
-    '--checkpoint_dir',
-    default='checkpoints/')
-parser.add_argument(
     '--embedding',
     help='cnn or lstm',
     default='cnn')
 parser.add_argument(
-    '--save_model',
-    help='Filename of saved model',
-    default=False)
+    '--mode',
+    help='text, image or both',
+    default='both')
 args = parser.parse_args()
-
-if not os.path.exists(args.checkpoint_dir):
-    os.makedirs(args.checkpoint_dir)
 
 def get_data(folder):
     text = []
@@ -113,23 +104,22 @@ if args.embedding == 'cnn':
         x = GlobalMaxPooling1D()(x)
         filters.append(x)
 
-    merge = merge(filters + [ visual_inputs ], mode='concat')
+    text = merge(filters, mode='concat')
 
 elif args.embedding == 'lstm':
 
-    # # 15*35 new sequences to feed into LSTM
-    # trunc = Reshape((15,35), input_shape=(525,))(filters)
-    # lstm = Bidirectional(LSTM(args.hidden_size/2, unroll=True, dropout_U=.5))(trunc)
-
     # accuracy 81% after 10 epochs, batch size 32, hidden 512
-    merge = Bidirectional(LSTM(args.hidden_size/2, unroll=True, dropout_U=.5))(one_hot)
-    merge = merge([lstm, visual_inputs ], mode='concat')
+    text = Bidirectional(LSTM(args.lstm_size/2, unroll=True, dropout_U=.5))(one_hot)
+
+if args.mode == 'text':
+    fusion = text
+if args.mode == 'image':
+    fusion = visual_inputs
+if args.mode == 'both':
+    fusion = merge([text, visual_inputs], mode='concat')
     
-merge = BatchNormalization()(merge)
-
-x = Dense(args.hidden_size, activation='relu')(merge)
-x = BatchNormalization()(x)
-
+x = Dense(args.hidden_size)(fusion)
+x = ELU()(x) # Alleviates need for batchnorm
 predictions = Dense(nb_classes, activation='softmax')(x)
 
 model = Model(input=[text_inputs, visual_inputs], output=predictions)
@@ -137,14 +127,7 @@ model = Model(input=[text_inputs, visual_inputs], output=predictions)
 model.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 print(model.summary())
 
-check_cb = keras.callbacks.ModelCheckpoint(args.checkpoint_dir+args.filename+'.{epoch:02d}-{val_loss:.2f}.hdf5', monitor='val_loss',
-                                           verbose=0, save_best_only=True, mode='min')
-
 model.fit([ text_train, visual_train ], target_train,
           nb_epoch=args.epochs,
           batch_size=args.batch_size,
-          validation_data=([ text_test, visual_test ], target_test),
-          callbacks=[check_cb])
-
-if args.save_model:
-    model.save(args.save_model)
+          validation_data=([ text_test, visual_test ], target_test))

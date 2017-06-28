@@ -87,7 +87,7 @@ def save_text(category):
 
     print '{}: mean: {}, median: {}, std: {}'.format(category, stats[0], stats[1], stats[2])
 
-    return stats
+    return encoding_lengths
         
         
 if __name__ == '__main__':
@@ -126,12 +126,17 @@ if __name__ == '__main__':
     pool = mp.Pool()
     results = pool.map(save_text, args.csv)
     results = filter(lambda x: isinstance(x, list), results)
+    flat_results = [ item for sublist in results for item in sublist ]
     
     print 'Graphemes used for encoding:',
-    for g in graphemes:
+    for g in sorted(graphemes_index.keys()):
         print g,
     print ''
     
-    print 'Mean of mean: {}, median: {}, std: {} of encodings before clipping/padding.'.format(np.mean([ x[0] for x in results]),
-                                                                                               np.median([ x[1] for x in results]),
-                                                                                               np.std([ x[2] for x in results]))
+    # print 'Mean of mean: {}, median: {}, std: {} of encodings before clipping/padding.'.format(np.mean([ x[0] for x in results]),
+    #                                                                                            np.median([ x[1] for x in results]),
+    #                                                                                            np.std([ x[2] for x in results]))
+
+    print 'Mean: {}, median: {}, std: {} of encodings before clipping/padding.'.format(np.mean(flat_results),
+                                                                                       np.median(flat_results),
+                                                                                       np.std(flat_results))

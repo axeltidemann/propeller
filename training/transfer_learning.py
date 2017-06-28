@@ -94,7 +94,7 @@ def learn(data, model_name, learning_rate, save_every, batch_size, hidden_size, 
             logits = tf.matmul(hidden_dropout, w4) + b4
 
         # Loss & train
-        cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(logits, y_)
+        cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits,labels=y_)
         train_step = tf.train.AdamOptimizer(learning_rate).minimize(cross_entropy)
 
         # Evaluation

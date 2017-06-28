@@ -38,6 +38,6 @@ mix = zip(accuracies, args.log_files)
 
 mix_sorted = sorted(mix, key=lambda x: x[0], reverse=True)
 
-for i in range(args.top_n):
+for i in range(min(args.top_n, len(mix_sorted))):
     print '{} {}'.format(mix_sorted[i][0], mix_sorted[i][1])
     
