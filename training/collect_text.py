@@ -22,6 +22,8 @@ def grapheme_map(X):
 def create_grapheme_index(grapheme_counts, top_k):
     grapheme_counts = json.load(open(grapheme_counts))
 
+    print 'Total number of graphemes before filtering: {}'.format(len(grapheme_counts))
+    
     # Filtering out stuff:
     
     # Numbers
@@ -29,7 +31,7 @@ def create_grapheme_index(grapheme_counts, top_k):
         del grapheme_counts[str(i)]
 
     # Special characters
-    unwanted = ['(', ')', '.', '*', '_', '-', '%', '@', '=', ';', '"', ':', '!', '<', '>', '&', '+', '/', u'…']
+    unwanted = ['(', ')', '.', '*', '_', '-', '%', '@', '=', ';', '"', ':', '!', '<', '>', '&', '+', '/', u'…', '#']
     for u in unwanted:
         del grapheme_counts[u]
 
@@ -40,6 +42,10 @@ def create_grapheme_index(grapheme_counts, top_k):
     graphemes, _ = zip(*sorted(grapheme_counts.items(),
                                key=lambda x: x[1], reverse=True))
 
+
+    ratio = 100.0*sum([ grapheme_counts[g] for g in graphemes[:top_k] ])/sum(grapheme_counts.values())
+    print '{} top thai graphemes are in {}% of the filtered dataset, which totals {} graphemes'.format(top_k, ratio, len(grapheme_counts))
+    
     graphemes = list(graphemes[:top_k]) + [c for c in ascii_lowercase]
     
     graphemes_index = { g: i+1 for i,g in enumerate(graphemes) } # Zero is used for padding.
@@ -114,7 +120,7 @@ if __name__ == '__main__':
         '--top_k',
         help='Top K graphemes to use, based on counts of the graphemes - excluding latin characters',
         type=int,
-        default=200) # Top 200 graphemes account for 95% of the data
+        default=200) # Top 200 graphemes account for 96.1% of the data
     parser.add_argument(
         '--with_description',
         help='Includes the description as well as the title',
@@ -132,10 +138,6 @@ if __name__ == '__main__':
     for g in sorted(graphemes_index.keys()):
         print g,
     print ''
-    
-    # print 'Mean of mean: {}, median: {}, std: {} of encodings before clipping/padding.'.format(np.mean([ x[0] for x in results]),
-    #                                                                                            np.median([ x[1] for x in results]),
-    #                                                                                            np.std([ x[2] for x in results]))
 
     print 'Mean: {}, median: {}, std: {} of encodings before clipping/padding.'.format(np.mean(flat_results),
                                                                                        np.median(flat_results),

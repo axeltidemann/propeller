@@ -28,16 +28,28 @@ with open(experiment_file, 'w') as _file:
 
 
     # Classic monolithic network
-    # for hidden_size in [ 128, 256, 512, 1024, 2048 ]:
-    #     outfile = 'hidden_size_{}'.format(hidden_size)
-    #     print(' python ~/propeller/training/text+image_classifier.py ../../train_top90_curated/ ../../test_top90_curated/ --hidden_size {} > {}'.format(hidden_size, outfile), file=_file)
+    for hidden_size in [ 64, 128, 256, 512, 1024, 2048 ]:
+        outfile = 'hidden_size_{}'.format(hidden_size)
+        print(' python ~/propeller/training/text+image_classifier.py ../../data_top90_curated/ --hidden_size {} --n_experiments 10 > {}'.format(hidden_size, outfile), file=_file)
 
 
     # Just LSTM
-    for hidden_size in [ 128, 256, 512 ]:
-        outfile = 'lstm_size_{}'.format(hidden_size)
-        print(' python ~/propeller/training/text+image_classifier.py ../../train_top90_curated/ ../../test_top90_curated/ --lstm_size {} --hidden_size 128 --mode text --embedding lstm > {}'.format(hidden_size, outfile), file=_file)
+    # for hidden_size in [ 128, 256, 512 ]:
+    #     outfile = 'lstm_size_{}'.format(hidden_size)
+    #     print(' python ~/propeller/training/text+image_classifier.py ../../train_top90_curated/ ../../test_top90_curated/ --lstm_size {} --hidden_size 128 --mode text --embedding lstm > {}'.format(hidden_size, outfile), file=_file)
 
-                    
+    # Testing batch sizes
+    # for batch_size in [ 32, 64, 128, 256, 512 ]:
+    #     outfile = 'batch_size_{}'.format(batch_size)
+    #     print(' python ~/propeller/training/text+image_classifier.py ../../train_top90_curated/ ../../test_top90_curated/ --hidden_size 128 --batch_size {} --mode image > {}'.format(batch_size, outfile), file=_file)
+
+    # Testing batch and hidden size
+    # for hidden_size in [ 128, 256, 512, 1024, 2048 ]:
+    #         for batch_size in [ 32, 64, 128, 256, 512 ]:
+    #             outfile = 'hidden_size_{}_batch_size_{}'.format(hidden_size, batch_size)
+    #             print(' python ~/propeller/training/text+image_classifier.py ../../train_top90_curated/ ../../test_top90_curated/ --hidden_size {} --batch_size {} > {}'.format(hidden_size, batch_size, outfile), file=_file)
+
+
+        
 st = os.stat(experiment_file)
 os.chmod(experiment_file, st.st_mode | stat.S_IEXEC)
