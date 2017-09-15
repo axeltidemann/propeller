@@ -57,6 +57,11 @@ parser.add_argument(
     help='Number of experiments to run',
     type=int,
     default=1)
+parser.add_argument(
+    '--filter_value',
+    help='Calculate stats for predictions above this threshold',
+    type=float,
+    default=0.0)
 args = parser.parse_args()
 
 t0 = time.time()
@@ -77,6 +82,8 @@ targets = np.vstack(targets)
 print 'Loading data took {} seconds'.format(time.time()-t0)
 
 test_accuracies = []
+filter_accuracies = []
+filter_lengths = []
 
 for experiment in range(args.n_experiments):
 
@@ -156,5 +163,27 @@ for experiment in range(args.n_experiments):
     
     test_accuracies.append(accuracy)
 
+    if args.filter_value > 0:
+        predict = model.predict([ text_test, visual_test ], batch_size=args.batch_size)
+        results = pd.DataFrame(data=np.hstack([ np.expand_dims(np.max(predict, axis=1),-1),
+                                                np.expand_dims(np.argmax(predict, axis=1),-1),
+                                                target_test ]), columns=['score', 'predicted', 'target'])
+        results_filter = results[ results.score > args.filter_value ]
+        filter_accuracy = np.mean(results_filter.predicted == results_filter.target)
+
+        print '\nFiltered accuracy (above {}, {}%) experiment {}: {}'.format(args.filter_value,
+                                                                             100.*len(results_filter)/len(results),
+                                                                             experiment, filter_accuracy)
+
+        filter_accuracies.append(filter_accuracy)
+        filter_lengths.append(float(len(results_filter))/len(results))
+
 print 'Test accuracy over {} experiments: mean: {} std: {}'.format(args.n_experiments, np.mean(test_accuracies),
                                                                    np.std(test_accuracies))
+
+if args.filter_value > 0:
+    print 'Filtered accuracy value (above {}) over {} experiments: mean {} std: {}. Average length: {}%'.format(args.filter_value,
+                                                                                                                args.n_experiments,
+                                                                                                                np.mean(filter_accuracies),
+                                                                                                                np.std(filter_accuracies),
+                                                                                                                100.*np.mean(filter_lengths))
