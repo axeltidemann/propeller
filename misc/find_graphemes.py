@@ -2,73 +2,74 @@
 
 import os
 import argparse
-import csv
 import json
 from collections import Counter
 import multiprocessing as mp
 
 import numpy as np
 import regex
+import pandas as pd
+import matplotlib
+matplotlib.use('agg')
+import matplotlib.pyplot as plt
 
 parser = argparse.ArgumentParser(description='''
-    Reads files with ad ids, titles and descriptions, and finds
-    all the unique graphemes in them. Saves counts and inverse mappings as well.
+    Reads HDF5 files with ad ids, titles, descriptions, price and image paths. Finds
+    all the unique graphemes in them, mean/std of price and how many images on average there are.
     ''', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument(
-    'csv',
-    help='CSV file(s) with ad ids, title and description',
-    nargs='+')
-parser.add_argument(
-    '--mapping_filename',
-    help='Filename of the JSON mapping file. _inverse and _counter will be appended to this filename.', 
-    default='grapheme_mapping.json')
+    'hdf',
+    help='HDF5 file with ads')
+parser.add_argument('--target_folder',
+                    help='Where to put the histograms',
+                    default='/online_classifieds/chotot/plots/histograms')
+
 args = parser.parse_args()
 
-def encode(x):
-    return unicode(x[1:-1], 'utf-8').lower()
+def traverse(key):
 
-def traverse(_file):
+    print('Opening', args.hdf, key)
 
-    letters = set([])
-    lengths = []
-    grapheme_counter = Counter()
+    data = pd.read_hdf(args.hdf, key, stop=1000)
 
-    print 'Opening {}'.format(_file)
-    with open(_file, 'rb') as csvfile:
-        reader = csv.reader(csvfile)
-        for ad_id, title, description in reader:
-            title = encode(title)
-            description = encode(description)
-            graphemes = regex.findall(u'\\X', title+description)
-            letters = letters.union(graphemes)
-            grapheme_counter.update(graphemes)
-            lengths.append(len(graphemes))
+    raw_text = ''.join([ str(t) for t in data.title + data.description ])
+    graphemes = regex.findall(r'\X', raw_text, regex.U)
 
-    return letters, lengths, grapheme_counter
+    for variable in zip(['title', 'description']):
 
+        if variable == 'price':
+            x = data.price
+        else:
+            x = data[variable].dropna().apply(lambda x: len(regex.findall(r'\X', x, regex.U)))
 
+        N = np.format_float_scientific(len(x), precision=1, exp_digits=1)
+        N = len(x)
+        pct = np.around(100*np.mean(~pd.isnull(data[variable])), 1)
+        
+        fig, ax = plt.subplots()
+        frq, edges = np.histogram(x, bins='doane') # doane best when data is not normally distributed
+        ax.bar(edges[:-1], frq, width=np.diff(edges), align='edge')
+        
+        fig.axes[0].set_title('N = {} ({}%)'.format(N, pct))
+        
+        plt.grid(False)
+        plt.xlabel('{}: $\mu = {}, \sigma={}$'.format(variable, np.mean(x), np.std(x)))
+        plt.savefig('{}/{}_{}.png'.format(target_folder, key, variable), dpi=300)
+
+    return Counter(graphemes)
+
+with pd.HDFStore(args.hdf, mode='r') as store:
+    keys = store.keys()
+    
 pool = mp.Pool()
-results = pool.map(traverse, args.csv)
+results = pool.map(traverse, keys)
 
-letters = set([])
-lengths = []
-grapheme_counter = Counter()
+counter = Counter()
 
-for lt, ln, gc in results:
-    letters.union(lt)
-    lengths.extend(ln)
-    grapheme_counter.update(gc)
-            
-mapping = { c: i for i,c in enumerate(letters) }
-mapping_inverse = { i: c for i,c in enumerate(letters) }
+for cntr in results:
+    counter.update(cntr)
 
-with open(args.mapping_filename, 'w') as _file:
-    json.dump(mapping, _file, sort_keys=True, indent=4)
-    
-with open('{}_inverse'.format(args.mapping_filename), 'w') as _file:
-    json.dump(mapping_inverse, _file, sort_keys=True, indent=4)
+file_name = '{}.json'.format(args.hdf)
 
-with open('{}_counter'.format(args.mapping_filename), 'w') as _file:
-    json.dump(grapheme_counter, _file, sort_keys=True, indent=4)
-    
-print 'Encoding lengths: mean: {}, median: {}, std: {}, max: {}, min: {}'.format(np.mean(lengths), np.median(lengths), np.std(lengths), max(lengths), min(lengths))
+with open(file_name, 'w') as _file:
+    json.dump(counter, _file, sort_keys=True, indent=4)
