@@ -1,4 +1,5 @@
 import argparse
+import os
 
 import pandas as pd
 import numpy as np
@@ -16,7 +17,7 @@ def strip(x):
     if pd.isnull(x):
         return x
     
-    x = x.replace('s3://chotot-staging/content_moderation/','')
+    x = x.replace('s3://chotot-staging/content_moderation/','/online_classifieds/chotot/')
     k = x.rfind('/')
     return x[:k]
 
@@ -43,6 +44,6 @@ with pd.HDFStore('chotot.h5', mode='w') as store:
         cleaned.price = cleaned.price.astype(float)
         cleaned.images = cleaned.images.apply(strip)
 
-        store.append(csv_file, cleaned, complib='blosc', complevel=9, data_columns=['ad_id'])
+        store.append(os.path.basename(csv_file), cleaned, complib='blosc', complevel=9, data_columns=['ad_id'])
         print('Cleaned', csv_file, 'appended, new length:', len(cleaned),
               '({}%)'.format(np.around(100*len(cleaned)/len(filtered),1)))
