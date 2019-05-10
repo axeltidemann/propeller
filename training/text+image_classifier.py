@@ -13,6 +13,7 @@ from keras.layers.convolutional import Convolution1D
 from keras.layers.pooling import GlobalMaxPooling1D
 from keras.layers.embeddings import Embedding
 from keras.layers.advanced_activations import ELU
+from sklearn.model_selection import train_test_split
 import pandas as pd
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -32,10 +33,6 @@ parser.add_argument(
     type=int,
     default=128)
 parser.add_argument(
-    '--lstm_size',
-    type=int,
-    default=512)
-parser.add_argument(
     '--dropout',
     type=float,
     default=.5)
@@ -45,70 +42,44 @@ parser.add_argument(
     type=int,
     default=50)
 parser.add_argument(
-    '--embedding',
-    help='cnn or lstm',
-    default='cnn')
-parser.add_argument(
-    '--mode',
-    help='text, image or both',
-    default='both')
-parser.add_argument(
-    '--n_experiments',
-    help='Number of experiments to run',
-    type=int,
-    default=1)
-parser.add_argument(
     '--filter_value',
     help='Calculate stats for predictions above this threshold',
     type=float,
     default=0.0)
+parser.add_argument(
+    '--test_validation_ratio',
+    help='The ratio to use for validation and testing (50% each)',
+    type=float,
+    default=0.2)
 args = parser.parse_args()
 
 t0 = time.time()
 
-titles = []
-images = []
-targets = []
+with h5py.File(args.hdf, 'r', libver='latest') as h5_file:
+    categories = [ 'categories/{}'.format(c) for c in list(h5_file['categories'].keys()) ]
+    sizes = [ h5_file['{}/table'].shape[0] for c in categories ]
 
-for i,h5 in enumerate(sorted(glob.glob('{}/*'.format(args.data)))):
-    titles.append(pd.read_hdf(h5, 'text'))
-    images.append(pd.read_hdf(h5, 'visual'))
-    targets.extend([i]*len(titles[-1]))
+min_size = min(sizes)
+data = pd.DataFrame()
 
-titles = np.vstack(titles)
-images = np.vstack(images)
-targets = np.vstack(targets)
+for target, category in enumerate(categories):
+    _data = pd.read_hdf(args.data, key=category, stop=min_size)
+    _data['target'] = target
 
-print 'Loading data took {} seconds'.format(time.time()-t0)
+    data = data.append(_data)
+
+train, X = train_test_split(data, shuffle=True, test_size=args.test_validation_ratio)
+validation, test = train_test_split(X, test_size=.5)
 
 test_accuracies = []
 filter_accuracies = []
 filter_lengths = []
 
-for experiment in range(args.n_experiments):
 
-    idx = np.random.permutation(len(titles))
 
-    train_idx = idx[:int(len(titles)*.8)]
-    validate_idx = idx[int(len(titles)*.8):int(len(titles)*.9)]
-    test_idx = idx[int(len(titles)*.9):]
 
-    text_train = titles[train_idx, :args.seq_len]
-    text_validate = titles[validate_idx, :args.seq_len]
-    text_test = titles[test_idx, :args.seq_len]
-
-    visual_train = images[train_idx]
-    visual_validate = images[validate_idx]
-    visual_test = images[test_idx]
-
-    target_train = targets[train_idx]
-    target_validate = targets[validate_idx]
-    target_test = targets[test_idx]
-
-    nb_classes = len(np.unique(targets))
-
-    vocab_size = np.max(titles)
-    params = np.eye(vocab_size+1, dtype=np.float32)
+vocab_size = np.max(titles)
+params = np.eye(vocab_size+1, dtype=np.float32)
 
     # 0 is the padding number, space is 1. However, space is an important character in thai.
     # We don't need to confuse the convolution unnecessarily.

@@ -11,6 +11,9 @@ parser.add_argument(
     'csv',
     help='CSV file(s).',
     nargs='+')
+parser.add_argument('--test',
+                    help='Run on smaller part of the dataset',
+                    action='store_true')
 args = parser.parse_args()
 
 def strip(x):
@@ -28,12 +31,14 @@ def valid(index, price):
         return True
     except:
         return False
-    
+
+nrows = 1000 if args.test else None
+names = ['ad_id','title', 'description', 'price', 'images']
 
 with pd.HDFStore('chotot.h5', mode='w') as store:
     for csv_file in args.csv:
 
-        raw = pd.read_csv(csv_file, header=None, names=['ad_id','title', 'description', 'price', 'images'], encoding='utf-8')
+        raw = pd.read_csv(csv_file, header=None, names=names, encoding='utf-8', nrows=nrows)
         filtered = raw.groupby(by='ad_id', sort=False).first()
         
         print('Read', csv_file, 'original length:', len(filtered))
@@ -44,6 +49,6 @@ with pd.HDFStore('chotot.h5', mode='w') as store:
         cleaned.price = cleaned.price.astype(float)
         cleaned.images = cleaned.images.apply(strip)
 
-        store.append(os.path.basename(csv_file), cleaned, complib='blosc', complevel=9, data_columns=['ad_id'])
+        store.append('categories/{}'.format(os.path.basename(csv_file)), cleaned, complib='blosc', complevel=9, data_columns=['ad_id'])
         print('Cleaned', csv_file, 'appended, new length:', len(cleaned),
               '({}%)'.format(np.around(100*len(cleaned)/len(filtered),1)))
