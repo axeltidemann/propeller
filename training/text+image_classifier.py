@@ -1,20 +1,22 @@
-# Copyright 2016 Telenor ASA, Author: Axel Tidemann
+# Copyright 2019 Telenor ASA, Author: Axel Tidemann
 
 import argparse
 import time
 import glob
+import random
 
 import numpy as np
 import keras
 from keras.models import Sequential, Model
-from keras.layers.wrappers import Bidirectional
-from keras.layers import Dense, LSTM, merge, Input, Dropout
+from keras.layers import Dense, Concatenate, Input, Dropout
 from keras.layers.convolutional import Convolution1D
 from keras.layers.pooling import GlobalMaxPooling1D
 from keras.layers.embeddings import Embedding
 from keras.layers.advanced_activations import ELU
+from keras.preprocessing.sequence import pad_sequences
 from sklearn.model_selection import train_test_split
 import pandas as pd
+import h5py
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument(
@@ -42,7 +44,7 @@ parser.add_argument(
     default=.5)
 parser.add_argument(
     '--seq_len',
-    help='Length of sequences. The sequences are typically longer than what might be needed.',
+    help='Length of input sequences.',
     type=int,
     default=50)
 parser.add_argument(
@@ -54,120 +56,110 @@ parser.add_argument(
     '--filter_value',
     help='Calculate stats for predictions above this threshold',
     type=float,
-    default=0.0)
+    default=0)
 parser.add_argument(
     '--test_validation_ratio',
     help='The ratio to use for validation and testing (50% each)',
     type=float,
     default=0.2)
+parser.add_argument(
+    '--test',
+    help='Test on a smaller part of the dataset',
+    action='store_true')
 args = parser.parse_args()
 
+N = 2048
+
 t0 = time.time()
-
-with h5py.File(args.hdf, 'r', libver='latest') as h5_file:
-    categories = [ 'categories/{}'.format(c) for c in list(h5_file['categories'].keys()) ]
-    sizes = [ h5_file['{}/table'].shape[0] for c in categories ]
-
-min_size = min(sizes)
-data = pd.DataFrame()
-
-for target, category in enumerate(categories):
-    _data = pd.read_hdf(args.data, key=category, stop=min_size)
-    _data['target'] = target
-
-    data = data.append(_data)
-
-train, X = train_test_split(data, shuffle=True, test_size=args.test_validation_ratio)
-validation, test = train_test_split(X, test_size=.5)
 
 graphemes = pd.read_hdf(args.data, key='graphemes')
 graphemes_used = graphemes.grapheme[:args.graphemes]
 grapheme_map = { g:i for i,g in enumerate(graphemes_used) }
 
-###### THIS IS WHERE WE GOT
+with h5py.File(args.data, 'r', libver='latest') as h5_file:
+    categories = [ 'categories/{}'.format(c) for c in list(h5_file['categories'].keys()) ]
+    sizes = [ h5_file['{}/table'.format(c)].shape[0] for c in categories ]
 
-test_accuracies = []
-filter_accuracies = []
-filter_lengths = []
+    min_size = 100 if args.test else min(sizes)
+    data = pd.DataFrame()
 
+    for target, category in enumerate(categories):
+        _data = pd.read_hdf(args.data, key=category, stop=min_size)
+        _data['target'] = target
+        _data['text'] = _data.title.apply(lambda x: [ grapheme_map[g] for g in x if g in grapheme_map ])
+        padded = pad_sequences(_data.text, maxlen=args.seq_len, padding='post', truncating='post')
+        _data.text = [ pad for pad in padded ]
+        _data['embeddings'] = [ h5_file['images/{}/{}'.format(category, ad_id)] for ad_id in _data.index ]
 
-vocab_size = np.max(titles)
-params = np.eye(vocab_size+1, dtype=np.float32)
+        data = data.append(_data)
 
-# 0 is the padding number, space is 1. However, space is an important character in thai.
-# We don't need to confuse the convolution unnecessarily.
-params[0][0] = 0 
+    print('Loading data in {} seconds.'.format(time.time() - t0))
 
-filter_widths = range(1,7)
-nb_filters_coeff = 25
+    train, X = train_test_split(data, shuffle=True, test_size=args.test_validation_ratio)
 
-text_inputs = Input(shape=(text_train.shape[1],))
-visual_inputs = Input(shape=(visual_train.shape[1],))
+    validation, test = train_test_split(X, test_size=.5)
 
-one_hot = Embedding(vocab_size+1, vocab_size+1, weights=[params], trainable=False)(text_inputs)
+    filter_widths = range(1,7)
+    nb_filters_coeff = 25
 
-if args.embedding == 'cnn':
+    text_inputs = Input(shape=(args.seq_len,), name='text')
+    visual_inputs = Input(shape=(N,), name='vision')
+
+    text_embedding = Embedding(args.graphemes + 1, args.embedding_size, input_length=args.seq_len)(text_inputs)
 
     filters = []
     for fw in filter_widths:
-        x = Convolution1D(nb_filters_coeff*fw, fw, activation='tanh')(one_hot)
+        x = Convolution1D(nb_filters_coeff*fw, fw, activation='tanh')(text_embedding)
         x = GlobalMaxPooling1D()(x)
         filters.append(x)
 
-    text_embedding = merge(filters, mode='concat')
+    fusion = Concatenate()(filters + [visual_inputs])
 
-elif args.embedding == 'lstm':
+    x = Dropout(args.dropout)(fusion)
+    x = Dense(args.hidden_size)(x)
+    x = ELU()(x) # Alleviates need for batchnorm
+    x = Dropout(args.dropout)(x)
+    predictions = Dense(len(categories), activation='softmax')(x)
 
-    text_embedding = Bidirectional(LSTM(args.lstm_size/2, unroll=True, dropout_U=args.dropout))(one_hot)
+    model = Model(inputs=[text_inputs, visual_inputs], outputs=predictions)
 
-if args.mode == 'text':
-    fusion = text_embedding
-if args.mode == 'image':
-    fusion = visual_inputs
-if args.mode == 'both':
-    fusion = merge([text_embedding, visual_inputs], mode='concat')
+    model.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+    print(model.summary())
 
-x = Dense(args.hidden_size)(fusion)
-x = ELU()(x) # Alleviates need for batchnorm
-x = Dropout(args.dropout)(x)
-predictions = Dense(nb_classes, activation='softmax')(x)
+    def serve(df):
+        vision = np.vstack(df.embeddings.apply(lambda x: random.choice(x) if len(x) else np.zeros(N)))
+        text = np.vstack(df.text)
+        
+        inputs = {'vision': vision, 'text': text}
+        outputs = df.target
 
-model = Model(input=[text_inputs, visual_inputs], output=predictions)
+        return (inputs, outputs)
 
-model.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-print(model.summary())
+    def yield_batches(df, batch_size):
+        while True:
+            batch = df.sample(batch_size)
+            yield serve(batch)
 
-model.fit([ text_train, visual_train ], target_train,
-          nb_epoch=args.epochs,
-          batch_size=args.batch_size,
-          validation_data=([ text_validate, visual_validate ], target_validate))
+    train_data_generator = yield_batches(train, args.batch_size)
+    validation_data = serve(validation)
+    test_data = serve(test)
 
-loss, accuracy = model.evaluate([ text_test, visual_test ], target_test, batch_size=args.batch_size)
-print '\nTest accuracy experiment {}: {}'.format(experiment, accuracy)
+    model.fit_generator(train_data_generator,
+                        steps_per_epoch=len(train)/args.batch_size,
+                        epochs=args.epochs,
+                        validation_data=validation_data)
 
-test_accuracies.append(accuracy)
+    loss, accuracy = model.evaluate(test_data[0], test_data[1], batch_size=args.batch_size)
+    print('Test accuracy {}'.format(accuracy))
 
-if args.filter_value > 0:
-    predict = model.predict([ text_test, visual_test ], batch_size=args.batch_size)
-    results = pd.DataFrame(data=np.hstack([ np.expand_dims(np.max(predict, axis=1),-1),
-                                            np.expand_dims(np.argmax(predict, axis=1),-1),
-                                            target_test ]), columns=['score', 'predicted', 'target'])
-    results_filter = results[ results.score > args.filter_value ]
-    filter_accuracy = np.mean(results_filter.predicted == results_filter.target)
+    if args.filter_value > 0:
+        predict = model.predict(test_data[0], batch_size=args.batch_size)
+        results = pd.DataFrame(data=np.hstack([ np.expand_dims(np.max(predict, axis=1),-1),
+                                                np.expand_dims(np.argmax(predict, axis=1),-1),
+                                                test_data[1] ]), columns=['score', 'predicted', 'target'])
+        results_filter = results[ results.score > args.filter_value ]
+        filter_accuracy = np.mean(results_filter.predicted == results_filter.target)
 
-    print '\nFiltered accuracy (above {}, {}%) experiment {}: {}'.format(args.filter_value,
-                                                                         100.*len(results_filter)/len(results),
-                                                                         experiment, filter_accuracy)
-
-    filter_accuracies.append(filter_accuracy)
-    filter_lengths.append(float(len(results_filter))/len(results))
-
-print 'Test accuracy over {} experiments: mean: {} std: {}'.format(args.n_experiments, np.mean(test_accuracies),
-                                                                   np.std(test_accuracies))
-
-if args.filter_value > 0:
-    print 'Filtered accuracy value (above {}) over {} experiments: mean {} std: {}. Average length: {}%'.format(args.filter_value,
-                                                                                                                args.n_experiments,
-                                                                                                                np.mean(filter_accuracies),
-                                                                                                                np.std(filter_accuracies),
-                                                                                                                100.*np.mean(filter_lengths))
+        print('Filtered accuracy (above {}, {}%): {}'.format(args.filter_value,
+                                                             100.*len(results_filter)/len(results),
+                                                             filter_accuracy))
