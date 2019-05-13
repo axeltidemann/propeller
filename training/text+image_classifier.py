@@ -31,6 +31,10 @@ parser.add_argument(
     type=int,
     default=10)
 parser.add_argument(
+    '--seed',
+    type=int,
+    default=7)
+parser.add_argument(
     '--hidden_size',
     type=int,
     default=128)
@@ -68,6 +72,8 @@ parser.add_argument(
     action='store_true')
 args = parser.parse_args()
 
+np.random.seed(args.seed)
+
 N = 2048
 
 t0 = time.time()
@@ -86,11 +92,16 @@ with h5py.File(args.data, 'r', libver='latest') as h5_file:
     for target, category in enumerate(categories):
         _data = pd.read_hdf(args.data, key=category, stop=min_size)
         _data['target'] = target
-        _data['text'] = _data.title.apply(lambda x: [ grapheme_map[g] for g in x if g in grapheme_map ])
-        padded = pad_sequences(_data.text, maxlen=args.seq_len, padding='post', truncating='post')
-        _data.text = [ pad for pad in padded ]
-        _data['embeddings'] = [ h5_file['images/{}/{}'.format(category, ad_id)] for ad_id in _data.index ]
 
+        for text_field in ['title', 'description']:
+            enc_name = '{}_encoded'.format(text_field)
+            _data[enc_name] = _data[text_field].apply(lambda x: [0] if pd.isnull(x)
+                                                      else [ grapheme_map[g] for g in x if g in grapheme_map ])
+            padded = pad_sequences(_data[enc_name], maxlen=args.seq_len, padding='post', truncating='post')
+            _data[enc_name] = [ p for p in padded ]
+        
+        _data['embeddings'] = [ h5_file['images/{}/{}'.format(category, ad_id)] for ad_id in _data.index ]
+        
         data = data.append(_data)
 
     print('Loading data in {} seconds.'.format(time.time() - t0))
@@ -102,16 +113,18 @@ with h5py.File(args.data, 'r', libver='latest') as h5_file:
     filter_widths = range(1,7)
     nb_filters_coeff = 25
 
-    text_inputs = Input(shape=(args.seq_len,), name='text')
+    title_inputs = Input(shape=(args.seq_len,), name='title')
+    description_inputs = Input(shape=(args.seq_len,), name='description')
     visual_inputs = Input(shape=(N,), name='vision')
 
-    text_embedding = Embedding(args.graphemes + 1, args.embedding_size, input_length=args.seq_len)(text_inputs)
-
     filters = []
-    for fw in filter_widths:
-        x = Convolution1D(nb_filters_coeff*fw, fw, activation='tanh')(text_embedding)
-        x = GlobalMaxPooling1D()(x)
-        filters.append(x)
+    for text_inputs in [ title_inputs, description_inputs ]:
+        embedding = Embedding(args.graphemes + 1, args.embedding_size, input_length=args.seq_len)(text_inputs)
+        
+        for fw in filter_widths:
+            x = Convolution1D(nb_filters_coeff*fw, fw, activation='tanh')(embedding)
+            x = GlobalMaxPooling1D()(x)
+            filters.append(x)
 
     fusion = Concatenate()(filters + [visual_inputs])
 
@@ -121,16 +134,17 @@ with h5py.File(args.data, 'r', libver='latest') as h5_file:
     x = Dropout(args.dropout)(x)
     predictions = Dense(len(categories), activation='softmax')(x)
 
-    model = Model(inputs=[text_inputs, visual_inputs], outputs=predictions)
+    model = Model(inputs=[title_inputs, description_inputs, visual_inputs], outputs=predictions)
 
     model.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
     print(model.summary())
 
     def serve(df):
         vision = np.vstack(df.embeddings.apply(lambda x: random.choice(x) if len(x) else np.zeros(N)))
-        text = np.vstack(df.text)
+        title = np.vstack(df['title_encoded'])
+        description = np.vstack(df['description_encoded'])
         
-        inputs = {'vision': vision, 'text': text}
+        inputs = {'vision': vision, 'title': title, 'description': description}
         outputs = df.target
 
         return (inputs, outputs)
