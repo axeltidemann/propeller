@@ -1,15 +1,10 @@
-# Distributions of length title, description + price
-# Also overall
-# Plot grapheme sorted count with plotly
+# Copyright 2019 Telenor ASA, Author: Axel Tidemann
 
 import os
 import argparse
-import json
-from collections import Counter
 import multiprocessing as mp
 
 import numpy as np
-import regex
 import pandas as pd
 import h5py
 import plotly
@@ -17,7 +12,6 @@ import plotly.graph_objs as go
 import matplotlib
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
-
 
 parser = argparse.ArgumentParser(description='''
     Reads HDF5 files with ad ids, titles, descriptions, price and image paths. Finds

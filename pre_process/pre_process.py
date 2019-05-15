@@ -2,7 +2,6 @@
 
 import os
 import argparse
-import json
 from collections import Counter
 import multiprocessing as mp
 
