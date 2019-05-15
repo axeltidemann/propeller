@@ -15,14 +15,13 @@ from keras.applications import Xception
 from keras.applications.inception_v3 import preprocess_input
 from keras.preprocessing.image import img_to_array, load_img
 from scipy.misc import imresize
-import h5py
 
 parser = argparse.ArgumentParser(description='''
     Reads HDF5 files with ad ids, titles, descriptions, price and image paths. Finds
     all unique graphemes and embeddings, stores them in the same file.
     ''', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument(
-    'hdf',
+    'data',
     help='HDF5 file with ads')
 parser.add_argument(
     '--gpus',
@@ -41,20 +40,20 @@ parser.add_argument(
     type=int)
 args = parser.parse_args()
 
-######################## GRAPHEMES ##########################
+# Graphemes
 
 def count(key):
 
-    print('Opening', args.hdf, key)
+    print('Opening', args.data, key)
 
-    data = pd.read_hdf(args.hdf, key=key)
+    data = pd.read_hdf(args.data, key=key)
 
     raw_text = ''.join([ str(t) for t in data.title + data.description ])
     graphemes = regex.findall(r'\X', raw_text, regex.U)
 
     return Counter(graphemes)
 
-with h5py.File(args.hdf, 'r+', libver='latest') as h5_file:
+with h5py.File(args.data, 'r+', libver='latest') as h5_file:
 
     for content in ['graphemes', 'images']:
         if content in h5_file:
@@ -73,11 +72,11 @@ for cntr in results:
 
 graphemes = pd.DataFrame(data=counter.most_common(), columns=['grapheme', 'n'])
 
-graphemes.to_hdf(args.hdf, key='graphemes', mode='r+')
+graphemes.to_hdf(args.data, key='graphemes', mode='r+')
 
 print('Graphemes found.')
 
-######################## IMAGE EMBEDDINGS ##########################
+# Image embeddings
 
 STOP = 'stop'
 
@@ -143,9 +142,9 @@ for gpu in range(args.gpus):
 
 print(args.gpus*args.threads, 'GPU processes launched to get image embeddings')
 
-with h5py.File(args.hdf, 'r+', libver='latest') as h5_file:
+with h5py.File(args.data, 'r+', libver='latest') as h5_file:
     for c in categories:
-        data = pd.read_hdf(args.hdf, key=c, columns=['images'])
+        data = pd.read_hdf(args.data, key=c, columns=['images'])
 
         for ad_id, path in zip(data.index, data.images):
             task_q.put((ad_id, path))
