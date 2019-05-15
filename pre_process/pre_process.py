@@ -48,7 +48,7 @@ def count(key):
 
     data = pd.read_hdf(args.data, key=key)
 
-    raw_text = ''.join([ str(t) for t in data.title + data.description ])
+    raw_text = ''.join([ str(t).lower() for t in data.title + data.description ])
     graphemes = regex.findall(r'\X', raw_text, regex.U)
 
     return Counter(graphemes)

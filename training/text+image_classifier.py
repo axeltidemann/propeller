@@ -101,7 +101,7 @@ with h5py.File(args.data, 'r', libver='latest') as h5_file:
         for text_field in ['title', 'description']:
             enc_name = '{}_encoded'.format(text_field)
             _data[enc_name] = _data[text_field].apply(lambda x: [0] if pd.isnull(x)
-                                                      else [ grapheme_map[g] for g in x if g in grapheme_map ])
+                                                      else [ grapheme_map[g] for g in x.lower() if g in grapheme_map ])
             padded = pad_sequences(_data[enc_name], maxlen=args.seq_len, padding='post', truncating='post')
             _data[enc_name] = [ p for p in padded ]
         
