@@ -151,8 +151,12 @@ with h5py.File(args.data, 'r+', libver='latest') as h5_file:
         for _ in data.images:
             ad_id, embeddings = result_q.get()
             print(ad_id, embeddings.shape)
-            h5_file.create_dataset('images/{}/{}'.format(c, ad_id), data=embeddings)
-            
+            try:
+                h5_file.create_dataset('images/{}/{}'.format(c, ad_id), data=embeddings)
+            except Exception as e:
+                print(e)
+                print('Strange. This already exists. Are they similar also? {}'.format(np.allclose(embeddings, h5_file['images/{}/{}'.format(c, ad_id)])))
+                
 for _ in range(args.gpus*args.threads):
     embed_q.put(STOP)
     
