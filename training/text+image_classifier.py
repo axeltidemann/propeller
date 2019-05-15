@@ -15,6 +15,7 @@ from keras.layers.embeddings import Embedding
 from keras.layers.advanced_activations import ELU
 from keras.preprocessing.sequence import pad_sequences
 from sklearn.model_selection import train_test_split
+from keras.callbacks import ModelCheckpoint
 import pandas as pd
 import h5py
 
@@ -69,6 +70,10 @@ parser.add_argument(
 parser.add_argument(
     '--test',
     help='Test on a smaller part of the dataset',
+    action='store_true')
+parser.add_argument(
+    '--save',
+    help='Save the model after training',
     action='store_true')
 args = parser.parse_args()
 
