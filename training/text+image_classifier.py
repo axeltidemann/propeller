@@ -173,8 +173,7 @@ for text_inputs, seq_len in zip([title_inputs, description_inputs], [args.title_
 fusion = Concatenate()(filters + [visual_inputs])
 
 x = Dropout(args.dropout)(fusion)
-x = Dense(args.hidden_size)(x)
-x = ELU()(x) # Alleviates need for batchnorm
+x = Dense(args.hidden_size, activation='elu')(x)
 x = Dropout(args.dropout)(x)
 predictions = Dense(len(categories), activation='softmax')(x)
 
