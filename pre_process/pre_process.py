@@ -14,6 +14,7 @@ from keras.applications import Xception
 from keras.applications.inception_v3 import preprocess_input
 from keras.preprocessing.image import img_to_array, load_img
 from scipy.misc import imresize
+from scipy import stats
 
 parser = argparse.ArgumentParser(description='''
     Reads HDF5 files with ad ids, titles, descriptions, price and image paths. Finds
@@ -37,6 +38,12 @@ parser.add_argument(
     help='How many threads to use pr GPU for image embedding',
     default=2,
     type=int)
+parser.add_argument(
+    '--quantile_size',
+    help='Number of quantiles',
+    default=20,
+    type=int)
+
 args = parser.parse_args()
 
 # Graphemes
@@ -50,11 +57,11 @@ def count(key):
     raw_text = ''.join([ str(t).lower() for t in data.title + data.description ])
     graphemes = regex.findall(r'\X', raw_text, regex.U)
 
-    return Counter(graphemes)
+    return (Counter(graphemes), data.price[ ~pd.isnull(data.price) ])
 
 with h5py.File(args.data, 'r+', libver='latest') as h5_file:
 
-    for content in ['graphemes', 'images']:
+    for content in ['graphemes', 'quantiles', 'images']:
         if content in h5_file:
             del h5_file[content]
             print(content, 'already existed, deleting.')
@@ -65,15 +72,29 @@ pool = mp.Pool()
 results = pool.map(count, categories)
 
 counter = Counter()
+price = pd.Series()
 
-for cntr in results:
-    counter.update(cntr)
+for _counter, _price in results:
+    counter.update(_counter)
+    price = price.append(_price)
+
+quantiles = np.unique(stats.mstats.mquantiles(price,
+                                              np.arange(args.quantile_size + 1, dtype=np.float64)
+                                              / float(args.quantile_size),
+                                              alphap=0.0,
+                                              betap=1.0,)).astype(float).tolist()
 
 graphemes = pd.DataFrame(data=counter.most_common(), columns=['grapheme', 'n'])
 
 graphemes.to_hdf(args.data, key='graphemes', mode='r+')
 
 print('Graphemes found.')
+
+quantiles = pd.DataFrame(data=quantiles, columns=['quantile'])
+quantiles.to_hdf(args.data, key='quantiles', mode='r+')
+
+print('Quantiles:')
+print(quantiles)
 
 # Image embeddings
 

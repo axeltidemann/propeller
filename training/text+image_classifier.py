@@ -70,7 +70,7 @@ parser.add_argument(
     default=0)
 parser.add_argument(
     '--test_validation_ratio',
-    help='The ratio to use for validation and testing (50% each)',
+    help='The ratio to use for validation and testing (50%% each)',
     type=float,
     default=0.2)
 parser.add_argument(
@@ -85,12 +85,26 @@ args = parser.parse_args()
 
 np.random.seed(args.seed)
 
+def value_to_quantile(original_value, quantiles):
+    if original_value <= quantiles[0]:
+        return 0.0
+    if original_value >= quantiles[-1]:
+        return 1.0
+    n_quantiles = float(len(quantiles) - 1)
+    right = np.searchsorted(quantiles, original_value)
+    left = right - 1
+
+    interpolated = (left + ((original_value - quantiles[left])
+                            / ((quantiles[right] + 1e-6) - quantiles[left]))) / n_quantiles
+    return interpolated
+
 def serve(df):
     vision = np.vstack(df.embeddings.apply(lambda x: random.choice(x) if len(x) else np.zeros(N)))
     title = np.vstack(df['title_encoded'])
     description = np.vstack(df['description_encoded'])
+    price = df.price_quantile
 
-    inputs = {'vision': vision, 'title': title, 'description': description}
+    inputs = {'vision': vision, 'title': title, 'description': description, 'price': price}
     outputs = df.target
 
     return (inputs, outputs)
@@ -108,8 +122,11 @@ graphemes = pd.read_hdf(args.data, key='graphemes')
 graphemes_used = graphemes.grapheme[:args.graphemes]
 grapheme_map = { g:i for i,g in enumerate(graphemes_used) }
 
+quantiles = pd.read_hdf(args.data, key='quantiles')
+quantiles = np.squeeze(quantiles.values)
+
 with h5py.File(args.data, 'r', libver='latest') as h5_file:
-    categories = [ 'categories/{}'.format(c) for c in list(h5_file['categories'].keys()) ]
+    categories = [ 'categories/{}'.format(c) for c in sorted(h5_file['categories'].keys()) ]
     sizes = [ h5_file['{}/table'.format(c)].shape[0] for c in categories ]
 
     for category, size in zip(categories, sizes):
@@ -132,6 +149,7 @@ with h5py.File(args.data, 'r', libver='latest') as h5_file:
             _data[enc_name] = [ p for p in padded ]
         
         _data['embeddings'] = [ h5_file['images/{}/{}'.format(category, ad_id)][:] for ad_id in _data.index ]
+        _data['price_quantile'] = _data.price.apply(lambda x: 0 if pd.isnull(x) else value_to_quantile(x, quantiles)) # should be -1?
         
         data = data.append(_data)
 
@@ -160,6 +178,7 @@ nb_filters_coeff = 25
 title_inputs = Input(shape=(args.title_len,), name='title')
 description_inputs = Input(shape=(args.desc_len,), name='description')
 visual_inputs = Input(shape=(N,), name='vision')
+price_inputs = Input(shape=(1,), name='price')
 
 filters = []
 for text_inputs, seq_len in zip([title_inputs, description_inputs], [args.title_len, args.desc_len]):
@@ -170,7 +189,8 @@ for text_inputs, seq_len in zip([title_inputs, description_inputs], [args.title_
         x = GlobalMaxPooling1D()(x)
         filters.append(x)
 
-fusion = Concatenate()(filters + [visual_inputs])
+price_embedding = Dense(args.embedding_size, activation='elu')(price_inputs)
+fusion = Concatenate()(filters + [visual_inputs, price_embedding])
 
 x = Dropout(args.dropout)(fusion)
 x = Dense(args.hidden_size, activation='elu')(x)
@@ -182,7 +202,7 @@ config.gpu_options.allow_growth = True
 config.allow_soft_placement = True
 
 with tf.Session(config=config) as session:
-    model = Model(inputs=[title_inputs, description_inputs, visual_inputs], outputs=predictions)
+    model = Model(inputs=[title_inputs, description_inputs, visual_inputs, price_inputs], outputs=predictions)
 
     model.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
     print(model.summary())
