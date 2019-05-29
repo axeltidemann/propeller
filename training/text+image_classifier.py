@@ -125,6 +125,9 @@ grapheme_map = { g:i for i,g in enumerate(graphemes_used) }
 quantiles = pd.read_hdf(args.data, key='quantiles')
 quantiles = np.squeeze(quantiles.values)
 
+if args.test:
+    args.batch_size = 8
+
 with h5py.File(args.data, 'r', libver='latest') as h5_file:
     categories = [ 'categories/{}'.format(c) for c in sorted(h5_file['categories'].keys()) ]
     sizes = [ h5_file['{}/table'.format(c)].shape[0] for c in categories ]
@@ -222,9 +225,11 @@ with tf.Session(config=config) as session:
 
     if args.filter_value > 0:
         predict = model.predict(test_data[0], batch_size=args.batch_size)
+
         results = pd.DataFrame(data=np.hstack([ np.expand_dims(np.max(predict, axis=1),-1),
                                                 np.expand_dims(np.argmax(predict, axis=1),-1),
-                                                test_data[1] ]), columns=['score', 'predicted', 'target'])
+                                                np.expand_dims(test_data[1],-1) ]), columns=['score', 'predicted', 'target'])
+
         results_filter = results[ results.score > args.filter_value ]
         filter_accuracy = np.mean(results_filter.predicted == results_filter.target)
 
