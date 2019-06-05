@@ -127,3 +127,12 @@ test_data = serve(data)
 
 loss, accuracy = model.evaluate(test_data[0], test_data[1], batch_size=args.batch_size)
 print('Accuracy {}'.format(accuracy))
+
+# predictions = model.predict(test_data[0], batch_size=args.batch_size)
+# predictions = np.argmax(predictions, axis=1)
+
+# for col in data.columns:
+#     del data[col]
+
+# data['prediction'] = predictions
+# data.to_csv('predictions.csv')
